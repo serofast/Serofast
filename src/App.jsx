@@ -33,14 +33,11 @@ function LandingPage() {
       <Header />
 
       <main>
-        <section
-          className={`${pageContainer} pt-[13px] max-800:pt-3`}
-          id="home"
-        >
+        <section className="w-full" id="home">
           <HeroBanner />
         </section>
 
-        <section className={`${pageContainer} pt-[27px]`} id="shops">
+        <section className={`${pageContainer} pt-12 max-800:pt-8`} id="shops">
           <SectionHeader
             title="Top Rated Shops"
             action="View all shops"

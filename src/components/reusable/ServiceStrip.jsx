@@ -9,20 +9,20 @@ const services = [
 
 export default function ServiceStrip() {
   return (
-    <div className="absolute bottom-5 left-[8%] right-[8%] z-[3] grid min-h-[69px] grid-cols-4 items-center rounded-[13px] bg-white/[0.96] px-[14px] py-[10px] shadow-float max-800:bottom-[14px] max-800:left-[4%] max-800:right-[4%] max-560:relative max-560:bottom-auto max-560:left-auto max-560:right-auto max-560:-mt-7 max-560:mx-3 max-560:mb-3 max-560:w-[calc(100%-24px)] max-560:grid-cols-2 max-560:gap-2 max-560:p-[10px]">
+    <div className="relative z-[3] mx-6 mb-6 grid min-h-[72px] grid-cols-4 items-center rounded-[16px] border border-white/80 bg-white/95 px-4 py-3 shadow-float backdrop-blur-md max-1100:mx-4 max-1100:mb-4 max-1100:grid-cols-2 max-1100:gap-3 max-560:mx-3 max-560:mb-4 max-560:grid-cols-2 max-560:gap-2 max-560:p-2.5">
       {services.map(([Icon, title, text]) => (
         <div
-          className="flex items-center gap-[11px] border-r border-[#eee] px-[13px] last:border-r-0 max-800:px-2 max-560:border-r-0 max-560:px-[5px] max-560:py-[3px] max-560:[&:nth-child(1)]:border-b max-560:[&:nth-child(1)]:border-b-[#eee] max-560:[&:nth-child(1)]:pb-2 max-560:[&:nth-child(2)]:border-b max-560:[&:nth-child(2)]:border-b-[#eee] max-560:[&:nth-child(2)]:pb-2 max-560:[&:nth-child(n+3)]:pt-2"
+          className="flex items-center gap-3 border-r border-[#eee] px-3 last:border-r-0 max-1100:border-r-0 max-1100:px-1.5 max-560:px-1"
           key={title}
         >
-          <div className="grid h-[35px] w-[35px] shrink-0 place-items-center rounded-full bg-promoHighlight text-brandRed max-800:h-[30px] max-800:w-[30px]">
-            <Icon size={20} />
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#FFF1F1] text-[#D22125] max-800:h-8 max-800:w-8">
+            <Icon size={18} />
           </div>
           <div>
-            <strong className="block text-[12px] max-800:text-[10px] max-380:text-[9px]">
+            <strong className="block text-[13px] font-bold text-textPrimary max-800:text-[11px] max-380:text-[10px]">
               {title}
             </strong>
-            <span className="mt-1 block text-[10px] text-textSecondary max-800:text-[8px] max-380:hidden">
+            <span className="mt-0.5 block text-[11px] text-textSecondary max-800:text-[9px] max-380:hidden">
               {text}
             </span>
           </div>
