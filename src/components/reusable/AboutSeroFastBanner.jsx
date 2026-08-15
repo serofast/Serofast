@@ -107,7 +107,7 @@ export default function AboutSeroFastBanner() {
         </ScrollReveal>
 
         {/* 3 Main Pillar Cards Grid with Staggered Scroll Reveal */}
-        <div className="mt-12 grid grid-cols-1 gap-7 lg:grid-cols-3 sm:gap-6">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-3">
           {pillars.map((pillar, index) => {
             const Icon = pillar.icon;
             return (
@@ -123,7 +123,7 @@ export default function AboutSeroFastBanner() {
                 >
                   {/* Top Banner Tag */}
                   <div>
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span
                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold ${pillar.badgeColor}`}
                       >
@@ -205,11 +205,12 @@ export default function AboutSeroFastBanner() {
         </div>
 
         {/* Edge-to-edge Metrics / Trust Highlights Strip */}
-        <ScrollReveal variant="scale-up" delay={200} className="mt-12">
-          <div className="grid grid-cols-2 gap-4 rounded-[20px] border border-[#f0e2e2] bg-white/90 p-5 shadow-sm backdrop-blur-md sm:grid-cols-4 max-560:p-4">
-            <div className="flex items-center gap-3.5 p-2">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed">
-                <Coins size={22} />
+        <ScrollReveal variant="scale-up" delay={200} className="mt-8 sm:mt-12">
+          <div className="grid grid-cols-2 gap-3 rounded-[20px] border border-[#f0e2e2] bg-white/90 p-4 shadow-sm backdrop-blur-md sm:grid-cols-4 sm:gap-4 sm:p-5 max-560:gap-2">
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed sm:h-11 sm:w-11">
+                <Coins size={20} className="sm:hidden" />
+                <Coins size={22} className="hidden sm:block" />
               </div>
               <div>
                 <strong className="block text-[17px] font-extrabold text-textPrimary">₹50 Only</strong>
@@ -217,31 +218,34 @@ export default function AboutSeroFastBanner() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-2">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
-                <Award size={22} />
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:h-11 sm:w-11">
+                <Award size={20} className="sm:hidden" />
+                <Award size={22} className="hidden sm:block" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <strong className="block text-[17px] font-extrabold text-textPrimary">Certificates</strong>
                 <span className="text-[11px] text-textSecondary">&amp; awards for students</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-2">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
-                <Zap size={22} />
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-11 sm:w-11">
+                <Zap size={20} className="sm:hidden" />
+                <Zap size={22} className="hidden sm:block" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <strong className="block text-[17px] font-extrabold text-textPrimary">In Hours</strong>
                 <span className="text-[11px] text-textSecondary">Fast local doorstep delivery</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-2">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
-                <Truck size={22} />
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11">
+                <Truck size={20} className="sm:hidden" />
+                <Truck size={22} className="hidden sm:block" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <strong className="block text-[17px] font-extrabold text-textPrimary">₹0 Shipping</strong>
                 <span className="text-[11px] text-textSecondary">No delivery charges</span>
               </div>

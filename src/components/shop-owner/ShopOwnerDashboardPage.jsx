@@ -103,8 +103,8 @@ export default function ShopOwnerDashboardPage() {
       </div>
 
       {/* KPI Metrics */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Revenue</span>
             <DollarSign size={16} className="text-emerald-600" />
@@ -113,7 +113,7 @@ export default function ShopOwnerDashboardPage() {
           <span className="mt-0.5 text-[11px] text-emerald-600 font-medium">100% Direct Retained</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Orders</span>
             <ShoppingBag size={16} className="text-slate-700" />
@@ -122,7 +122,7 @@ export default function ShopOwnerDashboardPage() {
           <span className="mt-0.5 text-[11px] text-slate-500 font-normal">3 Pending dispatch</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Products</span>
             <Package size={16} className="text-blue-600" />
@@ -131,7 +131,7 @@ export default function ShopOwnerDashboardPage() {
           <span className="mt-0.5 text-[11px] text-emerald-600 font-medium">3 In Stock</span>
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Promoters</span>
             <UsersRound size={16} className="text-purple-600" />
@@ -194,7 +194,7 @@ export default function ShopOwnerDashboardPage() {
                   <button
                     type="button"
                     onClick={() => updateOrderStatus(order.id, "Packing")}
-                    className="min-h-[36px] rounded-lg bg-brandRed px-3 py-1.5 text-xs font-semibold text-white hover:bg-brandRedDark transition"
+                    className="min-h-[44px] sm:min-h-[36px] flex-1 sm:flex-none rounded-lg bg-brandRed px-3 py-1.5 text-xs font-semibold text-white hover:bg-brandRedDark transition active:scale-95"
                   >
                     Accept
                   </button>
@@ -203,7 +203,7 @@ export default function ShopOwnerDashboardPage() {
                   <button
                     type="button"
                     onClick={() => updateOrderStatus(order.id, "Dispatched")}
-                    className="min-h-[36px] rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition"
+                    className="min-h-[44px] sm:min-h-[36px] flex-1 sm:flex-none rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition active:scale-95"
                   >
                     Dispatch
                   </button>
@@ -212,7 +212,7 @@ export default function ShopOwnerDashboardPage() {
                   <button
                     type="button"
                     onClick={() => updateOrderStatus(order.id, "Delivered")}
-                    className="min-h-[36px] rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition"
+                    className="min-h-[44px] sm:min-h-[36px] flex-1 sm:flex-none rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition active:scale-95"
                   >
                     Deliver
                   </button>

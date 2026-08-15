@@ -6,7 +6,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
   return (
     <div className="relative grid min-h-[calc(100svh-119px)] max-800:min-h-[calc(100svh-90px)] w-full grid-cols-1 lg:grid-cols-[50%_50%] xl:grid-cols-[48%_52%] overflow-hidden bg-[#fff2f2]">
       {/* Left Column: Content */}
-      <div className="relative z-[2] flex flex-col justify-center bg-[linear-gradient(90deg,#fff1f1_0%,#fff4f4_80%,rgba(255,244,244,0.3)_100%)] px-6 py-10 sm:px-12 md:px-16 lg:px-14 xl:px-20 lg:py-14 max-800:bg-[#fff2f2] max-800:p-[28px_20px_24px]">
+      <div className="relative z-[2] flex flex-col justify-center bg-[linear-gradient(90deg,#fff1f1_0%,#fff4f4_80%,rgba(255,244,244,0.3)_100%)] px-6 py-10 sm:px-12 md:px-16 lg:px-14 xl:px-20 lg:py-14 max-800:bg-[#fff2f2] max-800:p-[24px_20px_20px]">
         <div className="animate-fade-in-down mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-brandRed/20 bg-brandRed/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brandRed shadow-2xs">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brandRed opacity-75" />
@@ -21,12 +21,12 @@ export default function HeroBanner({ onOpenAppTeaser }) {
           <span className="text-brandRed">Become a Shop Owner</span>
         </h1>
 
-        <p className="animate-fade-in-up animation-delay-200 m-0 mb-5 text-sm leading-relaxed text-slate-600 max-w-lg">
+        <p className="animate-fade-in-up animation-delay-200 m-0 mb-4 text-sm leading-relaxed text-slate-600 max-w-lg sm:mb-5">
           Launch your official campus store profile, manage product inventory, and retain 100% of retail earnings with 0% commission.
         </p>
 
         {/* Minimal Feature Pills */}
-        <div className="animate-fade-in-up animation-delay-300 flex flex-wrap gap-2 mb-6">
+        <div className="animate-fade-in-up animation-delay-300 flex flex-wrap gap-2 mb-4 sm:mb-6">
           <span className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-800 shadow-2xs">
             <TrendingUp size={14} className="text-brandRed" />
             0% Commission (100% Direct Profit)
@@ -42,10 +42,10 @@ export default function HeroBanner({ onOpenAppTeaser }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="animate-fade-in-up animation-delay-400 flex flex-wrap items-center gap-3">
+        <div className="animate-fade-in-up animation-delay-400 flex flex-wrap items-stretch gap-2.5 sm:gap-3">
           <Link
             to="/signup"
-            className="inline-flex h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition-all hover:bg-brandRedDark hover:shadow-lg active:scale-95 max-560:w-full"
+            className="inline-flex h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition-all hover:bg-brandRedDark hover:shadow-lg active:scale-95 max-560:flex-1 max-560:min-w-0"
           >
             <Store size={16} />
             <span>Become a Shop Owner</span>
@@ -54,7 +54,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
           
           <Link
             to="/login"
-            className="inline-flex h-12 min-w-[140px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 text-xs font-bold text-slate-800 shadow-2xs transition-all hover:border-brandRed hover:text-brandRed active:scale-95 max-560:w-full"
+            className="inline-flex h-12 min-w-[140px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 text-xs font-bold text-slate-800 shadow-2xs transition-all hover:border-brandRed hover:text-brandRed active:scale-95 max-560:flex-1 max-560:min-w-0"
           >
             <span>Shop Owner Login</span>
           </Link>
@@ -70,7 +70,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
         </div>
 
         {/* Live Metrics */}
-        <div className="mt-7 grid grid-cols-3 gap-3 border-t border-rose-200/60 pt-4">
+        <div className="mt-5 grid grid-cols-3 gap-3 border-t border-rose-200/60 pt-3.5 sm:mt-7 sm:pt-4">
           <div>
             <div className="text-base font-bold text-slate-900">₹48.5K+</div>
             <div className="text-[11px] font-medium text-slate-500">Daily Payouts</div>
@@ -89,7 +89,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
       </div>
 
       {/* Right Column: Visual */}
-      <div className="group relative flex min-h-[340px] w-full flex-col justify-end overflow-hidden lg:min-h-full">
+      <div className="group relative flex min-h-[300px] w-full flex-col justify-end overflow-hidden max-380:min-h-[260px] lg:min-h-full">
         <img
           src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1400&q=90"
           alt="Verified Shop Owner Managing Campus Business"

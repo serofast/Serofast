@@ -72,15 +72,25 @@ export default function ShopOwnerInventoryPage() {
         </button>
       </div>
 
-      <div className="flex min-h-[44px] items-center rounded-xl border border-slate-200/80 bg-white px-3.5 shadow-2xs">
+      <div className="flex min-h-[44px] items-center gap-1 rounded-xl border border-slate-200/80 bg-white px-3.5 shadow-2xs transition focus-within:border-slate-300 focus-within:ring-2 focus-within:ring-brandRed/10">
         <Search size={16} className="text-slate-400 shrink-0" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search products..."
-          className="w-full border-0 bg-transparent px-2.5 text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+          className="w-full border-0 bg-transparent px-2.5 py-3 text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
         />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => setSearchQuery("")}
+            aria-label="Clear search"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 cursor-pointer"
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {/* Mobile Product Card Stack (< sm viewports) */}
@@ -185,11 +195,24 @@ export default function ShopOwnerInventoryPage() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-xl space-y-4 animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => setIsModalOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl bg-white p-5 shadow-xl space-y-4 animate-scale-up sm:animate-scale-up">
+            {/* Bottom-sheet drag handle (mobile) */}
+            <div className="mx-auto h-1.5 w-10 rounded-full bg-slate-200 sm:hidden" aria-hidden="true" />
+
             <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
               <h3 className="text-sm font-bold text-slate-900">Add Product</h3>
-              <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700 p-1">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                aria-label="Close"
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -249,7 +272,7 @@ export default function ShopOwnerInventoryPage() {
 
               <button
                 type="submit"
-                className="min-h-[44px] w-full rounded-xl bg-brandRed py-2.5 text-xs font-semibold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer"
+                className="min-h-[48px] w-full rounded-xl bg-brandRed py-2.5 text-xs font-semibold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer active:scale-[0.98]"
               >
                 Save Product
               </button>

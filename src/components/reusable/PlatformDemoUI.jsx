@@ -116,17 +116,17 @@ export default function PlatformDemoUI() {
             </div>
 
             {/* Tab Content Display */}
-            <div className="min-h-[300px] p-6 font-mono text-xs text-slate-200">
+            <div className="min-h-[300px] p-4 font-mono text-xs text-slate-200 sm:p-6">
               {/* 1. Terminal Log Tab */}
               {activeTab === "terminal" && (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3 font-sans">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 font-sans">
                     <span className="text-slate-400 text-xs">Live Console Output</span>
                     <button
                       type="button"
                       onClick={simulateNewOrder}
                       disabled={isSimulating}
-                      className="flex items-center gap-1.5 rounded-lg bg-brandRed px-3 py-1 text-xs font-bold text-white shadow-sm transition hover:bg-brandRedDark active:scale-95 disabled:opacity-50"
+                      className="flex items-center gap-1.5 rounded-lg bg-brandRed px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-brandRedDark active:scale-95 disabled:opacity-50"
                     >
                       <Play size={12} />
                       <span>{isSimulating ? "Processing..." : "Simulate Incoming Order"}</span>
@@ -175,7 +175,7 @@ export default function PlatformDemoUI() {
               {/* 3. Live Order Stream Tab */}
               {activeTab === "orders" && (
                 <div className="font-sans space-y-3">
-                  <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-800">
+                  <div className="hidden sm:flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-800">
                     <span>Order ID</span>
                     <span>Customer</span>
                     <span>Amount</span>
@@ -183,20 +183,20 @@ export default function PlatformDemoUI() {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-lg bg-slate-900 p-3 text-xs">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-lg bg-slate-900 p-3 text-xs sm:flex sm:items-center sm:justify-between sm:gap-0">
                       <span className="font-mono text-slate-300">#SF-1092</span>
-                      <span className="text-slate-300">Rahul K. (Campus Hostel 4)</span>
-                      <span className="font-bold text-white">₹1,499</span>
-                      <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[11px] text-emerald-400 font-semibold">
+                      <span className="text-right font-bold text-white sm:text-left">₹1,499</span>
+                      <span className="col-span-2 min-w-0 truncate text-slate-300 sm:col-auto">Rahul K. (Campus Hostel 4)</span>
+                      <span className="col-span-2 justify-self-start sm:col-auto rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[11px] text-emerald-400 font-semibold">
                         Delivered in 24m
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between rounded-lg bg-slate-900 p-3 text-xs">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-lg bg-slate-900 p-3 text-xs sm:flex sm:items-center sm:justify-between sm:gap-0">
                       <span className="font-mono text-slate-300">#SF-1093</span>
-                      <span className="text-slate-300">Sneha M. (Greenways Apt)</span>
-                      <span className="font-bold text-white">₹2,499</span>
-                      <span className="rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[11px] text-blue-400 font-semibold">
+                      <span className="text-right font-bold text-white sm:text-left">₹2,499</span>
+                      <span className="col-span-2 min-w-0 truncate text-slate-300 sm:col-auto">Sneha M. (Greenways Apt)</span>
+                      <span className="col-span-2 justify-self-start sm:col-auto rounded-md bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 text-[11px] text-blue-400 font-semibold">
                         Out for Delivery
                       </span>
                     </div>

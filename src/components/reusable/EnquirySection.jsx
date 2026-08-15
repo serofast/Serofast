@@ -148,7 +148,7 @@ export default function EnquirySection() {
                   )}
                 </button>
 
-                <div className="flex items-center justify-between text-[11px] text-[#777] pt-2">
+                <div className="flex flex-col items-start gap-1 text-[11px] text-[#777] pt-2 sm:flex-row sm:items-center sm:justify-between">
                   <span>🔒 100% Privacy Protected. No spam.</span>
                   <span>⚡ Response guaranteed within 2 hours</span>
                 </div>

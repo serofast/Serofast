@@ -70,6 +70,34 @@ export default function ShopOwnerOrdersPage() {
               </span>
             </div>
 
+            {/* Order fulfillment progress indicator */}
+            <div className="space-y-1">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    order.status === "Delivered"
+                      ? "bg-emerald-500"
+                      : order.status === "Dispatched"
+                      ? "bg-blue-500"
+                      : "bg-amber-500"
+                  }`}
+                  style={{
+                    width:
+                      order.status === "Delivered"
+                        ? "100%"
+                        : order.status === "Dispatched"
+                        ? "66%"
+                        : "33%",
+                  }}
+                />
+              </div>
+              <div className="flex justify-between text-[10px] font-medium text-slate-400">
+                <span className={order.status === "Pending" ? "text-amber-600" : ""}>Pending</span>
+                <span className={order.status === "Dispatched" ? "text-blue-600" : ""}>Dispatched</span>
+                <span className={order.status === "Delivered" ? "text-emerald-600" : ""}>Delivered</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               <div className="space-y-0.5">
                 <span className="font-semibold text-slate-900 flex items-center gap-1">
@@ -90,11 +118,11 @@ export default function ShopOwnerOrdersPage() {
               </div>
             </div>
 
-            <div className="rounded-lg bg-slate-50 p-2.5 space-y-1 text-xs">
+            <div className="rounded-lg bg-slate-50 p-3 space-y-1 text-xs">
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between font-medium text-slate-700">
-                  <span>{item.qty}x {item.name}</span>
-                  <span>₹{item.price}</span>
+                <div key={idx} className="flex items-start justify-between gap-3 font-medium text-slate-700">
+                  <span className="min-w-0 flex-1">{item.qty}x {item.name}</span>
+                  <span className="shrink-0">₹{item.price}</span>
                 </div>
               ))}
               <div className="flex justify-between border-t border-slate-200/60 pt-1.5 font-bold text-slate-900">

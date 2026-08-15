@@ -81,7 +81,7 @@ function LandingPage() {
             />
           </ScrollReveal>
 
-          <div className="grid grid-cols-6 gap-3 max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 max-1100:[&>*:nth-child(n+4)]:hidden">
+          <div className="grid grid-cols-6 gap-3 max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 [@media(max-width:1100px)_and_(min-width:801px)]:[&>*:nth-child(n+4)]:hidden max-800:[&>*:nth-child(n+5)]:hidden">
             {shops.map((shop, idx) => (
               <ScrollReveal
                 key={shop.name}
@@ -108,7 +108,7 @@ function LandingPage() {
             />
           </ScrollReveal>
 
-          <div className="grid grid-cols-6 gap-[13px] max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 max-1100:[&>*:nth-child(n+4)]:hidden">
+          <div className="grid grid-cols-6 gap-[13px] max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 [@media(max-width:1100px)_and_(min-width:801px)]:[&>*:nth-child(n+4)]:hidden max-800:[&>*:nth-child(n+5)]:hidden">
             {products.map((product, idx) => (
               <ScrollReveal
                 key={product.name}

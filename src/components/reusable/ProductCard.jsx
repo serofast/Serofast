@@ -39,14 +39,14 @@ export default function ProductCard({ product, onOpenAppTeaser }) {
             <button
               onClick={handleClick}
               aria-label={`Like ${product.name}`}
-              className="grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#e2e2e2] bg-white text-[#666] shadow-2xs transition-all duration-200 hover:scale-110 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:scale-90"
+              className="grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#e2e2e2] bg-white text-[#666] shadow-2xs transition-all duration-200 hover:scale-110 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 active:scale-90 max-560:h-[32px] max-560:w-[32px]"
             >
               <Heart size={16} />
             </button>
             <button
               onClick={handleClick}
               aria-label={`Add ${product.name} to cart`}
-              className="grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#e2e2e2] bg-white text-[#666] shadow-2xs transition-all duration-200 hover:scale-110 hover:border-brandRed hover:bg-brandRed hover:text-white active:scale-90"
+              className="grid h-[28px] w-[28px] place-items-center rounded-[8px] border border-[#e2e2e2] bg-white text-[#666] shadow-2xs transition-all duration-200 hover:scale-110 hover:border-brandRed hover:bg-brandRed hover:text-white active:scale-90 max-560:h-[32px] max-560:w-[32px]"
             >
               <ShoppingCart size={16} />
             </button>

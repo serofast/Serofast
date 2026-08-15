@@ -30,7 +30,7 @@ export default function ShopOwnerSettingsPage() {
                 type="text"
                 value={store.name}
                 onChange={(e) => setStore({ ...store, name: e.target.value })}
-                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 font-medium"
+                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium transition"
               />
             </div>
 
@@ -40,7 +40,7 @@ export default function ShopOwnerSettingsPage() {
                 type="text"
                 value={store.ownerName}
                 onChange={(e) => setStore({ ...store, ownerName: e.target.value })}
-                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 font-medium"
+                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium transition"
               />
             </div>
           </div>
@@ -52,7 +52,7 @@ export default function ShopOwnerSettingsPage() {
                 type="email"
                 value={store.email}
                 onChange={(e) => setStore({ ...store, email: e.target.value })}
-                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 font-medium"
+                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium transition"
               />
             </div>
 
@@ -62,7 +62,7 @@ export default function ShopOwnerSettingsPage() {
                 type="tel"
                 value={store.phone}
                 onChange={(e) => setStore({ ...store, phone: e.target.value })}
-                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 font-medium"
+                className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium transition"
               />
             </div>
           </div>
@@ -73,7 +73,7 @@ export default function ShopOwnerSettingsPage() {
               type="text"
               value={store.address}
               onChange={(e) => setStore({ ...store, address: e.target.value })}
-              className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 font-medium"
+              className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium transition"
             />
           </div>
 
@@ -93,7 +93,7 @@ export default function ShopOwnerSettingsPage() {
             <h4 className="text-xs font-bold text-slate-900">Printable Customer QR Code</h4>
             <p className="text-[11px] text-slate-500 font-normal">Display at counter for instant orders.</p>
 
-            <div className="mx-auto grid h-36 w-36 place-items-center rounded-xl bg-slate-900 text-white p-3">
+            <div className="mx-auto grid h-36 w-36 place-items-center rounded-xl bg-slate-900 text-white p-3 ring-1 ring-slate-700 shadow-lg">
               <QrCode size={96} className="text-amber-400" />
             </div>
 

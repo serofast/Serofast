@@ -63,9 +63,9 @@ export default function ComparisonPricingSection() {
         </ScrollReveal>
 
         {/* Dynamic Calculator & Comparison Bar Section */}
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
           {/* Interactive Calculator Slider Card */}
-          <div className="lg:col-span-5 rounded-3xl border border-white/80 bg-white/95 p-7 shadow-[0_12px_36px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_20px_45px_rgba(210,33,37,0.1)]">
+          <div className="lg:col-span-5 rounded-3xl border border-white/80 bg-white/95 p-5 sm:p-7 shadow-[0_12px_36px_rgba(0,0,0,0.04)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_20px_45px_rgba(210,33,37,0.1)]">
             <div className="flex items-center justify-between">
               <span className="rounded-full bg-brandRed/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-brandRed">
                 Profit Calculator
@@ -80,7 +80,7 @@ export default function ComparisonPricingSection() {
             </h3>
 
             <div className="mt-6">
-              <div className="flex justify-between text-sm font-bold text-textPrimary">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-sm font-bold text-textPrimary">
                 <span>Monthly Store Revenue:</span>
                 <span className="text-brandRed text-base font-extrabold">
                   ₹{monthlySales.toLocaleString("en-IN")}
@@ -93,7 +93,7 @@ export default function ComparisonPricingSection() {
                 step="5000"
                 value={monthlySales}
                 onChange={(e) => setMonthlySales(Number(e.target.value))}
-                className="mt-3 w-full accent-brandRed cursor-pointer h-2 bg-gray-200 rounded-lg"
+                className="mt-4 w-full accent-brandRed cursor-pointer h-2.5 sm:h-2 bg-gray-200 rounded-lg touch-manipulation"
               />
               <div className="flex justify-between text-[11px] text-textMuted mt-1">
                 <span>₹10,000/mo</span>
@@ -127,7 +127,7 @@ export default function ComparisonPricingSection() {
           {/* Comparison Side-by-Side Cards */}
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Traditional Aggregators Card */}
-            <div className="rounded-3xl border border-gray-200 bg-gray-50/90 p-6 transition-all duration-300 hover:border-gray-300 hover:bg-white hover:shadow-md">
+            <div className="rounded-3xl border border-gray-200 bg-gray-50/90 p-5 sm:p-6 transition-all duration-300 hover:border-gray-300 hover:bg-white hover:shadow-md">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-extrabold text-gray-500 uppercase tracking-wider">
                   Traditional Apps
@@ -175,7 +175,7 @@ export default function ComparisonPricingSection() {
             </div>
 
             {/* SeroFast Platform Card */}
-            <div className="relative rounded-3xl border-2 border-brandRed bg-white p-6 shadow-[0_12px_32px_rgba(210,33,37,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(210,33,37,0.2)]">
+            <div className="relative rounded-3xl border-2 border-brandRed bg-white p-5 sm:p-6 shadow-[0_12px_32px_rgba(210,33,37,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(210,33,37,0.2)]">
               <div className="absolute -top-3 right-6 rounded-full bg-brandRed px-3 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-sm">
                 RECOMMENDED
               </div>

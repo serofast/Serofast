@@ -35,7 +35,7 @@ export default function AppTeaserModal({ isOpen, onClose, initialItemName }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 max-560:p-3">
+    <div className="fixed inset-0 z-[200] flex items-end justify-center p-0 sm:items-center sm:p-4 max-560:p-0">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
@@ -43,7 +43,10 @@ export default function AppTeaserModal({ isOpen, onClose, initialItemName }) {
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-[540px] overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-2xl animate-in zoom-in-95 duration-200">
+      <div className="relative z-10 flex max-h-[92vh] w-full max-w-[540px] flex-col overflow-hidden rounded-t-3xl border border-slate-100 bg-white shadow-2xl animate-in zoom-in-95 duration-200 sm:rounded-3xl max-560:pb-[env(safe-area-inset-bottom)]">
+        {/* Bottom-sheet drag handle (mobile) */}
+        <div className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-slate-200 sm:hidden" aria-hidden="true" />
+
         {/* Header */}
         <div className="relative bg-slate-950 px-6 py-6 text-white max-560:px-4 max-560:py-5">
           <button
@@ -74,7 +77,7 @@ export default function AppTeaserModal({ isOpen, onClose, initialItemName }) {
         </div>
 
         {/* Body */}
-        <div className="p-5 max-560:p-4">
+        <div className="overflow-y-auto p-5 max-560:p-4">
           {/* Navigation Tabs */}
           <div className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 mb-4">
             <button
