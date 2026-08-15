@@ -43,14 +43,14 @@ export default function SellerDashboardPage() {
 
         <div className="flex flex-wrap gap-2.5">
           <Link
-            to="/seller/products"
+            to="/shop-owner/inventory"
             className="flex items-center gap-2 rounded-xl bg-brandRed px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-brandRed/20 hover:bg-[#b81b1f] hover:-translate-y-0.5 transition-all active:scale-95"
           >
             <Plus size={16} />
             <span>Add New Product</span>
           </Link>
           <Link
-            to="/seller/settings"
+            to="/shop-owner/settings"
             className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-slate-700 hover:border-brandRed hover:text-brandRed transition-all active:scale-95"
           >
             <QrCode size={16} />
@@ -119,7 +119,7 @@ export default function SellerDashboardPage() {
             <h3 className="text-base font-extrabold text-slate-900">Live Customer Orders</h3>
             <p className="text-xs text-slate-500 font-medium">Manage incoming orders and update delivery dispatch states.</p>
           </div>
-          <Link to="/seller/orders" className="text-xs font-bold text-brandRed hover:underline flex items-center gap-1">
+          <Link to="/shop-owner/orders" className="text-xs font-bold text-brandRed hover:underline flex items-center gap-1">
             <span>View All Orders</span>
             <ArrowRight size={14} />
           </Link>

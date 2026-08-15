@@ -32,7 +32,7 @@ export default function SellerPayoutsPage() {
           <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Platform Commission Fee</span>
           <div className="mt-2 text-3xl font-extrabold text-emerald-700">₹0 (0%)</div>
           <span className="text-[11px] text-emerald-800 font-semibold flex items-center gap-1">
-            <ShieldCheck size={13} /> ₹50 One-Time Merchant Setup
+            <ShieldCheck size={13} /> ₹50 One-Time Shop Owner Setup
           </span>
         </div>
       </div>

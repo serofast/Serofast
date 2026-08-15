@@ -6,11 +6,8 @@ import {
   ShoppingBag,
   Settings,
   CreditCard,
-  Store,
   Power,
-  Bell,
   ExternalLink,
-  ChevronRight,
   Menu,
   X,
   ShieldCheck,
@@ -27,16 +24,16 @@ export default function SellerLayout() {
   };
 
   const navItems = [
-    { label: "Dashboard", path: "/seller/dashboard", icon: LayoutDashboard },
-    { label: "Products & Stock", path: "/seller/products", icon: Package },
-    { label: "Customer Orders", path: "/seller/orders", icon: ShoppingBag, badge: "3" },
-    { label: "Store Settings & QR", path: "/seller/settings", icon: Settings },
-    { label: "Payouts & Bank", path: "/seller/payouts", icon: CreditCard },
+    { label: "Store Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
+    { label: "Products & Inventory", path: "/shop-owner/inventory", icon: Package },
+    { label: "Live Customer Orders", path: "/shop-owner/orders", icon: ShoppingBag, badge: "3" },
+    { label: "Store Profile & QR Poster", path: "/shop-owner/settings", icon: Settings },
+    { label: "Bank Settlements & Payouts", path: "/shop-owner/payouts", icon: CreditCard },
   ];
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#1e293b] flex flex-col font-sans">
-      {/* Top Seller Bar */}
+      {/* Top Shop Owner Bar */}
       <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-4 sm:px-8 shadow-xs backdrop-blur-md">
         <div className="flex items-center gap-4">
           <button
@@ -47,15 +44,15 @@ export default function SellerLayout() {
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <Link to="/seller/dashboard" className="flex items-center gap-2.5">
+          <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-brandRed text-white font-extrabold text-base shadow-sm">
               S
             </span>
             <div className="flex flex-col">
               <span className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
-                SEROFAST <span className="rounded-md bg-brandRed/10 px-1.5 py-0.5 text-[10px] text-brandRed font-bold">SELLER</span>
+                SEROFAST <span className="rounded-md bg-brandRed/10 px-1.5 py-0.5 text-[10px] text-brandRed font-bold">SHOP OWNER</span>
               </span>
-              <span className="text-[11px] text-slate-500 font-medium">Merchant Dashboard</span>
+              <span className="text-[11px] text-slate-500 font-medium">Verified Store Workspace</span>
             </div>
           </Link>
         </div>
@@ -73,25 +70,25 @@ export default function SellerLayout() {
             }`}
           >
             <span className={`h-2.5 w-2.5 rounded-full ${storeStatus === "online" ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-            <span className="hidden sm:inline">{storeStatus === "online" ? "Store Accepting Orders" : "Store Offline"}</span>
+            <span className="hidden sm:inline">{storeStatus === "online" ? "Store Active & Accepting Orders" : "Store Offline"}</span>
           </button>
 
-          {/* View Live Storefront Link */}
+          {/* View Public Store Profile */}
           <Link
             to="/"
             target="_blank"
             className="hidden sm:flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-brandRed hover:text-brandRed transition-colors"
           >
-            <span>View Live Store</span>
+            <span>Preview Storefront</span>
             <ExternalLink size={13} />
           </Link>
 
-          {/* Exit Seller Portal */}
+          {/* Exit Shop Owner Portal */}
           <button
             type="button"
             onClick={() => navigate("/")}
             className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-brandRed transition-colors"
-            title="Exit Seller Portal"
+            title="Exit Workspace"
           >
             <Power size={18} />
           </button>
@@ -118,7 +115,7 @@ export default function SellerLayout() {
                 <div className="flex flex-col min-w-0">
                   <h4 className="text-xs font-bold text-slate-900 truncate">{initialSellerStore.name}</h4>
                   <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                    <ShieldCheck size={11} /> ₹50 Verified Merchant
+                    <ShieldCheck size={11} /> Verified Shop Owner
                   </span>
                 </div>
               </div>
@@ -157,8 +154,8 @@ export default function SellerLayout() {
 
             {/* Bottom Support Callout */}
             <div className="rounded-2xl bg-brandRed/5 border border-brandRed/10 p-3.5 text-center">
-              <span className="text-[11px] font-bold text-brandRed block">Need Merchant Support?</span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">Contact SeroFast Desk 24/7</span>
+              <span className="text-[11px] font-bold text-brandRed block">Shop Owner Support</span>
+              <span className="text-[10px] text-slate-500 block mt-0.5">24/7 Merchant Support Line</span>
               <a
                 href="#support"
                 className="mt-2.5 inline-block w-full rounded-lg bg-white border border-brandRed/20 py-1 text-[11px] font-bold text-brandRed shadow-2xs hover:bg-brandRed hover:text-white transition-colors"

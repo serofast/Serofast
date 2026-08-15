@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, Smartphone, Store, UserRound } from "lucide-react";
+import { Search, Smartphone, Store, UserRound, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { categories } from "../../data/landing";
 
-export default function Header() {
+export default function Header({ onOpenAppTeaser }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +23,13 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (onOpenAppTeaser) {
+      onOpenAppTeaser(searchQuery || "Search Products");
+    }
+  };
 
   return (
     <header
@@ -53,59 +61,81 @@ export default function Header() {
           <span className="tracking-tight">SEROFAST</span>
         </Link>
 
-        <div className="group flex h-[44px] items-center rounded-[18px] border border-[#d9d9d9] bg-[#fafafa] px-[14px] text-[#777] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-300 hover:border-[#bbb] hover:bg-white focus-within:border-brandRed focus-within:bg-white focus-within:ring-4 focus-within:ring-brandRed/10 focus-within:shadow-[0_4px_18px_rgba(210,33,37,0.1)] max-800:order-3 max-800:col-span-full max-800:mb-2.5">
+        {/* Search Bar (Triggers App Teaser for Shoppers) */}
+        <form
+          onSubmit={handleSearchSubmit}
+          className="group flex h-[44px] items-center rounded-[18px] border border-[#d9d9d9] bg-[#fafafa] px-[14px] text-[#777] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-300 hover:border-[#bbb] hover:bg-white focus-within:border-brandRed focus-within:bg-white focus-within:ring-4 focus-within:ring-brandRed/10 focus-within:shadow-[0_4px_18px_rgba(210,33,37,0.1)] max-800:order-3 max-800:col-span-full max-800:mb-2.5"
+        >
           <Search size={20} className="shrink-0 transition-colors duration-200 group-hover:text-brandRed group-focus-within:text-brandRed" />
           <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search products"
-            placeholder="Search for products and more"
+            placeholder="Search campus products (App launching soon)..."
             className="w-full border-0 bg-transparent px-3 text-[14px] text-textPrimary outline-none placeholder:text-[#999]"
           />
-          <span className="h-[18px] w-[18px] rounded-full border-[1.6px] border-[#a9a9a9] transition-all duration-300 group-hover:border-brandRed group-focus-within:border-brandRed group-focus-within:bg-brandRed/15" />
-        </div>
+          <button
+            type="submit"
+            className="rounded-full bg-brandRed/10 px-2.5 py-1 text-[11px] font-bold text-brandRed transition hover:bg-brandRed hover:text-white"
+          >
+            Search
+          </button>
+        </form>
 
         <nav
           className="flex items-center gap-[17px] whitespace-nowrap text-[13px] font-semibold max-1100:gap-2.5 max-1100:text-[11px]"
           aria-label="Account actions"
         >
-          <a
-            className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:text-brandRed max-800:hidden"
-            href="#app"
+          <button
+            type="button"
+            onClick={() => onOpenAppTeaser?.("Customer Mobile App")}
+            className="inline-flex items-center gap-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:text-brandRed max-800:hidden"
           >
-            <Smartphone size={20} className="transition-transform duration-200 hover:scale-110" />
-            Download App
-          </a>
+            <Smartphone size={18} className="text-brandRed transition-transform duration-200 hover:scale-110" />
+            <span>Mobile App</span>
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-700 border border-amber-300">
+              NEW
+            </span>
+          </button>
+
           <span className="h-7 w-px bg-[#e6e6e6] max-800:hidden" />
+
+          {/* Become a Shop Owner CTA */}
           <Link
-            to="/create-shop"
-            className="inline-flex items-center gap-2 text-brandRed transition-all duration-200 hover:-translate-y-0.5 hover:text-brandRedDark max-560:text-[0px] max-560:[&>svg]:h-[22px] max-560:[&>svg]:w-[22px]"
+            to="/signup?role=shop-owner"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brandRed/30 active:scale-95 max-560:text-[12px] max-560:px-3"
           >
-            <Store size={20} className="transition-transform duration-200 hover:scale-110" />
-            Create Shop
+            <Store size={18} className="animate-bounce shrink-0" />
+            <span>Become a Shop Owner</span>
           </Link>
+
           <span className="h-7 w-px bg-[#e6e6e6] max-800:hidden" />
+
+          {/* Shop Owner Login Link */}
           <Link
-            to="/login?role=admin"
-            className="inline-flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:text-brandRed max-800:hidden"
+            to="/login"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/40 hover:bg-white hover:text-brandRed max-800:hidden"
           >
-            <UserRound size={20} className="transition-transform duration-200 hover:scale-110" />
-            Login
+            <UserRound size={17} />
+            <span>Shop Owner Login</span>
           </Link>
         </nav>
       </div>
 
+      {/* Sub Navigation Bar */}
       <div className="border-t border-[#f4f4f4] max-800:hidden">
         <nav
           className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] text-[13px] font-semibold text-[#333]"
           aria-label="Section Navigation"
         >
           <a href="#shops" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Top Shops
+            Partner Campus Shops
           </a>
           <a href="#products" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Popular Products
+            Campus Products
           </a>
           <a href="#comparison" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Pricing &amp; Savings
+            Shop Owner Profit Calculator
           </a>
           <a href="#demo" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
             Platform Demo
@@ -117,18 +147,19 @@ export default function Header() {
             FAQ
           </a>
           <a href="#enquiry" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Contact Us
+            Contact Support
           </a>
           <span className="h-4 w-px bg-gray-200" />
           <div className="flex items-center gap-1 overflow-x-auto">
             {categories.slice(0, 5).map((category) => (
-              <a
+              <button
                 key={category}
-                href="#products"
-                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] text-gray-500 transition-all duration-200 hover:text-brandRed hover:bg-gray-100"
+                type="button"
+                onClick={() => onOpenAppTeaser?.(category)}
+                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] text-gray-600 transition-all duration-200 hover:text-brandRed hover:bg-rose-50"
               >
                 {category}
-              </a>
+              </button>
             ))}
           </div>
         </nav>

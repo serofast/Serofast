@@ -1,11 +1,5 @@
+import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import {
-  Truck,
-  RotateCcw,
-  CreditCard,
-  Headphones,
-} from "lucide-react";
-
 import {
   Header,
   SectionHeader,
@@ -22,10 +16,12 @@ import {
   ScrollReveal,
   ScrollToTop,
   MobileBottomNav,
+  AppTeaserModal,
+  LiveActivityTicker,
 } from "./components/reusable";
 
 import { CreateShopPage } from "./components/create-shop";
-import { AuthPage } from "./components/auth";
+import { LoginPage } from "./components/auth";
 
 import {
   SellerLayout,
@@ -54,26 +50,34 @@ const pageContainer =
    ========================================================= */
 
 function LandingPage() {
+  const [isAppTeaserOpen, setIsAppTeaserOpen] = useState(false);
+  const [teaserItemName, setTeaserItemName] = useState("");
+
+  const handleOpenTeaser = (itemName) => {
+    setTeaserItemName(itemName || "");
+    setIsAppTeaserOpen(true);
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-lightBackground text-textPrimary max-560:pb-[68px]">
-      <Header />
+      <Header onOpenAppTeaser={handleOpenTeaser} />
 
       <main>
         {/* 1. Hero Banner */}
         <section className="w-full" id="home">
-          <HeroBanner />
+          <HeroBanner onOpenAppTeaser={handleOpenTeaser} />
         </section>
 
         {/* 2. Infinite Logo & Partner Marquee Ticker */}
         <LogoMarquee />
 
-        {/* 3. Top Rated Shops */}
+        {/* 3. Top Rated Campus Shops */}
         <section className={`${pageContainer} pt-12 max-800:pt-8`} id="shops">
           <ScrollReveal variant="fade-down" delay={50}>
             <SectionHeader
-              title="Top Rated Shops"
-              action="View all shops"
-              href="#shops"
+              title="Verified Partner Campus Shops"
+              action="Explore Shops in App"
+              onClickAction={() => handleOpenTeaser("Campus Shops Catalog")}
             />
           </ScrollReveal>
 
@@ -85,7 +89,7 @@ function LandingPage() {
                 delay={idx * 75}
                 duration={650}
               >
-                <ShopCard shop={shop} />
+                <ShopCard shop={shop} onOpenAppTeaser={handleOpenTeaser} />
               </ScrollReveal>
             ))}
           </div>
@@ -98,9 +102,9 @@ function LandingPage() {
         >
           <ScrollReveal variant="fade-down" delay={50}>
             <SectionHeader
-              title="Popular Products"
-              action="View all products"
-              href="#products"
+              title="Popular Campus Products"
+              action="View All Products in App"
+              onClickAction={() => handleOpenTeaser("All Campus Products")}
             />
           </ScrollReveal>
 
@@ -112,7 +116,7 @@ function LandingPage() {
                 delay={idx * 75}
                 duration={650}
               >
-                <ProductCard product={product} />
+                <ProductCard product={product} onOpenAppTeaser={handleOpenTeaser} />
               </ScrollReveal>
             ))}
           </div>
@@ -140,6 +144,16 @@ function LandingPage() {
       <Footer />
       <ScrollToTop />
       <MobileBottomNav />
+
+      {/* Real-time Activity Ticker Toast */}
+      <LiveActivityTicker />
+
+      {/* Shopper App Teaser Modal */}
+      <AppTeaserModal
+        isOpen={isAppTeaserOpen}
+        onClose={() => setIsAppTeaserOpen(false)}
+        initialItemName={teaserItemName}
+      />
     </div>
   );
 }
@@ -158,8 +172,8 @@ function CreateShopRoute() {
   );
 }
 
-function AuthRoute({ mode }) {
-  return <AuthPage mode={mode} />;
+function AuthRoute({ mode, defaultRole }) {
+  return <LoginPage mode={mode} defaultRole={defaultRole} />;
 }
 
 export default function App() {
@@ -168,46 +182,43 @@ export default function App() {
       {/* Public Landing Page */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Create Shop Onboarding Flow */}
-      <Route
-        path="/create-shop/*"
-        element={<CreateShopRoute />}
-      />
+      {/* Shop Owner Onboarding Flow */}
+      <Route path="/become-shop-owner/*" element={<CreateShopRoute />} />
+      <Route path="/create-shop/*" element={<Navigate to="/become-shop-owner" replace />} />
 
-      {/* Auth Routes */}
-      <Route
-        path="/login"
-        element={<AuthRoute mode="login" />}
-      />
-      <Route
-        path="/signup"
-        element={<AuthRoute mode="signup" />}
-      />
+      {/* Authentication Routes */}
+      <Route path="/login" element={<AuthRoute mode="login" />} />
+      <Route path="/admin-login" element={<AuthRoute mode="login" defaultRole="admin" />} />
+      <Route path="/signup" element={<AuthRoute mode="signup" />} />
 
-      {/* Seller Portal Routes */}
-      <Route path="/seller" element={<SellerLayout />}>
+      {/* Shop Owner Management Portal Routes */}
+      <Route path="/shop-owner" element={<SellerLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<SellerDashboardPage />} />
-        <Route path="products" element={<SellerProductsPage />} />
+        <Route path="inventory" element={<SellerProductsPage />} />
+        <Route path="products" element={<Navigate to="../inventory" replace />} />
         <Route path="orders" element={<SellerOrdersPage />} />
         <Route path="settings" element={<SellerStoreSettingsPage />} />
         <Route path="payouts" element={<SellerPayoutsPage />} />
       </Route>
 
-      {/* Admin Portal Routes */}
+      {/* Legacy Seller Route Redirects */}
+      <Route path="/seller/*" element={<Navigate to="/shop-owner/dashboard" replace />} />
+
+      {/* Platform Administration Portal Routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="shops" element={<AdminShopsPage />} />
-        <Route path="students" element={<AdminStudentsPage />} />
-        <Route path="orders" element={<AdminOrdersPage />} />
+        <Route path="campus-shops" element={<AdminShopsPage />} />
+        <Route path="shops" element={<Navigate to="../campus-shops" replace />} />
+        <Route path="student-promoters" element={<AdminStudentsPage />} />
+        <Route path="students" element={<Navigate to="../student-promoters" replace />} />
+        <Route path="platform-orders" element={<AdminOrdersPage />} />
+        <Route path="orders" element={<Navigate to="../platform-orders" replace />} />
       </Route>
 
-      {/* Fallback */}
-      <Route
-        path="*"
-        element={<Navigate to="/" replace />}
-      />
+      {/* Fallback Catch-All */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

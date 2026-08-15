@@ -1,36 +1,36 @@
 import { ShieldCheck, Store } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function RoleTabs({ role, onChange }) {
-  return (
-    <div className="rounded-[15px] bg-[#F5F7FA] p-1.5">
-      <div className="grid grid-cols-2 gap-1">
-        <button
-          type="button"
-          onClick={() => onChange("admin")}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-[11px] px-3 text-sm font-medium transition ${
-            role === "admin"
-              ? "bg-white text-brandRed shadow-[0_2px_8px_rgba(15,23,42,0.05)]"
-              : "text-[#51627C] hover:text-textPrimary"
-          }`}
-          aria-pressed={role === "admin"}
-        >
-          <ShieldCheck size={17} />
-          <span>I am an Admin</span>
-        </button>
+  if (role === "admin") {
+    return (
+      <div className="rounded-[15px] bg-slate-900 p-2 text-white shadow-md">
+        <div className="flex items-center justify-between px-3 py-1">
+          <div className="flex items-center gap-2 font-bold text-xs">
+            <ShieldCheck size={18} className="text-amber-400" />
+            <span>Platform Administration Portal</span>
+          </div>
+          <Link
+            to="/login"
+            className="text-[11px] font-semibold text-rose-300 hover:text-white hover:underline"
+          >
+            Switch to Shop Owner
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-        <button
-          type="button"
-          onClick={() => onChange("shop-owner")}
-          className={`flex min-h-[48px] items-center justify-center gap-2 rounded-[11px] px-3 text-sm font-medium transition ${
-            role === "shop-owner"
-              ? "bg-white text-brandRed shadow-[0_2px_8px_rgba(15,23,42,0.05)]"
-              : "text-[#51627C] hover:text-textPrimary"
-          }`}
-          aria-pressed={role === "shop-owner"}
-        >
-          <Store size={17} />
-          <span>I am a Shop Owner</span>
-        </button>
+  return (
+    <div className="rounded-[15px] bg-rose-50/80 border border-rose-100 p-2.5">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2 text-brandRed font-extrabold text-sm">
+          <Store size={19} className="animate-bounce" />
+          <span>Shop Owner Portal</span>
+        </div>
+        <span className="rounded-full bg-white px-2.5 py-0.5 text-[10px] font-bold text-slate-700 shadow-xs border border-rose-100">
+          Official Merchant Access
+        </span>
       </div>
     </div>
   );

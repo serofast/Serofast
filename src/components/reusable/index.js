@@ -14,5 +14,5 @@ export { default as LogoMarquee } from "./LogoMarquee";
 export { default as ComparisonPricingSection } from "./ComparisonPricingSection";
 export { default as PlatformDemoUI } from "./PlatformDemoUI";
 export { default as FaqAccordion } from "./FaqAccordion";
-
-
+export { default as AppTeaserModal } from "./AppTeaserModal";
+export { default as LiveActivityTicker } from "./LiveActivityTicker";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Check, X, ShieldCheck, Zap, TrendingUp, Sparkles, ArrowRight, DollarSign, Percent } from "lucide-react";
+import { TrendingUp, Sparkles, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import ScrollReveal from "./ScrollReveal";
 
@@ -58,7 +58,7 @@ export default function ComparisonPricingSection() {
           </h2>
 
           <p className="mt-3 text-[15px] leading-relaxed text-textSecondary sm:text-[16px]">
-            Traditional aggregators drain your hard-earned margins with 15-30% commissions and annual platform fees. With SeroFast, pay just ₹50 once and keep 100% of your profits.
+            Traditional aggregators drain your hard-earned margins with 15-30% commissions and annual platform fees. With SeroFast, pay just ₹50 once and keep 100% of your profits as a verified Shop Owner.
           </p>
         </ScrollReveal>
 
@@ -116,10 +116,10 @@ export default function ComparisonPricingSection() {
             </div>
 
             <Link
-              to="/create-shop"
+              to="/signup?role=shop-owner"
               className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brandRed text-sm font-bold text-white shadow-[0_8px_20px_rgba(210,33,37,0.3)] transition-all duration-300 hover:bg-[#b81b1f] hover:shadow-[0_12px_28px_rgba(210,33,37,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
             >
-              <span>Register Your Store for ₹50 Now</span>
+              <span>Become a Shop Owner for ₹50 Now</span>
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -215,7 +215,7 @@ export default function ComparisonPricingSection() {
               {/* Animated Progress Bar */}
               <div className="mt-6">
                 <div className="flex justify-between text-[11px] font-bold text-emerald-700 mb-1">
-                  <span>Merchant Retention</span>
+                  <span>Shop Owner Retention</span>
                   <span>100% Profit</span>
                 </div>
                 <div className="h-2.5 w-full rounded-full bg-emerald-100 overflow-hidden">

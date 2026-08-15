@@ -10,6 +10,9 @@ import {
   Phone,
   Tag,
   Chrome,
+  ShieldCheck,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { shopCategories } from "../data";
@@ -17,14 +20,14 @@ import { shopCategories } from "../data";
 function Field({ label, icon: Icon, children, error }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium uppercase tracking-[0.08em] text-[#8AA0BF]">
+      <span className="mb-2 block text-xs font-bold uppercase tracking-[0.08em] text-[#6b7c96]">
         {label}
       </span>
       <div
-        className={`relative flex min-h-[52px] items-center rounded-[14px] border bg-white px-4 transition ${
+        className={`relative flex min-h-[52px] items-center rounded-[14px] border bg-white px-4 transition-all duration-200 ${
           error
             ? "border-red-400 ring-2 ring-red-500/10"
-            : "border-[#DCE4EE] focus-within:border-brandRed focus-within:ring-2 focus-within:ring-brandRed/10"
+            : "border-[#DCE4EE] focus-within:border-brandRed focus-within:ring-4 focus-within:ring-brandRed/10 focus-within:shadow-[0_4px_16px_rgba(210,33,37,0.08)]"
         }`}
       >
         <Icon size={19} className="mr-3 shrink-0 text-[#90A4C1]" />
@@ -70,10 +73,10 @@ export default function AuthForm({ mode, role }) {
   const [values, setValues] = useState({});
 
   const title = useMemo(() => {
-    if (isLogin && isAdmin) return "Admin Sign In";
+    if (isLogin && isAdmin) return "Platform Admin Sign In";
     if (isLogin) return "Shop Owner Sign In";
-    if (isAdmin) return "Create Admin Account";
-    return "Register Your Shop";
+    if (isAdmin) return "Create Admin Credentials";
+    return "Become a Shop Owner";
   }, [isLogin, isAdmin]);
 
   const update = (key, value) =>
@@ -98,130 +101,121 @@ export default function AuthForm({ mode, role }) {
   };
 
   if (submitted) {
-    // Shop-owner signup continues into the shop creation flow.
     const registerShop = !isLogin && !isAdmin;
 
     return (
-      <div className="py-8 text-center">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#FFF1F2] text-brandRed">
-          <Store size={24} />
+      <div className="py-8 text-center animate-in zoom-in-95 duration-200">
+        <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-lg shadow-emerald-500/20">
+          <CheckCircle2 size={32} />
         </div>
-        <h1 className="mt-5 text-2xl font-bold text-textPrimary">
-          {isLogin ? "Ready to continue" : "Account details captured"}
+        <h1 className="mt-5 text-2xl font-black text-textPrimary">
+          {isLogin ? "Welcome Back, Shop Owner!" : "Shop Owner Profile Created! 🎉"}
         </h1>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-textSecondary">
+        <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-textSecondary">
           {registerShop
-            ? "Your shop owner profile is ready. Next, let's set up your shop on SeroFast."
-            : "This frontend flow is ready for your authentication API or Supabase integration."}
+            ? "Your official shop owner credentials are ready. Next, configure your store catalog and start receiving orders."
+            : "Your credentials have been verified. You can now access your management portal."}
         </p>
+
         {registerShop ? (
           <Link
-            to="/create-shop"
-            className="mt-6 flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brandRed px-6 text-sm font-semibold text-white transition hover:bg-brandRedDark"
+            to="/shop-owner/dashboard"
+            className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brandRed px-7 text-sm font-bold text-white shadow-lg shadow-brandRed/25 transition hover:bg-brandRedDark active:scale-95"
           >
             <Store size={18} />
-            Register your Shop
+            Go to Shop Owner Dashboard
           </Link>
-        ) : null}
-        <button
-          type="button"
-          onClick={() => setSubmitted(false)}
-          className={`mt-4 min-h-11 rounded-lg border px-6 text-sm font-semibold transition ${
-            registerShop
-              ? "border-[#DCE4EE] bg-white text-textSecondary hover:border-brandRed hover:text-brandRed"
-              : "border-transparent bg-brandRed text-white hover:bg-brandRedDark"
-          }`}
-        >
-          Back to form
-        </button>
+        ) : (
+          <Link
+            to={isAdmin ? "/admin/dashboard" : "/shop-owner/dashboard"}
+            className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brandRed px-7 text-sm font-bold text-white shadow-lg shadow-brandRed/25 transition hover:bg-brandRedDark active:scale-95"
+          >
+            <ArrowRight size={18} />
+            Enter Portal
+          </Link>
+        )}
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setSubmitted(false)}
+            className="mt-4 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:underline"
+          >
+            Edit form details
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Role Indicator Banner */}
+      {isAdmin ? (
+        <div className="flex items-center justify-between rounded-xl bg-slate-900 px-4 py-2.5 text-white">
+          <div className="flex items-center gap-2 text-xs font-bold">
+            <ShieldCheck size={16} className="text-amber-400" />
+            <span>Platform Admin Access</span>
+          </div>
+          <Link to="/login" className="text-[11px] text-rose-300 hover:underline">
+            Switch to Shop Owner
+          </Link>
+        </div>
+      ) : null}
+
+      <div>
+        <div className="flex items-center gap-2">
+          {!isAdmin && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2.5 py-0.5 text-[10px] font-bold text-brandRed">
+              <Sparkles size={11} />
+              Merchant Portal
+            </span>
+          )}
+        </div>
+        <h1 className="mt-1 text-2xl font-black tracking-tight text-textPrimary sm:text-3xl">
+          {title}
+        </h1>
+        <p className="mt-1.5 text-xs leading-relaxed text-textSecondary">
+          {isAdmin
+            ? "Access the SeroFast overall platform management system."
+            : isLogin
+              ? "Sign in with your store credentials to view orders, stock & payouts."
+              : "Register your store profile to sell directly to campus students with 0% fees."}
+        </p>
+      </div>
+
       {isLogin ? (
         <>
-          {isAdmin ? (
-            <div className="grid grid-cols-2 rounded-[15px] bg-[#F5F7FA] p-1.5 text-sm font-medium">
-              <div className="rounded-[11px] bg-white px-4 py-3 text-center text-brandRed shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
-                Admin
-              </div>
-              <Link
-                to="/login?role=shop-owner"
-                className="rounded-[11px] px-4 py-3 text-center text-[#51627C] hover:text-textPrimary"
-              >
-                Shop Owner
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 rounded-[15px] bg-[#F5F7FA] p-1.5 text-sm font-medium">
-              <Link
-                to="/login?role=admin"
-                className="rounded-[11px] px-4 py-3 text-center text-[#51627C] hover:text-textPrimary"
-              >
-                Admin
-              </Link>
-              <div className="rounded-[11px] bg-white px-4 py-3 text-center text-brandRed shadow-[0_2px_8px_rgba(15,23,42,0.05)]">
-                Shop Owner
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-textPrimary sm:text-3xl">
-              {title}
-            </h1>
-            <p className="mt-2 text-sm text-textSecondary">
-              {isAdmin
-                ? "Access the SeroFast marketplace administration workspace."
-                : "Enter your shop credentials to access your seller workspace."}
-            </p>
-          </div>
-
-          {isAdmin ? (
-            <Field label="Email Address" icon={Mail}>
+          {!isAdmin ? (
+            <Field label="Shop ID / Store Identifier" icon={Store}>
               <input
-                value={values.email || ""}
-                onChange={(event) => update("email", event.target.value)}
-                type="email"
-                placeholder="name@example.com"
+                value={values.shopId || ""}
+                onChange={(event) => update("shopId", event.target.value)}
+                placeholder="e.g. SHOP-1042 or UrbanStyles"
                 className="min-w-0 flex-1 border-0 bg-transparent text-sm text-textPrimary outline-none placeholder:text-[#95A5BD]"
-                autoComplete="email"
               />
             </Field>
-          ) : (
-            <>
-              <Field label="Shop ID" icon={Store}>
-                <input
-                  value={values.shopId || ""}
-                  onChange={(event) => update("shopId", event.target.value)}
-                  placeholder="Enter your unique shop ID"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm text-textPrimary outline-none placeholder:text-[#95A5BD]"
-                />
-              </Field>
+          ) : null}
 
-              <Field label="Email Address" icon={Mail}>
-                <input
-                  value={values.email || ""}
-                  onChange={(event) => update("email", event.target.value)}
-                  type="email"
-                  placeholder="name@example.com"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm text-textPrimary outline-none placeholder:text-[#95A5BD]"
-                  autoComplete="email"
-                />
-              </Field>
-            </>
-          )}
+          <Field label="Business Email" icon={Mail}>
+            <input
+              value={values.email || ""}
+              onChange={(event) => update("email", event.target.value)}
+              type="email"
+              placeholder="owner@yourshop.com"
+              className="min-w-0 flex-1 border-0 bg-transparent text-sm text-textPrimary outline-none placeholder:text-[#95A5BD]"
+              autoComplete="email"
+            />
+          </Field>
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium uppercase tracking-[0.08em] text-[#8AA0BF]">
+              <span className="text-xs font-bold uppercase tracking-[0.08em] text-[#6b7c96]">
                 Password
               </span>
-              <Link to="/forgot-password" className="text-sm font-medium text-brandRed hover:text-brandRedDark">
+              <a href="#forgot" className="text-xs font-semibold text-brandRed hover:underline">
                 Forgot?
-              </Link>
+              </a>
             </div>
             <PasswordInput
               name="current-password"
@@ -233,179 +227,124 @@ export default function AuthForm({ mode, role }) {
 
           <button
             type="submit"
-            className="flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[14px] bg-brandRed px-5 text-base font-semibold text-white transition hover:bg-brandRedDark"
+            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-brandRed px-5 text-sm font-bold text-white shadow-lg shadow-brandRed/25 transition-all duration-200 hover:bg-brandRedDark hover:shadow-xl active:scale-95"
           >
-            {isAdmin ? "Sign In" : "Enter Workspace"}
-            <ArrowRight size={20} />
+            <span>{isAdmin ? "Admin Sign In" : "Sign In to Shop Owner Portal"}</span>
+            <ArrowRight size={18} />
           </button>
 
-          <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-[#A6B4C8]">
+          <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#A6B4C8]">
             <span className="h-px flex-1 bg-[#E6EBF1]" />
-            <span>Or Continue With</span>
+            <span>Or Quick Login</span>
             <span className="h-px flex-1 bg-[#E6EBF1]" />
           </div>
 
           <button
             type="button"
-            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] border border-[#DCE4EE] bg-white text-sm font-medium text-textPrimary hover:border-brandRed"
+            className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-[14px] border border-[#DCE4EE] bg-white text-xs font-semibold text-textPrimary shadow-2xs transition hover:border-brandRed hover:bg-rose-50/50"
           >
-            <Chrome size={19} />
-            Google Account
+            <Chrome size={18} className="text-rose-600" />
+            Continue with Google WorkSpace
           </button>
 
-          <p className="text-center text-sm text-textSecondary">
-            {isAdmin ? "New here?" : "Want to join SeroFast?"}{" "}
-            <Link
-              to={`/signup?role=${isAdmin ? "admin" : "shop-owner"}`}
-              className="font-semibold text-brandRed hover:text-brandRedDark"
-            >
-              {isAdmin ? "Sign up today" : "Register your Shop"}
-            </Link>
+          <p className="text-center text-xs text-textSecondary pt-2">
+            {!isAdmin ? (
+              <>
+                New store merchant?{" "}
+                <Link
+                  to="/signup?role=shop-owner"
+                  className="font-bold text-brandRed hover:underline"
+                >
+                  Become a Shop Owner
+                </Link>
+              </>
+            ) : null}
           </p>
         </>
       ) : (
         <>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-textPrimary sm:text-3xl">
-              {title}
-            </h1>
-            <p className="mt-2 text-sm text-textSecondary">
-              {isAdmin
-                ? "Create an administrator account for SeroFast."
-                : "Set up your shop owner account and merchant profile."}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] border border-[#DCE4EE] bg-white text-sm font-medium text-textPrimary hover:border-brandRed"
-          >
-            <Chrome size={19} />
-            {isAdmin ? "Sign up with Google" : "Pre-fill with Google"}
-          </button>
-
-          <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-[#A6B4C8]">
-            <span className="h-px flex-1 bg-[#E6EBF1]" />
-            <span>Or Fill Details</span>
-            <span className="h-px flex-1 bg-[#E6EBF1]" />
-          </div>
-
-          {isAdmin ? (
-            <>
-              <Field label="Full Name" icon={UserRound}>
-                <input
-                  value={values.fullName || ""}
-                  onChange={(event) => update("fullName", event.target.value)}
-                  placeholder="What should we call you?"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                  autoComplete="name"
-                />
-              </Field>
-
-              <Field label="Email Address" icon={Mail}>
-                <input
-                  value={values.email || ""}
-                  onChange={(event) => update("email", event.target.value)}
-                  type="email"
-                  placeholder="name@example.com"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                  autoComplete="email"
-                />
-              </Field>
-
-              <PasswordInput
-                name="new-password"
-                value={values.password || ""}
-                onChange={(value) => update("password", value)}
-                placeholder="Min. 8 characters"
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Shop Name" icon={Store}>
+              <input
+                value={values.shopName || ""}
+                onChange={(event) => update("shopName", event.target.value)}
+                placeholder="e.g. Campus Corner Store"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
               />
-            </>
-          ) : (
-            <>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Shop Name" icon={Store}>
-                  <input
-                    value={values.shopName || ""}
-                    onChange={(event) => update("shopName", event.target.value)}
-                    placeholder="e.g. Elegant Weaves"
-                    className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                  />
-                </Field>
+            </Field>
 
-                <Field label="Owner Name" icon={UserRound}>
-                  <input
-                    value={values.ownerName || ""}
-                    onChange={(event) => update("ownerName", event.target.value)}
-                    placeholder="Full legal name"
-                    className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                    autoComplete="name"
-                  />
-                </Field>
-              </div>
+            <Field label="Owner Full Name" icon={UserRound}>
+              <input
+                value={values.ownerName || ""}
+                onChange={(event) => update("ownerName", event.target.value)}
+                placeholder="Full legal name"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
+                autoComplete="name"
+              />
+            </Field>
+          </div>
 
-              <Field label="Business Email" icon={Mail}>
-                <input
-                  value={values.businessEmail || ""}
-                  onChange={(event) => update("businessEmail", event.target.value)}
-                  type="email"
-                  placeholder="contact@yourshop.com"
-                  className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                  autoComplete="email"
-                />
-              </Field>
+          <Field label="Business Email" icon={Mail}>
+            <input
+              value={values.businessEmail || ""}
+              onChange={(event) => update("businessEmail", event.target.value)}
+              type="email"
+              placeholder="contact@yourshop.com"
+              className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
+              autoComplete="email"
+            />
+          </Field>
 
-              <div className="grid gap-5 sm:grid-cols-2">
-                <PasswordInput
-                  name="new-password"
-                  value={values.password || ""}
-                  onChange={(value) => update("password", value)}
-                  placeholder="••••••••"
-                />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <PasswordInput
+              name="new-password"
+              value={values.password || ""}
+              onChange={(value) => update("password", value)}
+              placeholder="••••••••"
+            />
 
-                <Field label="Phone Number" icon={Phone}>
-                  <input
-                    value={values.phone || ""}
-                    onChange={(event) => update("phone", event.target.value)}
-                    type="tel"
-                    placeholder="+91 00000 00000"
-                    className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
-                    autoComplete="tel"
-                  />
-                </Field>
-              </div>
+            <Field label="Mobile Phone (for order SMS)" icon={Phone}>
+              <input
+                value={values.phone || ""}
+                onChange={(event) => update("phone", event.target.value)}
+                type="tel"
+                placeholder="+91 98765 43210"
+                className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-[#95A5BD]"
+                autoComplete="tel"
+              />
+            </Field>
+          </div>
 
-              <Field label="Shop Category" icon={Tag}>
-                <select
-                  value={values.category || ""}
-                  onChange={(event) => update("category", event.target.value)}
-                  className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-sm outline-none"
-                >
-                  <option value="">Select category</option>
-                  {shopCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </>
-          )}
+          <Field label="Shop Category" icon={Tag}>
+            <select
+              value={values.category || ""}
+              onChange={(event) => update("category", event.target.value)}
+              className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-sm outline-none text-textPrimary"
+            >
+              <option value="">Select your shop category</option>
+              {shopCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </Field>
 
           <button
             type="submit"
-            className="flex min-h-[54px] w-full items-center justify-center gap-2 rounded-[14px] bg-brandRed px-5 text-base font-semibold text-white transition hover:bg-brandRedDark"
+            className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-r from-brandRed to-rose-600 px-5 text-sm font-extrabold text-white shadow-lg shadow-brandRed/30 transition-all duration-200 hover:shadow-xl active:scale-95"
           >
-            {isAdmin ? "Get Started" : "Create Merchant Account"}
-            <ArrowRight size={20} />
+            <span>Become a Shop Owner</span>
+            <ArrowRight size={18} />
           </button>
 
-          <p className="text-center text-sm text-textSecondary">
-            {isAdmin ? "Already have an account?" : "Already have an account?"}{" "}
+          <p className="text-center text-xs text-textSecondary pt-1">
+            Already registered as a Shop Owner?{" "}
             <Link
-              to={`/login?role=${isAdmin ? "admin" : "shop-owner"}`}
-              className="font-semibold text-brandRed hover:text-brandRedDark"
+              to="/login"
+              className="font-bold text-brandRed hover:underline"
             >
-              Log in
+              Shop Owner Sign In
             </Link>
           </p>
         </>

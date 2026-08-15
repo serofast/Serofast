@@ -9,7 +9,6 @@ import {
   Power,
   Menu,
   X,
-  Sparkles,
 } from "lucide-react";
 
 export default function AdminLayout() {
@@ -17,10 +16,10 @@ export default function AdminLayout() {
   const navigate = useNavigate();
 
   const navItems = [
-    { label: "Executive Overview", path: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Merchant Shops (₹50)", path: "/admin/shops", icon: Store, badge: "542" },
-    { label: "Student Program", path: "/admin/students", icon: GraduationCap, badge: "1.2k" },
-    { label: "Global Order Monitor", path: "/admin/orders", icon: ShoppingBag },
+    { label: "Platform Overview", path: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "Registered Campus Shops", path: "/admin/campus-shops", icon: Store, badge: "542" },
+    { label: "Student Promoter Network", path: "/admin/student-promoters", icon: GraduationCap, badge: "1.2k" },
+    { label: "Platform Order Transactions", path: "/admin/platform-orders", icon: ShoppingBag },
   ];
 
   return (
