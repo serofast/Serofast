@@ -10,4 +10,9 @@ export { default as Footer } from "./Footer";
 export { default as ScrollReveal } from "./ScrollReveal";
 export { default as ScrollToTop } from "./ScrollToTop";
 export { default as MobileBottomNav } from "./MobileBottomNav";
+export { default as LogoMarquee } from "./LogoMarquee";
+export { default as ComparisonPricingSection } from "./ComparisonPricingSection";
+export { default as PlatformDemoUI } from "./PlatformDemoUI";
+export { default as FaqAccordion } from "./FaqAccordion";
+
 

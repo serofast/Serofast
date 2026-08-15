@@ -10,9 +10,13 @@ import {
   Header,
   SectionHeader,
   HeroBanner,
+  LogoMarquee,
   ShopCard,
   ProductCard,
+  ComparisonPricingSection,
+  PlatformDemoUI,
   AboutSeroFastBanner,
+  FaqAccordion,
   EnquirySection,
   Footer,
   ScrollReveal,
@@ -38,12 +42,15 @@ function LandingPage() {
       <Header />
 
       <main>
-        {/* 1. Hero Banner (Edge-to-Edge) */}
+        {/* 1. Hero Banner */}
         <section className="w-full" id="home">
           <HeroBanner />
         </section>
 
-        {/* 2. Top Rated Shops */}
+        {/* 2. Infinite Logo & Partner Marquee Ticker */}
+        <LogoMarquee />
+
+        {/* 3. Top Rated Shops */}
         <section className={`${pageContainer} pt-12 max-800:pt-8`} id="shops">
           <ScrollReveal variant="fade-down" delay={50}>
             <SectionHeader
@@ -67,7 +74,7 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* 3. Popular Products */}
+        {/* 4. Popular Products */}
         <section
           className={`${pageContainer} pt-[32px] pb-[44px]`}
           id="products"
@@ -94,21 +101,27 @@ function LandingPage() {
           </div>
         </section>
 
-        {/* 4. Full-Width Edge-to-Edge About SeroFast Banner */}
+        {/* 5. Animated Comparison & Profit Calculator Section */}
+        <ComparisonPricingSection />
+
+        {/* 6. Interactive Platform Demo & Terminal UI */}
+        <PlatformDemoUI />
+
+        {/* 7. Full-Width About SeroFast Ecosystem Banner */}
         <section className="w-full" id="about">
           <AboutSeroFastBanner />
         </section>
 
-        {/* 5. Enquiry Email Section */}
+        {/* 8. Interactive FAQ Accordion */}
+        <FaqAccordion />
+
+        {/* 9. Enquiry Email Section */}
         <EnquirySection />
       </main>
 
-      {/* 6. Footer (White Background with Complete Details) */}
+      {/* 10. Footer & Floating Controls */}
       <Footer />
-
-      {/* Floating Scroll To Top Action Button */}
       <ScrollToTop />
-
       <MobileBottomNav />
     </div>
   );

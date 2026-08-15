@@ -95,18 +95,42 @@ export default function Header() {
 
       <div className="border-t border-[#f4f4f4] max-800:hidden">
         <nav
-          className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]"
-          aria-label="Categories"
+          className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] text-[13px] font-semibold text-[#333]"
+          aria-label="Section Navigation"
         >
-          {categories.map((category) => (
-            <a
-              key={category}
-              href="#products"
-              className="group relative shrink-0 rounded-full px-3 py-1.5 text-[13px] font-semibold text-[#222] transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed"
-            >
-              {category}
-            </a>
-          ))}
+          <a href="#shops" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Top Shops
+          </a>
+          <a href="#products" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Popular Products
+          </a>
+          <a href="#comparison" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Pricing &amp; Savings
+          </a>
+          <a href="#demo" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Platform Demo
+          </a>
+          <a href="#about" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Ecosystem
+          </a>
+          <a href="#faq" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            FAQ
+          </a>
+          <a href="#enquiry" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Contact Us
+          </a>
+          <span className="h-4 w-px bg-gray-200" />
+          <div className="flex items-center gap-1 overflow-x-auto">
+            {categories.slice(0, 5).map((category) => (
+              <a
+                key={category}
+                href="#products"
+                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] text-gray-500 transition-all duration-200 hover:text-brandRed hover:bg-gray-100"
+              >
+                {category}
+              </a>
+            ))}
+          </div>
         </nav>
       </div>
     </header>
