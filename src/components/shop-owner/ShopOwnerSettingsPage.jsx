@@ -15,124 +15,102 @@ export default function ShopOwnerSettingsPage() {
   return (
     <div className="space-y-6 animate-fade-in font-sans">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Store Profile &amp; QR Poster</h1>
-        <p className="text-xs text-slate-500 font-normal mt-1">Manage shop details, delivery settings &amp; printable QR poster.</p>
+        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Settings</h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">Manage store profile &amp; printable QR poster.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <form onSubmit={handleSave} className="lg:col-span-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h3 className="text-base font-bold text-slate-900">General Store Information</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <form onSubmit={handleSave} className="lg:col-span-8 rounded-xl border border-slate-200/80 bg-white p-5 shadow-2xs space-y-3.5">
+          <h3 className="text-sm font-bold text-slate-900">General Information</h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700">Store Name</label>
+              <label className="block font-medium text-slate-700">Store Name</label>
               <input
                 type="text"
                 value={store.name}
                 onChange={(e) => setStore({ ...store, name: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
+                className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-slate-900 outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700">Owner Full Name</label>
+              <label className="block font-medium text-slate-700">Owner Full Name</label>
               <input
                 type="text"
                 value={store.ownerName}
                 onChange={(e) => setStore({ ...store, ownerName: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
+                className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-slate-900 outline-none focus:border-slate-400"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700">Business Email</label>
+              <label className="block font-medium text-slate-700">Business Email</label>
               <input
                 type="email"
                 value={store.email}
                 onChange={(e) => setStore({ ...store, email: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
+                className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-slate-900 outline-none focus:border-slate-400"
               />
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700">Phone Number (SMS Notifications)</label>
+              <label className="block font-medium text-slate-700">Phone Number</label>
               <input
                 type="tel"
                 value={store.phone}
                 onChange={(e) => setStore({ ...store, phone: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
+                className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-slate-900 outline-none focus:border-slate-400"
               />
             </div>
           </div>
 
           <div className="text-xs">
-            <label className="block font-semibold text-slate-700">Physical Store Address</label>
+            <label className="block font-medium text-slate-700">Address</label>
             <input
               type="text"
               value={store.address}
               onChange={(e) => setStore({ ...store, address: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
+              className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-slate-900 outline-none focus:border-slate-400"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
-            <div>
-              <label className="block font-semibold text-slate-700">Campus Delivery Radius (Km)</label>
-              <input
-                type="number"
-                value={store.deliveryRadiusKm}
-                onChange={(e) => setStore({ ...store, deliveryRadiusKm: Number(e.target.value) })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
-              />
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-700">Minimum Order Amount (₹)</label>
-              <input
-                type="number"
-                value={store.minOrderAmount}
-                onChange={(e) => setStore({ ...store, minOrderAmount: Number(e.target.value) })}
-                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed font-medium"
-              />
-            </div>
-          </div>
-
-          <div className="pt-3">
+          <div className="pt-2">
             <button
               type="submit"
-              className="flex items-center justify-center gap-2 rounded-xl bg-brandRed px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brandRedDark transition"
+              className="flex items-center justify-center gap-1.5 rounded-lg bg-brandRed px-4 py-2 text-xs font-semibold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition"
             >
-              <Save size={15} />
-              <span>{saved ? "Profile Saved! ✓" : "Save Changes"}</span>
+              <Save size={14} />
+              <span>{saved ? "Saved! ✓" : "Save Changes"}</span>
             </button>
           </div>
         </form>
 
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs text-center space-y-3">
-            <h4 className="text-xs font-bold text-slate-900">Printable Customer QR Poster</h4>
-            <p className="text-xs text-slate-500 font-normal">Display this QR code at your shop counter for instant customer orders.</p>
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs text-center space-y-3">
+            <h4 className="text-xs font-bold text-slate-900">Printable Customer QR Code</h4>
+            <p className="text-[11px] text-slate-500 font-normal">Display at counter for instant orders.</p>
 
-            <div className="mx-auto grid h-40 w-40 place-items-center rounded-xl bg-slate-900 text-white p-3 shadow-md">
-              <QrCode size={110} className="text-amber-400" />
+            <div className="mx-auto grid h-36 w-36 place-items-center rounded-lg bg-slate-900 text-white p-3">
+              <QrCode size={96} className="text-amber-400" />
             </div>
 
             <button
               type="button"
               onClick={() => alert("Downloading printable PDF poster...")}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 text-xs font-semibold text-slate-800 hover:border-brandRed hover:text-brandRed transition"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 text-xs font-medium text-slate-800 hover:bg-slate-100 transition"
             >
               Download PDF Poster
             </button>
           </div>
 
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-xs text-emerald-900 space-y-1">
-            <span className="font-bold flex items-center gap-1 text-emerald-800">
-              <ShieldCheck size={15} /> Verification Status
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 text-xs text-emerald-900 space-y-1">
+            <span className="font-semibold flex items-center gap-1 text-emerald-800">
+              <ShieldCheck size={14} /> Verified Merchant
             </span>
-            <p className="text-emerald-700 font-normal">Your store is verified on SeroFast with 100% direct profit guarantee.</p>
+            <p className="text-emerald-700 text-[11px] font-normal">100% direct profit guarantee.</p>
           </div>
         </div>
       </div>
