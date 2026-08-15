@@ -1,52 +1,41 @@
 import { Check } from "lucide-react";
 
-const labels = [
-  "Shop Details",
-  "Seller Info",
-  "Business",
-  "Payment",
-  "Delivery",
-  "Review & Launch",
-];
+const labels = ["Your Shop", "About You", "Products", "Payments", "Launch"];
 
 export default function ProgressSteps({ step }) {
-  const progress = ((step - 1) / 5) * 100;
+  const progress = ((step - 1) / 4) * 100;
 
   return (
-    <div className="mb-6 lg:mb-8 font-sans">
-      <div className="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
-        <span>Seller Setup Wizard</span>
-        <span className="text-brandRed">Step {step} of 6</span>
-      </div>
-
-      {/* Progress Bar Line */}
-      <div className="relative grid grid-cols-6 gap-1 md:gap-4">
-        <div className="absolute left-[8.3%] right-[8.3%] top-[14px] h-0.5 rounded-full bg-slate-200 lg:top-[18px]">
+    <div className="mb-8 font-sans">
+      <div className="relative grid grid-cols-5 gap-1 md:gap-4">
+        <div className="absolute left-[10%] right-[10%] top-[16px] h-[3px] rounded-full bg-slate-100">
           <span
-            className="block h-full rounded-full bg-brandRed transition-all duration-300"
+            className="block h-full rounded-full bg-brandRed transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
 
-        {labels.map((label, index) => {
-          const number = index + 1;
-          const complete = number < step;
-          const active = number === step;
+        {labels.map((label, i) => {
+          const num = i + 1;
+          const done = num < step;
+          const active = num === step;
 
           return (
-            <div key={label} className="relative z-10 flex flex-col items-center gap-1.5 text-center">
+            <div key={label} className="relative z-10 flex flex-col items-center gap-2 text-center">
               <div
-                className={`grid h-7 w-7 sm:h-9 sm:w-9 place-items-center rounded-full border-2 text-xs sm:text-sm font-bold transition-all ${
-                  active || complete
-                    ? "border-brandRed bg-brandRed text-white shadow-sm"
-                    : "border-slate-200 bg-white text-slate-400"
+                className={`grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full text-xs sm:text-sm font-bold transition-all duration-300 ${
+                  active
+                    ? "border-2 border-brandRed bg-brandRed text-white shadow-md shadow-brandRed/25 scale-110"
+                    : done
+                    ? "border-2 border-brandRed bg-brandRed text-white"
+                    : "border-2 border-slate-200 bg-white text-slate-400"
                 }`}
               >
-                {complete ? <Check size={14} /> : number}
+                {done ? <Check size={15} strokeWidth={3} /> : num}
               </div>
               <span
-                className={`text-[10px] sm:text-xs font-semibold leading-tight hidden sm:block ${
-                  active || complete ? "text-brandRed" : "text-slate-400"
+                className={`text-[10px] sm:text-[11px] font-semibold leading-tight hidden sm:block ${
+                  active ? "text-brandRed" : done ? "text-slate-700" : "text-slate-400"
                 }`}
               >
                 {label}

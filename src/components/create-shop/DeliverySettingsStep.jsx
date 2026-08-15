@@ -1,142 +1,66 @@
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, Truck, Clock, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Truck, Clock, MapPin, CheckCircle2, Sparkles } from "lucide-react";
 
-export default function DeliverySettingsStep({ form, updateForm, onNext, onBack }) {
-  const [errors, setErrors] = useState({});
-
-  const validate = () => {
-    const errs = {};
-    if (!form.prepTime) errs.prepTime = "Please select preparation time";
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validate()) {
-      onNext();
-    }
-  };
-
+export default function DeliverySettingsStep({ onNext, onBack }) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 font-sans max-w-2xl mx-auto">
+    <div className="space-y-6 font-sans max-w-2xl mx-auto">
       <div>
-        <span className="text-xs font-bold uppercase tracking-wider text-brandRed">Step 5 of 6</span>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Delivery Settings</h2>
+        <span className="text-xs font-bold uppercase tracking-wider text-brandRed">Step 4 of 5</span>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Campus Delivery &amp; Logistics</h2>
         <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5">
-          Configure fulfillment rules, shipping fee thresholds, prep times, and return policies.
+          SeroFast handles 100% of campus order pickups and deliveries. No logistics setup needed from sellers!
         </p>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-2xs space-y-4">
-        {/* Shipping Method & Radius */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Fulfillment Method <span className="text-brandRed">*</span>
-            </label>
-            <select
-              value={form.shippingMethod || "Campus Delivery + Store Pickup"}
-              onChange={(e) => updateForm({ shippingMethod: e.target.value })}
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            >
-              <option value="Campus Delivery + Store Pickup">Campus Runner Delivery + Self Pickup</option>
-              <option value="Store Pickup Only">Self Pickup Only at Counter</option>
-              <option value="Pan-City Delivery">Pan-City Express Delivery</option>
-            </select>
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-2xs space-y-4">
+        {/* Highlight 1: SeroFast Runners Pickup */}
+        <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+              <Truck size={18} className="text-blue-600" /> SeroFast Campus Runners
+            </span>
+            <span className="rounded-full bg-blue-600 text-white px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+              Automated Pickups
+            </span>
           </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Delivery Radius
-            </label>
-            <select
-              value={form.deliveryRadius || "5 km"}
-              onChange={(e) => updateForm({ deliveryRadius: e.target.value })}
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            >
-              <option value="Entire Campus">Entire Campus &amp; Hostels</option>
-              <option value="3 km">Within 3 km Radius</option>
-              <option value="5 km">Within 5 km Radius</option>
-              <option value="10 km">Within 10 km Radius</option>
-            </select>
-          </div>
+          <p className="text-xs text-blue-950 font-normal leading-relaxed">
+            When a student places an order, a SeroFast runner arrives at your shop location to pick up the packaged item.
+          </p>
         </div>
 
-        {/* Shipping Fee & Free Shipping Threshold */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Standard Shipping Fee (₹)
-            </label>
-            <input
-              type="number"
-              value={form.shippingFee !== undefined ? form.shippingFee : "20"}
-              onChange={(e) => updateForm({ shippingFee: e.target.value })}
-              placeholder="20"
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            />
+        {/* Highlight 2: Express 15-30 Min Delivery */}
+        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+              <Clock size={18} className="text-amber-600" /> Express 15–30 Minute Delivery
+            </span>
+            <span className="rounded bg-amber-600 text-white px-2 py-0.5 text-[10px] font-bold">
+              Hostel Delivery
+            </span>
           </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Free Shipping Above (₹)
-            </label>
-            <input
-              type="number"
-              value={form.freeShippingThreshold !== undefined ? form.freeShippingThreshold : "499"}
-              onChange={(e) => updateForm({ freeShippingThreshold: e.target.value })}
-              placeholder="499"
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            />
-          </div>
+          <p className="text-xs text-amber-950 font-normal leading-relaxed">
+            Runners deliver directly to student hostel rooms, academic blocks, and campus gates with live order tracking.
+          </p>
         </div>
 
-        {/* Prep Time */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-            Estimated Order Preparation Time <span className="text-brandRed">*</span>
-          </label>
-          <select
-            value={form.prepTime || "15-30 mins"}
-            onChange={(e) => updateForm({ prepTime: e.target.value })}
-            className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-          >
-            <option value="15-30 mins">Instant (15-30 mins)</option>
-            <option value="1-2 hours">Same Day (1-2 hours)</option>
-            <option value="24 hours">Next Day (24 hours)</option>
-          </select>
-        </div>
+        {/* Highlight 3: Seller Responsibilities */}
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 space-y-2.5">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+            <MapPin size={16} className="text-brandRed" /> Simple Seller Fulfillment Rules
+          </span>
 
-        {/* Return & Cancellation Policy */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Return Policy
-            </label>
-            <select
-              value={form.returnPolicy || "7 Days Easy Returns"}
-              onChange={(e) => updateForm({ returnPolicy: e.target.value })}
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            >
-              <option value="7 Days Easy Returns">7 Days Easy Returns</option>
-              <option value="3 Days Replacement Only">3 Days Replacement Only</option>
-              <option value="No Returns">No Returns (Final Sale)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-              Cancellation Policy
-            </label>
-            <select
-              value={form.cancellationPolicy || "Free cancellation before dispatch"}
-              onChange={(e) => updateForm({ cancellationPolicy: e.target.value })}
-              className="mt-1.5 min-h-[48px] w-full rounded-xl border border-slate-200 p-3 text-xs sm:text-sm font-medium text-slate-900 outline-none focus:border-brandRed"
-            >
-              <option value="Free cancellation before dispatch">Free cancellation before dispatch</option>
-              <option value="Instant cancellation">Instant cancellation anytime</option>
-            </select>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-slate-700 font-medium">Accept incoming order notification on your Seller Dashboard</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-slate-700 font-medium">Package the product securely with customer order slip</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+              <span className="text-slate-700 font-medium">Hand over package to SeroFast runner upon arrival</span>
+            </div>
           </div>
         </div>
       </div>
@@ -152,13 +76,14 @@ export default function DeliverySettingsStep({ form, updateForm, onNext, onBack 
         </button>
 
         <button
-          type="submit"
+          type="button"
+          onClick={onNext}
           className="min-h-[48px] flex items-center justify-center gap-2 rounded-xl bg-brandRed px-6 py-3 text-sm font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer"
         >
-          <span>Step 6 — Review &amp; Launch</span>
+          <span>Step 5 — Review &amp; Launch</span>
           <ArrowRight size={18} />
         </button>
       </div>
-    </form>
+    </div>
   );
 }

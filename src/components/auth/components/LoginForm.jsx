@@ -5,16 +5,15 @@ import {
   EyeOff,
   Mail,
   LockKeyhole,
-  Store,
-  Chrome,
   CheckCircle2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginShopOwner } from "../../../lib/supabase";
 
 function Field({ label, icon: Icon, children, error }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+    <label className="block font-sans">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
         {label}
       </span>
       <div
@@ -28,7 +27,7 @@ function Field({ label, icon: Icon, children, error }) {
         {children}
       </div>
       {error ? (
-        <span className="mt-1 block text-xs text-red-500">{error}</span>
+        <span className="mt-1 block text-xs text-red-500 font-medium">{error}</span>
       ) : null}
     </label>
   );
@@ -45,13 +44,13 @@ function PasswordInput({ value, onChange, placeholder, name, error }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+        className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
         autoComplete="current-password"
       />
       <button
         type="button"
         onClick={() => setShow((current) => !current)}
-        className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-brandRed"
+        className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-brandRed transition"
         aria-label={show ? "Hide password" : "Show password"}
       >
         {show ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -63,32 +62,38 @@ function PasswordInput({ value, onChange, placeholder, name, error }) {
 export default function LoginForm() {
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState({});
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const update = (key, value) =>
     setValues((current) => ({ ...current, [key]: value }));
 
   const validate = () => {
-    const required = ["shopId", "email", "password"];
-    return required.every((key) => String(values[key] || "").trim());
+    const errs = {};
+    if (!values.email?.trim()) errs.email = "Email is required";
+    if (!values.password?.trim()) errs.password = "Password is required";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const searchParams = new URLSearchParams(window.location.search);
-  const redirectTarget = searchParams.get("redirect") || "/shop-owner/dashboard";
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    localStorage.setItem("serofast_user_logged_in", "true");
-    setSubmitted(true);
-  };
-
-  const handleGoogleLogin = () => {
-    localStorage.setItem("serofast_user_logged_in", "true");
-    setSubmitted(true);
+    if (validate()) {
+      const result = await loginShopOwner({ email: values.email, password: values.password });
+      setSubmitted(true);
+      setTimeout(() => {
+        if (result.shop) {
+          navigate("/shop-owner/dashboard");
+        } else {
+          navigate("/create-shop");
+        }
+      }, 900);
+    }
   };
 
   if (submitted) {
     return (
-      <div className="py-6 text-center animate-in zoom-in-95 duration-200 font-sans">
+      <div className="py-6 text-center animate-scale-up font-sans">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-md shadow-emerald-500/20">
           <CheckCircle2 size={28} />
         </div>
@@ -98,52 +103,35 @@ export default function LoginForm() {
         <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500 font-normal">
           Loading your store workspace...
         </p>
-
-        <Link
-          to="/shop-owner/dashboard"
-          className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95"
-        >
-          <span>Enter Workspace</span>
-          <ArrowRight size={16} />
-        </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 font-sans">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">
+        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
           Shop Owner Sign In
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
-          Sign in to manage store catalog, orders &amp; payouts.
+        <p className="mt-1 text-xs text-slate-500 font-normal">
+          Sign in to manage your campus shop catalog, orders &amp; payouts.
         </p>
       </div>
 
-      <Field label="Shop ID" icon={Store}>
-        <input
-          value={values.shopId || ""}
-          onChange={(event) => update("shopId", event.target.value)}
-          placeholder="e.g. SHOP-1042"
-          className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
-        />
-      </Field>
-
-      <Field label="Email Address" icon={Mail}>
+      <Field label="Email Address" icon={Mail} error={errors.email}>
         <input
           value={values.email || ""}
           onChange={(event) => update("email", event.target.value)}
           type="email"
-          placeholder="owner@yourshop.com"
-          className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+          placeholder="yourname@gmail.com"
+          className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
           autoComplete="email"
         />
       </Field>
 
       <div>
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
             Password
           </span>
           <a href="#forgot" className="text-xs font-semibold text-brandRed hover:underline">
@@ -155,33 +143,19 @@ export default function LoginForm() {
           value={values.password || ""}
           onChange={(value) => update("password", value)}
           placeholder="••••••••"
+          error={errors.password}
         />
       </div>
 
       <button
         type="submit"
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95"
+        className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95 cursor-pointer mt-2"
       >
         <span>Sign In</span>
         <ArrowRight size={16} />
       </button>
 
-      <div className="flex items-center gap-3 text-[10px] uppercase tracking-wider text-slate-400 pt-1">
-        <span className="h-px flex-1 bg-slate-100" />
-        <span>Or</span>
-        <span className="h-px flex-1 bg-slate-100" />
-      </div>
-
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
-      >
-        <Chrome size={16} className="text-rose-600" />
-        Continue with Google
-      </button>
-
-      <p className="text-center text-xs text-slate-500 pt-1">
+      <p className="text-center text-xs text-slate-500 pt-2 font-normal">
         New store owner?{" "}
         <Link
           to="/signup"
