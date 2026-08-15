@@ -1,0 +1,141 @@
+import { useState } from "react";
+import { QrCode, Save, ShieldCheck } from "lucide-react";
+import { initialSellerStore } from "../../data/sellerData";
+
+export default function ShopOwnerSettingsPage() {
+  const [store, setStore] = useState(initialSellerStore);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Store Profile &amp; QR Poster</h1>
+        <p className="text-xs text-slate-500 font-medium mt-1">Manage your shop details, delivery parameters, and download customer QR posters.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <form onSubmit={handleSave} className="lg:col-span-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <h3 className="text-base font-extrabold text-slate-900">General Store Information</h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700">Store Name</label>
+              <input
+                type="text"
+                value={store.name}
+                onChange={(e) => setStore({ ...store, name: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700">Owner Full Name</label>
+              <input
+                type="text"
+                value={store.ownerName}
+                onChange={(e) => setStore({ ...store, ownerName: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700">Business Email</label>
+              <input
+                type="email"
+                value={store.email}
+                onChange={(e) => setStore({ ...store, email: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700">Phone Number (SMS Notifications)</label>
+              <input
+                type="tel"
+                value={store.phone}
+                onChange={(e) => setStore({ ...store, phone: e.target.value })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+          </div>
+
+          <div className="text-xs">
+            <label className="block font-bold text-slate-700">Physical Store Address</label>
+            <input
+              type="text"
+              value={store.address}
+              onChange={(e) => setStore({ ...store, address: e.target.value })}
+              className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-2">
+            <div>
+              <label className="block font-bold text-slate-700">Campus Delivery Radius (Km)</label>
+              <input
+                type="number"
+                value={store.deliveryRadiusKm}
+                onChange={(e) => setStore({ ...store, deliveryRadiusKm: Number(e.target.value) })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700">Minimum Order Amount (₹)</label>
+              <input
+                type="number"
+                value={store.minOrderAmount}
+                onChange={(e) => setStore({ ...store, minOrderAmount: Number(e.target.value) })}
+                className="mt-1 w-full rounded-xl border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-brandRed"
+              />
+            </div>
+          </div>
+
+          <div className="pt-3">
+            <button
+              type="submit"
+              className="flex items-center justify-center gap-2 rounded-xl bg-brandRed px-6 py-3 text-xs font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition"
+            >
+              <Save size={16} />
+              <span>{saved ? "Store Profile Saved! ✓" : "Save Changes"}</span>
+            </button>
+          </div>
+        </form>
+
+        <div className="lg:col-span-4 space-y-4">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs text-center space-y-4">
+            <h4 className="text-sm font-extrabold text-slate-900">Printable Customer QR Poster</h4>
+            <p className="text-xs text-slate-500">Display this QR code at your shop counter to let customers order instantly on SeroFast.</p>
+
+            <div className="mx-auto grid h-44 w-44 place-items-center rounded-2xl bg-slate-900 text-white p-4 shadow-md">
+              <QrCode size={120} className="text-amber-400" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => alert("Downloading printable PDF poster...")}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-800 hover:border-brandRed hover:text-brandRed transition"
+            >
+              Download PDF Poster
+            </button>
+          </div>
+
+          <div className="rounded-3xl border border-emerald-200 bg-emerald-50/80 p-5 text-xs text-emerald-900 space-y-1">
+            <span className="font-bold flex items-center gap-1 text-emerald-800">
+              <ShieldCheck size={16} /> Verification Status
+            </span>
+            <p className="text-emerald-700 font-medium">Your store is verified on SeroFast campus network with 100% direct profit guarantee.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

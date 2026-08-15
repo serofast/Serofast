@@ -117,8 +117,8 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <Link to="/login?role=admin" className="transition-colors hover:text-brandRed">
-                  Merchant Dashboard
+                <Link to="/login" className="transition-colors hover:text-brandRed">
+                  Shop Owner Portal
                 </Link>
               </li>
               <li>

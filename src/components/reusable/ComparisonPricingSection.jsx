@@ -116,7 +116,7 @@ export default function ComparisonPricingSection() {
             </div>
 
             <Link
-              to="/signup?role=shop-owner"
+              to="/signup"
               className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brandRed text-sm font-bold text-white shadow-[0_8px_20px_rgba(210,33,37,0.3)] transition-all duration-300 hover:bg-[#b81b1f] hover:shadow-[0_12px_28px_rgba(210,33,37,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
             >
               <span>Become a Shop Owner for ₹50 Now</span>

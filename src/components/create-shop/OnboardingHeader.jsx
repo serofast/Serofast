@@ -92,7 +92,7 @@ export default function OnboardingHeader({ step, onClose }) {
                 <Store size={15} /> Create Shop
               </span>
               <Link
-                to="/login?role=shop-owner"
+                to="/login"
                 className="hidden items-center gap-1 text-sm text-textSecondary transition hover:text-brandRed min-[821px]:inline-flex"
               >
                 <UserRound size={15} /> Login

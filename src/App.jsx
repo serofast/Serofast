@@ -21,16 +21,16 @@ import {
 } from "./components/reusable";
 
 import { CreateShopPage } from "./components/create-shop";
-import { LoginPage } from "./components/auth";
+import { LoginPage, RegisterPage } from "./components/auth";
 
 import {
-  SellerLayout,
-  SellerDashboardPage,
-  SellerProductsPage,
-  SellerOrdersPage,
-  SellerStoreSettingsPage,
-  SellerPayoutsPage,
-} from "./components/seller";
+  ShopOwnerLayout,
+  ShopOwnerDashboardPage,
+  ShopOwnerInventoryPage,
+  ShopOwnerOrdersPage,
+  ShopOwnerSettingsPage,
+  ShopOwnerPayoutsPage,
+} from "./components/shop-owner";
 
 import {
   AdminLayout,
@@ -172,34 +172,27 @@ function CreateShopRoute() {
   );
 }
 
-function AuthRoute({ mode, defaultRole }) {
-  return <LoginPage mode={mode} defaultRole={defaultRole} />;
-}
-
 export default function App() {
   return (
     <Routes>
       {/* Public Landing Page */}
       <Route path="/" element={<LandingPage />} />
 
-      {/* Shop Owner Onboarding Flow */}
-      <Route path="/become-shop-owner/*" element={<CreateShopRoute />} />
-      <Route path="/create-shop/*" element={<Navigate to="/become-shop-owner" replace />} />
-
-      {/* Authentication Routes */}
-      <Route path="/login" element={<AuthRoute mode="login" />} />
-      <Route path="/admin-login" element={<AuthRoute mode="login" defaultRole="admin" />} />
-      <Route path="/signup" element={<AuthRoute mode="signup" />} />
+      {/* Authentication & Onboarding Routes */}
+      <Route path="/signup" element={<RegisterPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/become-shop-owner/*" element={<Navigate to="/signup" replace />} />
+      <Route path="/create-shop/*" element={<Navigate to="/signup" replace />} />
 
       {/* Shop Owner Management Portal Routes */}
-      <Route path="/shop-owner" element={<SellerLayout />}>
+      <Route path="/shop-owner" element={<ShopOwnerLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<SellerDashboardPage />} />
-        <Route path="inventory" element={<SellerProductsPage />} />
+        <Route path="dashboard" element={<ShopOwnerDashboardPage />} />
+        <Route path="inventory" element={<ShopOwnerInventoryPage />} />
         <Route path="products" element={<Navigate to="../inventory" replace />} />
-        <Route path="orders" element={<SellerOrdersPage />} />
-        <Route path="settings" element={<SellerStoreSettingsPage />} />
-        <Route path="payouts" element={<SellerPayoutsPage />} />
+        <Route path="orders" element={<ShopOwnerOrdersPage />} />
+        <Route path="settings" element={<ShopOwnerSettingsPage />} />
+        <Route path="payouts" element={<ShopOwnerPayoutsPage />} />
       </Route>
 
       {/* Legacy Seller Route Redirects */}

@@ -252,7 +252,7 @@ export default function AuthForm({ mode, role }) {
               <>
                 New store merchant?{" "}
                 <Link
-                  to="/signup?role=shop-owner"
+                  to="/become-shop-owner"
                   className="font-bold text-brandRed hover:underline"
                 >
                   Become a Shop Owner

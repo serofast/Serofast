@@ -7,7 +7,7 @@ export default function MobileBottomNav() {
     [Store, "Shops", "#shops"],
     [Search, "Search", "#products"],
     [ShoppingCart, "Cart", "#products"],
-    [UserRound, "Profile", "/login?role=admin"],
+    [UserRound, "Login", "/login"],
   ];
 
   return (

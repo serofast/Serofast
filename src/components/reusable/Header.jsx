@@ -102,7 +102,7 @@ export default function Header({ onOpenAppTeaser }) {
 
           {/* Become a Shop Owner CTA */}
           <Link
-            to="/signup?role=shop-owner"
+            to="/signup"
             className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brandRed/30 active:scale-95 max-560:text-[12px] max-560:px-3"
           >
             <Store size={18} className="animate-bounce shrink-0" />
