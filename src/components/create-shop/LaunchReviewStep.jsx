@@ -1,187 +1,156 @@
 import { useState } from "react";
-import { CircleHelp, Send, X, ArrowLeft } from "lucide-react";
-import { formatINR } from "./utils";
-import SellingPriceInput from "./SellingPriceInput";
+import { ArrowLeft, Rocket, MapPin, Truck, RotateCcw, ShieldCheck, CheckCircle2, Store } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export default function LaunchReviewStep({
-  form,
-  selectedProducts,
-  onUpdatePrice,
-  onRemoveProduct,
-  onBack,
-  onLaunch,
-}) {
-  // id -> raw draft string typed by the user (may be invalid while typing)
-  const [priceDrafts, setPriceDrafts] = useState({});
+export default function LaunchReviewStep({ form, onBack, onLaunch }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [launched, setLaunched] = useState(false);
+  const navigate = useNavigate();
 
-  const entryFee = form.entryFee === "standard" ? 50 : 0;
-  const entryFeeLabel = form.entryFee === "standard" ? "Standard Entry Fee" : "Limited Time Offer";
+  const handleCreateShop = () => {
+    setSubmitting(true);
+    setTimeout(() => {
+      onLaunch();
+      setLaunched(true);
+      setSubmitting(false);
+    }, 1200);
+  };
 
-  const baseTotal = selectedProducts.reduce((sum, product) => sum + product.basePrice, 0);
-  const sellingTotal = selectedProducts.reduce(
-    (sum, product) => sum + (product.sellingPrice || product.basePrice),
-    0
-  );
-  const potentialProfit = sellingTotal - baseTotal;
+  const coverUrl = form.cover || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80";
+  const logoUrl = form.logo || "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=300&q=80";
+
+  if (launched) {
+    return (
+      <div className="py-8 space-y-6 text-center animate-scale-up font-sans max-w-xl mx-auto">
+        <div className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-lg shadow-emerald-500/20">
+          <CheckCircle2 size={48} />
+        </div>
+
+        <div>
+          <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3.5 py-1 text-xs font-bold text-emerald-700 uppercase tracking-wider">
+            🎉 Setup Complete — Shop Registered
+          </span>
+          <h1 className="mt-4 text-2xl sm:text-3xl font-bold text-slate-900">
+            Your Shop is Live!
+          </h1>
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal max-w-md mx-auto">
+            <strong className="text-slate-900 font-bold">“{form.shopName || "Urban Threads"}”</strong> has been registered on SeroFast and synced to the Supabase database.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs text-left space-y-2 text-xs font-medium">
+          <div className="flex justify-between items-center py-1 border-b border-slate-100">
+            <span className="text-slate-500">Store Name:</span>
+            <span className="text-slate-900 font-bold">{form.shopName || "Urban Threads"}</span>
+          </div>
+          <div className="flex justify-between items-center py-1 border-b border-slate-100">
+            <span className="text-slate-500">Owner:</span>
+            <span className="text-slate-900 font-semibold">{form.ownerName || "Ramesh Kumar"}</span>
+          </div>
+          <div className="flex justify-between items-center py-1 border-b border-slate-100">
+            <span className="text-slate-500">Settlement UPI:</span>
+            <span className="font-mono text-brandRed font-bold">{form.upiId || "store@hdfcbank"}</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => navigate("/shop-owner/dashboard")}
+          className="min-h-[50px] w-full flex items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-sm font-bold text-white shadow-lg shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer"
+        >
+          <Store size={18} />
+          <span>Go to Seller Dashboard</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <section>
-      <div className="mb-6 lg:mb-8">
-        <h1 className="mb-1.5 mt-0 text-2xl font-bold md:text-3xl lg:text-4xl">Review & Launch</h1>
-        <p className="m-0 max-w-2xl text-sm leading-relaxed text-textSecondary lg:text-base">
-          Confirm your products and selling prices. You can only increase the admin base price.
-          When ready, launch your shop!
+    <div className="space-y-6 font-sans max-w-2xl mx-auto">
+      <div>
+        <span className="text-xs font-bold uppercase tracking-wider text-brandRed">Step 6 of 6</span>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Review &amp; Launch</h2>
+        <p className="text-xs sm:text-sm text-slate-500 font-normal mt-0.5">
+          Review your shop card preview before publishing your store to campus shoppers.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-8">
-        <div className="overflow-hidden rounded-bento-sm border border-lightBorder bg-lightSurface shadow-bento">
-          <div className="flex min-h-[60px] items-center justify-between gap-3 border-b border-lightBorder px-4 lg:px-5">
-            <strong className="text-base font-bold lg:text-lg">Selected Products</strong>
-            <span className="rounded-full bg-promoHighlight px-3 py-1 text-xs font-bold text-brandRed lg:text-sm">
-              {selectedProducts.length} Products
-            </span>
-          </div>
-
-          {selectedProducts.length > 0 ? (
-            selectedProducts.map((product) => {
-              const sellingPrice = product.sellingPrice || product.basePrice;
-              const profit = sellingPrice - product.basePrice;
-
-              const handlePriceChange = (raw) => {
-                setPriceDrafts((cur) => ({ ...cur, [product.id]: raw }));
-                const num = raw === "" ? 0 : Number(raw.replace(/[^0-9]/g, ""));
-                if (raw !== "" && num >= product.basePrice) {
-                  onUpdatePrice(product.id, num);
-                }
-              };
-
-              return (
-                <div
-                  key={product.id}
-                  className="grid grid-cols-2 items-center gap-3 border-b border-lightBorder p-4 last:border-b-0 lg:grid-cols-[52px_minmax(0,1.4fr)_110px_140px_auto_44px] lg:gap-4 lg:p-5"
-                >
-                  <img
-                    src={product.image}
-                    alt=""
-                    className="h-12 w-12 rounded-lg bg-[#f7f7f7] object-contain mix-blend-multiply lg:h-14 lg:w-14"
-                  />
-                  <div className="min-w-0">
-                    <span className="block text-[11px] font-bold uppercase tracking-[0.05em] text-textSecondary">
-                      {product.category}
-                    </span>
-                    <strong className="mt-0.5 block truncate text-sm font-semibold lg:text-base">
-                      {product.name}
-                    </strong>
-                  </div>
-                  <span className="text-sm text-textSecondary">
-                    Base: {formatINR(product.basePrice)}
-                  </span>
-                  <SellingPriceInput
-                    id={`launch-price-${product.id}`}
-                    value={priceDrafts[product.id] ?? String(sellingPrice)}
-                    base={product.basePrice}
-                    onChange={handlePriceChange}
-                    label={`Selling price for ${product.name}`}
-                  />
-                  <span className="w-max rounded-md bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600 lg:text-sm">
-                    +{formatINR(profit)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveProduct(product.id)}
-                    aria-label={`Remove ${product.name}`}
-                    className="grid h-10 w-10 place-items-center rounded-lg border border-[#e2e5ea] bg-lightSurface text-textSecondary transition hover:border-brandRed hover:text-brandRed"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              );
-            })
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-3 p-10 text-center">
-              <p className="text-base font-semibold">No products selected yet</p>
-              <p className="text-sm text-textSecondary">
-                Go back to the product catalog and add at least one product.
-              </p>
-              <button
-                type="button"
-                onClick={onBack}
-                className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg bg-brandRed px-6 text-sm font-semibold text-white transition hover:bg-brandRedDark"
-              >
-                Choose Products
-              </button>
-            </div>
-          )}
+      {/* Live Shop Preview Card */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-md">
+        <div className="bg-slate-100 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/60 flex items-center justify-between">
+          <span>Live Customer Shop Preview</span>
+          <span className="text-emerald-600 font-semibold flex items-center gap-1">
+            <ShieldCheck size={12} /> Verified Seller
+          </span>
         </div>
 
-        <aside className="h-fit rounded-bento-sm border border-lightBorder bg-lightSurface shadow-bento lg:sticky lg:top-24">
-          <div className="border-b border-lightBorder p-5 text-base font-bold lg:text-lg">
-            Launch Summary
+        {/* Cover Image & Logo Overlay */}
+        <div className="relative h-40 sm:h-48 w-full bg-slate-200">
+          <img src={coverUrl} alt="Cover" className="h-full w-full object-cover" />
+          <div className="absolute -bottom-6 left-5 h-16 w-16 rounded-xl border-2 border-white bg-white shadow-md overflow-hidden">
+            <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
+          </div>
+        </div>
+
+        <div className="pt-8 p-5 space-y-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-bold text-slate-900">{form.shopName || "Urban Threads"}</h3>
+              <span className="rounded-full bg-brandRed/10 px-2 py-0.5 text-[10px] font-bold text-brandRed">
+                {form.category || "Fashion"}
+              </span>
+            </div>
+            {form.tagline && <p className="text-xs font-medium text-slate-600 mt-0.5">{form.tagline}</p>}
+            <p className="text-xs text-slate-500 font-normal mt-1.5 leading-relaxed">
+              {form.description || "Official campus store providing quality fashion and accessories."}
+            </p>
           </div>
 
-          <dl className="grid gap-3 p-5">
-            {[
-              ["Shop Name", form.shopName || "My Awesome Shop"],
-              ["Category", form.category || "Fashion"],
-              ["Products", selectedProducts.length],
-              ["Total Base Value", formatINR(baseTotal)],
-              ["Your Selling Total", formatINR(sellingTotal)],
-              ["Potential Profit", formatINR(potentialProfit)],
-              ["Entry Charge", formatINR(entryFee)],
-            ].map(([label, value]) => (
-              <div key={label} className="flex justify-between gap-3 text-sm">
-                <dt className="text-textSecondary">{label}</dt>
-                <dd
-                  className={`m-0 text-right font-bold ${
-                    label === "Potential Profit" ? "text-emerald-600" : "text-textPrimary"
-                  }`}
-                >
-                  {value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-2 border-t border-slate-100">
+            <div className="space-y-0.5">
+              <span className="font-semibold text-slate-700 flex items-center gap-1 text-[11px]">
+                <MapPin size={13} className="text-brandRed" /> Location
+              </span>
+              <p className="text-slate-500 text-[11px] font-normal">{form.city || "Chennai"}, {form.pincode || "600025"}</p>
+            </div>
 
-          <div className="mx-5 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-800">
-            <CircleHelp size={16} className="mt-0.5 shrink-0" />
-            <span>
-              One-time entry charge of <b>{formatINR(entryFee)}</b> ({entryFeeLabel}) will be
-              applied when you launch.
-            </span>
-          </div>
+            <div className="space-y-0.5">
+              <span className="font-semibold text-slate-700 flex items-center gap-1 text-[11px]">
+                <Truck size={13} className="text-blue-600" /> Delivery
+              </span>
+              <p className="text-slate-500 text-[11px] font-normal">₹{form.shippingFee || "20"} ({form.prepTime || "15-30 mins"})</p>
+            </div>
 
-          <div className="p-5 pt-4">
-            <button
-              type="button"
-              onClick={onLaunch}
-              className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-lg bg-brandRed px-6 text-sm font-semibold text-white transition hover:bg-brandRedDark"
-            >
-              <Send size={18} />
-              Launch My Shop
-            </button>
-            <button
-              type="button"
-              onClick={onBack}
-              className="mt-3 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[#d9d9d9] bg-lightSurface px-5 text-sm font-semibold text-textPrimary transition hover:border-brandRed hover:text-brandRed"
-            >
-              <ArrowLeft size={16} />
-              Back to Products
-            </button>
+            <div className="space-y-0.5">
+              <span className="font-semibold text-slate-700 flex items-center gap-1 text-[11px]">
+                <RotateCcw size={13} className="text-emerald-600" /> Policy
+              </span>
+              <p className="text-slate-500 text-[11px] font-normal">{form.returnPolicy || "7 Days Returns"}</p>
+            </div>
           </div>
-        </aside>
+        </div>
       </div>
 
-      <footer className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-lightBorder pt-5 text-xs text-textSecondary sm:flex-row lg:text-sm">
-        <strong className="text-brandRed">Serofast</strong>
-        <div className="flex flex-wrap justify-center gap-5">
-          <span>Terms of Service</span>
-          <span>Privacy Policy</span>
-          <span>Vendor Handbook</span>
-          <span>Contact Us</span>
-        </div>
-        <span>© 2024 Serofast Marketplace. All rights reserved.</span>
-      </footer>
-    </section>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 pt-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="min-h-[48px] flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+        >
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleCreateShop}
+          disabled={submitting}
+          className="min-h-[50px] flex-1 sm:flex-initial flex items-center justify-center gap-2 rounded-xl bg-brandRed px-8 py-3 text-sm font-bold text-white shadow-lg shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer disabled:opacity-50"
+        >
+          <Rocket size={18} />
+          <span>{submitting ? "Publishing Store..." : "Create My Shop"}</span>
+        </button>
+      </div>
+    </div>
   );
 }

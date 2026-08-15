@@ -1,19 +1,27 @@
 import { Check } from "lucide-react";
 
-const labels = ["Why Join", "Shop Details", "Products", "Launch"];
+const labels = [
+  "Shop Details",
+  "Seller Info",
+  "Business",
+  "Payment",
+  "Delivery",
+  "Review & Launch",
+];
 
 export default function ProgressSteps({ step }) {
-  const progress = ((step - 1) / 3) * 100;
+  const progress = ((step - 1) / 5) * 100;
 
   return (
-    <div className="mb-8 lg:mb-10">
-      <div className="mb-4 flex items-center justify-between text-xs font-bold tracking-[0.04em] text-textSecondary lg:text-sm">
-        <span>{step === 1 ? "Getting Started" : "Create Your Shop"}</span>
-        <strong className="text-brandRed">Step {step} of 4</strong>
+    <div className="mb-6 lg:mb-8 font-sans">
+      <div className="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">
+        <span>Seller Setup Wizard</span>
+        <span className="text-brandRed">Step {step} of 6</span>
       </div>
 
-      <div className="relative grid grid-cols-4 gap-2 md:gap-6">
-        <div className="absolute left-[12.5%] right-[12.5%] top-[17px] h-0.5 rounded-full bg-lightBorder lg:top-[21px]">
+      {/* Progress Bar Line */}
+      <div className="relative grid grid-cols-6 gap-1 md:gap-4">
+        <div className="absolute left-[8.3%] right-[8.3%] top-[14px] h-0.5 rounded-full bg-slate-200 lg:top-[18px]">
           <span
             className="block h-full rounded-full bg-brandRed transition-all duration-300"
             style={{ width: `${progress}%` }}
@@ -26,19 +34,19 @@ export default function ProgressSteps({ step }) {
           const active = number === step;
 
           return (
-            <div key={label} className="relative z-10 flex flex-col items-center gap-2 text-center">
+            <div key={label} className="relative z-10 flex flex-col items-center gap-1.5 text-center">
               <div
-                className={`grid h-9 w-9 place-items-center rounded-full border-2 text-sm font-bold transition-colors lg:h-11 lg:w-11 lg:text-base ${
+                className={`grid h-7 w-7 sm:h-9 sm:w-9 place-items-center rounded-full border-2 text-xs sm:text-sm font-bold transition-all ${
                   active || complete
-                    ? "border-brandRed bg-brandRed text-white"
-                    : "border-lightBorder bg-white text-textSecondary"
+                    ? "border-brandRed bg-brandRed text-white shadow-sm"
+                    : "border-slate-200 bg-white text-slate-400"
                 }`}
               >
-                {complete ? <Check size={18} /> : number}
+                {complete ? <Check size={14} /> : number}
               </div>
               <span
-                className={`text-[11px] font-semibold leading-tight md:text-xs lg:text-sm ${
-                  active || complete ? "text-brandRed" : "text-textSecondary"
+                className={`text-[10px] sm:text-xs font-semibold leading-tight hidden sm:block ${
+                  active || complete ? "text-brandRed" : "text-slate-400"
                 }`}
               >
                 {label}
