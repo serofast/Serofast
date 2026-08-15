@@ -9,6 +9,7 @@ import BusinessDetailsStep from "./BusinessDetailsStep";
 import PaymentSettlementStep from "./PaymentSettlementStep";
 import DeliverySettingsStep from "./DeliverySettingsStep";
 import LaunchReviewStep from "./LaunchReviewStep";
+import { createShopInSupabase } from "../../lib/supabase";
 
 const STEP_PATHS = {
   1: "/create-shop",
@@ -92,37 +93,8 @@ export default function CreateShopPage({ onClose, onComplete }) {
     navigate("/shop-owner/dashboard");
   };
 
-  const handleLaunchShop = () => {
-    const generatedId = window.crypto?.randomUUID
-      ? window.crypto.randomUUID()
-      : `shop-${Math.random().toString(36).substring(2, 10)}`;
-
-    const newShopData = {
-      id: generatedId,
-      name: form.shopName || "Urban Threads Campus Store",
-      tagline: form.tagline || "Trendy campus fashion",
-      description: form.description || "Official campus store created on SeroFast Platform.",
-      cover_url: form.cover || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
-      avatar_url: form.logo || "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=300&q=80",
-      category_id: (form.category || "fashion").toLowerCase(),
-      rating: 4.8,
-      created_at: new Date().toISOString(),
-      owner_name: form.ownerName,
-      email: form.email,
-      phone: form.phone,
-      address: form.address,
-      upi_id: form.upiId,
-      shipping_fee: form.shippingFee,
-    };
-
-    try {
-      const existing = JSON.parse(localStorage.getItem("serofast_created_shops") || "[]");
-      localStorage.setItem("serofast_created_shops", JSON.stringify([newShopData, ...existing]));
-      localStorage.setItem("serofast_active_shop", JSON.stringify(newShopData));
-    } catch (e) {
-      console.warn("Storage write error", e);
-    }
-
+  const handleLaunchShop = async () => {
+    const newShopData = await createShopInSupabase(form);
     if (onComplete) {
       onComplete(newShopData);
     }

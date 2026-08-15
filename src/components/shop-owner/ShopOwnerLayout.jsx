@@ -10,12 +10,16 @@ import {
   Bell,
   ChevronDown,
   ShieldCheck,
+  Power,
+  ExternalLink,
+  Store,
 } from "lucide-react";
 import { initialSellerStore } from "../../data/sellerData";
 import ShopOwnerBottomNav from "./ShopOwnerBottomNav";
 
 export default function ShopOwnerLayout() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [activeShop, setActiveShop] = useState(() => {
     try {
       const stored = localStorage.getItem("serofast_active_shop");
@@ -37,6 +41,11 @@ export default function ShopOwnerLayout() {
     }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("serofast_active_shop");
+    navigate("/login");
+  };
+
   const navItems = [
     { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
     { label: "Products", path: "/shop-owner/inventory", icon: Package },
@@ -50,7 +59,7 @@ export default function ShopOwnerLayout() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900 flex flex-col font-sans">
-      {/* Top Navigation Header: Logo, Title, Search Bar, Notification Icon & Profile Icon */}
+      {/* Top Navigation Header */}
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-3 sm:px-6 gap-3 shadow-2xs">
         {/* Left: Brand Logo & Store Title */}
         <div className="flex items-center gap-2">
@@ -82,7 +91,10 @@ export default function ShopOwnerLayout() {
           <div className="relative">
             <button
               type="button"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              onClick={() => {
+                setNotificationsOpen(!notificationsOpen);
+                setProfileDropdownOpen(false);
+              }}
               className="relative grid h-9 w-9 place-items-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition active:scale-95"
               title="Notifications"
             >
@@ -113,17 +125,62 @@ export default function ShopOwnerLayout() {
             )}
           </div>
 
-          {/* Profile Icon & Store Name */}
-          <div
-            onClick={() => navigate("/shop-owner/settings")}
-            className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white p-1 pr-2 hover:border-slate-300 transition cursor-pointer active:scale-95"
-          >
-            <img
-              src={currentLogoUrl}
-              alt={currentStoreName}
-              className="h-7 w-7 rounded-full object-cover border border-slate-200"
-            />
-            <ChevronDown size={14} className="text-slate-400" />
+          {/* Profile Icon with Interactive Dropdown & Logout Button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setProfileDropdownOpen(!profileDropdownOpen);
+                setNotificationsOpen(false);
+              }}
+              className="flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white p-1 pr-2 hover:border-slate-300 transition cursor-pointer active:scale-95"
+            >
+              <img
+                src={currentLogoUrl}
+                alt={currentStoreName}
+                className="h-7 w-7 rounded-full object-cover border border-slate-200"
+              />
+              <ChevronDown size={14} className="text-slate-400" />
+            </button>
+
+            {/* Profile & Logout Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50 text-xs animate-scale-up space-y-1">
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <span className="font-bold text-slate-900 block truncate">{currentStoreName}</span>
+                  <span className="text-[10px] text-slate-500 block truncate">owner@serofast.com</span>
+                </div>
+
+                <Link
+                  to="/shop-owner/settings"
+                  onClick={() => setProfileDropdownOpen(false)}
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-700 hover:bg-slate-100 transition font-medium"
+                >
+                  <Settings size={14} className="text-slate-500" />
+                  <span>Store Settings</span>
+                </Link>
+
+                <Link
+                  to="/"
+                  target="_blank"
+                  className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-700 hover:bg-slate-100 transition font-medium"
+                >
+                  <ExternalLink size={14} className="text-slate-500" />
+                  <span>Customer Storefront</span>
+                </Link>
+
+                <div className="border-t border-slate-100 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-brandRed font-semibold hover:bg-rose-50 transition cursor-pointer"
+                  >
+                    <Power size={14} />
+                    <span>Log Out / Exit Store</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -180,15 +237,26 @@ export default function ShopOwnerLayout() {
               </nav>
             </div>
 
-            {/* Bottom Merchant Support */}
-            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-center">
-              <span className="text-[11px] font-medium text-slate-700 block">Merchant Support</span>
-              <a
-                href="#support"
-                className="mt-1.5 inline-block w-full rounded-lg bg-white border border-slate-200 py-1 text-[11px] font-medium text-slate-700 hover:border-brandRed hover:text-brandRed transition"
+            {/* Bottom Merchant Support & Log Out Button */}
+            <div className="space-y-2">
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-center">
+                <span className="text-[11px] font-medium text-slate-700 block">Merchant Support</span>
+                <a
+                  href="#support"
+                  className="mt-1.5 inline-block w-full rounded-lg bg-white border border-slate-200 py-1 text-[11px] font-medium text-slate-700 hover:border-brandRed hover:text-brandRed transition"
+                >
+                  Help Desk
+                </a>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2 text-xs font-semibold text-brandRed hover:bg-rose-50 transition cursor-pointer"
               >
-                Help Desk
-              </a>
+                <Power size={14} />
+                <span>Log Out</span>
+              </button>
             </div>
           </div>
         </aside>

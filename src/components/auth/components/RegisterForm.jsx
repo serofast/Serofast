@@ -5,19 +5,19 @@ import {
   EyeOff,
   Mail,
   LockKeyhole,
-  Store,
   UserRound,
   Phone,
   Tag,
   CheckCircle2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { shopCategories } from "../data";
+import { registerShopOwner } from "../../../lib/supabase";
 
 function Field({ label, icon: Icon, children, error }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+    <label className="block font-sans">
+      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
         {label}
       </span>
       <div
@@ -31,7 +31,7 @@ function Field({ label, icon: Icon, children, error }) {
         {children}
       </div>
       {error ? (
-        <span className="mt-1 block text-xs text-red-500">{error}</span>
+        <span className="mt-1 block text-xs text-red-500 font-medium">{error}</span>
       ) : null}
     </label>
   );
@@ -48,13 +48,13 @@ function PasswordInput({ value, onChange, placeholder, name, error }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+        className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
         autoComplete="new-password"
       />
       <button
         type="button"
         onClick={() => setShow((current) => !current)}
-        className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-brandRed"
+        className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-brandRed transition"
         aria-label={show ? "Hide password" : "Show password"}
       >
         {show ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -66,114 +66,114 @@ function PasswordInput({ value, onChange, placeholder, name, error }) {
 export default function RegisterForm() {
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState({});
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const update = (key, value) =>
     setValues((current) => ({ ...current, [key]: value }));
 
   const validate = () => {
-    const required = ["shopName", "ownerName", "businessEmail", "password", "phone", "category"];
-    return required.every((key) => String(values[key] || "").trim());
+    const errs = {};
+    if (!values.name?.trim()) errs.name = "Full name is required";
+    if (!values.email?.trim()) errs.email = "Gmail / Email is required";
+    if (!values.password?.trim()) errs.password = "Password is required";
+    if (!values.phone?.trim()) errs.phone = "Phone number is required";
+    if (!values.category) errs.category = "Please select a category";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    if (validate()) setSubmitted(true);
+    if (validate()) {
+      await registerShopOwner(values);
+      setSubmitted(true);
+      setTimeout(() => {
+        navigate("/create-shop");
+      }, 1000);
+    }
   };
 
   if (submitted) {
     return (
-      <div className="py-6 text-center animate-in zoom-in-95 duration-200">
+      <div className="py-6 text-center animate-scale-up font-sans">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-md shadow-emerald-500/20">
           <CheckCircle2 size={28} />
         </div>
         <h2 className="mt-4 text-xl font-extrabold text-slate-900">
-          Shop Registered 🎉
+          Account Created 🎉
         </h2>
-        <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500">
-          Your shop owner profile is ready.
+        <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500 font-normal">
+          Proceeding to 6-Step Shop Setup Wizard...
         </p>
-
-        <Link
-          to="/shop-owner/dashboard"
-          className="mt-5 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95"
-        >
-          <Store size={16} />
-          Go to Dashboard
-        </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 font-sans">
       <div>
         <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Become a Shop Owner
+          Sign Up as Shop Owner
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
-          Register your campus shop to sell directly with 0% commission.
+        <p className="mt-1 text-xs text-slate-500 font-normal">
+          Create your account to start selling on SeroFast with 0% commission.
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Shop Name" icon={Store}>
-          <input
-            value={values.shopName || ""}
-            onChange={(event) => update("shopName", event.target.value)}
-            placeholder="e.g. Campus Books"
-            className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
-          />
-        </Field>
-
-        <Field label="Owner Name" icon={UserRound}>
-          <input
-            value={values.ownerName || ""}
-            onChange={(event) => update("ownerName", event.target.value)}
-            placeholder="Full legal name"
-            className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
-            autoComplete="name"
-          />
-        </Field>
-      </div>
-
-      <Field label="Business Email" icon={Mail}>
+      {/* 1. Full Name */}
+      <Field label="Full Name" icon={UserRound} error={errors.name}>
         <input
-          value={values.businessEmail || ""}
-          onChange={(event) => update("businessEmail", event.target.value)}
+          value={values.name || ""}
+          onChange={(event) => update("name", event.target.value)}
+          placeholder="e.g. Ramesh Kumar"
+          className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
+          autoComplete="name"
+        />
+      </Field>
+
+      {/* 2. Gmail / Email */}
+      <Field label="Gmail / Email Address" icon={Mail} error={errors.email}>
+        <input
+          value={values.email || ""}
+          onChange={(event) => update("email", event.target.value)}
           type="email"
-          placeholder="contact@yourshop.com"
-          className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+          placeholder="yourname@gmail.com"
+          className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
           autoComplete="email"
         />
       </Field>
 
+      {/* 3. Password & 4. Phone Number */}
       <div className="grid gap-3 sm:grid-cols-2">
         <PasswordInput
           name="new-password"
           value={values.password || ""}
           onChange={(value) => update("password", value)}
           placeholder="••••••••"
+          error={errors.password}
         />
 
-        <Field label="Phone Number" icon={Phone}>
+        <Field label="Phone Number" icon={Phone} error={errors.phone}>
           <input
             value={values.phone || ""}
             onChange={(event) => update("phone", event.target.value)}
             type="tel"
             placeholder="+91 98765 43210"
-            className="min-w-0 flex-1 border-0 bg-transparent text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
+            className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
             autoComplete="tel"
           />
         </Field>
       </div>
 
-      <Field label="Category" icon={Tag}>
+      {/* 5. Category */}
+      <Field label="Primary Shop Category" icon={Tag} error={errors.category}>
         <select
           value={values.category || ""}
           onChange={(event) => update("category", event.target.value)}
-          className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-xs font-medium text-slate-900 outline-none"
+          className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none cursor-pointer"
         >
-          <option value="">Select category</option>
+          <option value="">Select Category</option>
           {shopCategories.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
@@ -184,13 +184,13 @@ export default function RegisterForm() {
 
       <button
         type="submit"
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95"
+        className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95 cursor-pointer mt-2"
       >
-        <span>Become a Shop Owner</span>
+        <span>Continue to Shop Setup</span>
         <ArrowRight size={16} />
       </button>
 
-      <p className="text-center text-xs text-slate-500 pt-1">
+      <p className="text-center text-xs text-slate-500 pt-1 font-normal">
         Already registered?{" "}
         <Link
           to="/login"
