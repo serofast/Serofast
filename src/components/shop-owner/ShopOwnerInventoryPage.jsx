@@ -55,35 +55,35 @@ export default function ShopOwnerInventoryPage() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in font-sans">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Products &amp; Inventory</h1>
-          <p className="text-xs text-slate-500 font-medium mt-1">Manage your digital storefront catalog &amp; stock availability.</p>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Products &amp; Inventory</h1>
+          <p className="text-xs text-slate-500 font-normal mt-1">Manage store catalog &amp; stock availability.</p>
         </div>
 
         <button
           type="button"
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 rounded-xl bg-brandRed px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition active:scale-95 cursor-pointer"
+          className="flex items-center gap-1.5 rounded-xl bg-brandRed px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-brandRedDark transition active:scale-95 cursor-pointer"
         >
-          <Plus size={16} />
+          <Plus size={15} />
           <span>Add New Product</span>
         </button>
       </div>
 
       <div className="flex items-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-xs">
-        <Search size={18} className="text-slate-400 shrink-0" />
+        <Search size={16} className="text-slate-400 shrink-0" />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search product by name or category..."
-          className="w-full border-0 bg-transparent px-3 text-xs text-slate-900 outline-none placeholder:text-slate-400"
+          className="w-full border-0 bg-transparent px-3 text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
         />
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xs">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="border-b border-slate-100 bg-slate-50/80 font-bold uppercase text-slate-500">
@@ -104,7 +104,7 @@ export default function ShopOwnerInventoryPage() {
                       <img
                         src={prod.image}
                         alt={prod.name}
-                        className="h-11 w-11 rounded-xl object-cover border border-slate-100 shadow-2xs"
+                        className="h-10 w-10 rounded-xl object-cover border border-slate-100 shadow-2xs"
                       />
                       <div>
                         <span className="font-bold text-slate-900 block text-sm">{prod.name}</span>
@@ -113,7 +113,7 @@ export default function ShopOwnerInventoryPage() {
                     </div>
                   </td>
                   <td className="px-5 py-4 text-slate-600 font-semibold">{prod.category}</td>
-                  <td className="px-5 py-4 font-extrabold text-slate-900">
+                  <td className="px-5 py-4 font-bold text-slate-900">
                     ₹{prod.price} <span className="text-[11px] font-normal text-slate-400 line-through">₹{prod.originalPrice}</span>
                   </td>
                   <td className="px-5 py-4">
@@ -150,17 +150,17 @@ export default function ShopOwnerInventoryPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4 animate-scale-up">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4 animate-scale-up">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-extrabold text-slate-900">Add Product to Store</h3>
+              <h3 className="text-base font-bold text-slate-900">Add Product to Store</h3>
               <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-700">
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleAddProduct} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700">Product Title</label>
+                <label className="block text-xs font-semibold text-slate-700">Product Title</label>
                 <input
                   type="text"
                   required
@@ -173,7 +173,7 @@ export default function ShopOwnerInventoryPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700">Category</label>
+                  <label className="block text-xs font-semibold text-slate-700">Category</label>
                   <select
                     value={newProdCategory}
                     onChange={(e) => setNewProdCategory(e.target.value)}
@@ -188,7 +188,7 @@ export default function ShopOwnerInventoryPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700">Price (₹)</label>
+                  <label className="block text-xs font-semibold text-slate-700">Price (₹)</label>
                   <input
                     type="number"
                     required
@@ -201,7 +201,7 @@ export default function ShopOwnerInventoryPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700">Image URL (Optional)</label>
+                <label className="block text-xs font-semibold text-slate-700">Image URL (Optional)</label>
                 <input
                   type="url"
                   value={newProdImage}
@@ -213,7 +213,7 @@ export default function ShopOwnerInventoryPage() {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-brandRed py-3 text-xs font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition"
+                className="w-full rounded-xl bg-brandRed py-2.5 text-xs font-bold text-white shadow-sm hover:bg-brandRedDark transition"
               >
                 Save &amp; Publish Product
               </button>

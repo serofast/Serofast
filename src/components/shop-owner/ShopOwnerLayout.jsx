@@ -45,12 +45,12 @@ export default function ShopOwnerLayout() {
           </button>
 
           <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brandRed text-white font-extrabold text-base shadow-sm">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brandRed text-white font-bold text-base shadow-sm">
               S
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
-                SEROFAST <span className="rounded-md bg-brandRed/10 px-1.5 py-0.5 text-[10px] text-brandRed font-bold">SHOP OWNER</span>
+              <span className="text-sm font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                SEROFAST <span className="rounded-md bg-brandRed/10 px-1.5 py-0.5 text-[10px] text-brandRed font-semibold">SHOP OWNER</span>
               </span>
               <span className="text-[11px] text-slate-500 font-medium">Verified Store Workspace</span>
             </div>
@@ -63,7 +63,7 @@ export default function ShopOwnerLayout() {
           <button
             type="button"
             onClick={toggleStatus}
-            className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition-all duration-200 ${
+            className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
               storeStatus === "online"
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 shadow-2xs hover:bg-emerald-100"
                 : "border-slate-300 bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -142,7 +142,7 @@ export default function ShopOwnerLayout() {
                         <span>{item.label}</span>
                       </div>
                       {item.badge && (
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-extrabold text-brandRed">
+                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-brandRed">
                           {item.badge}
                         </span>
                       )}
@@ -155,7 +155,7 @@ export default function ShopOwnerLayout() {
             {/* Bottom Support Callout */}
             <div className="rounded-2xl bg-brandRed/5 border border-brandRed/10 p-3.5 text-center">
               <span className="text-[11px] font-bold text-brandRed block">Shop Owner Support</span>
-              <span className="text-[10px] text-slate-500 block mt-0.5">24/7 Merchant Support Line</span>
+              <span className="text-[10px] text-slate-500 block mt-0.5">24/7 Support Line</span>
               <a
                 href="#support"
                 className="mt-2.5 inline-block w-full rounded-lg bg-white border border-brandRed/20 py-1 text-[11px] font-bold text-brandRed shadow-2xs hover:bg-brandRed hover:text-white transition-colors"

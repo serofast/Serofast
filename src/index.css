@@ -1,9 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Sansation:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap");
 @import "tailwindcss";
 
 @theme {
   /* Typography */
-  --font-sansation: "Sansation", sans-serif;
+  --font-sans: "Sansation", system-ui, -apple-system, sans-serif;
+  --font-sansation: "Sansation", system-ui, -apple-system, sans-serif;
 
   /* Brand red */
   --color-brandRed: #d32f2f;
