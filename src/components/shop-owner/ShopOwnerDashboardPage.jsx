@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   DollarSign,
@@ -9,11 +9,25 @@ import {
   QrCode,
   CheckCircle2,
   ArrowRight,
+  Store,
+  Sparkles,
 } from "lucide-react";
 import { initialSellerOrders, initialSellerProducts, initialSellerStore } from "../../data/sellerData";
 
 export default function ShopOwnerDashboardPage() {
   const [orders, setOrders] = useState(initialSellerOrders);
+  const [activeShop, setActiveShop] = useState(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("serofast_active_shop");
+      if (stored) {
+        setActiveShop(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.warn("Storage read error", e);
+    }
+  }, []);
 
   const updateOrderStatus = (orderId, newStatus) => {
     setOrders((prev) =>
@@ -25,24 +39,58 @@ export default function ShopOwnerDashboardPage() {
     .filter((o) => o.status !== "Cancelled")
     .reduce((sum, o) => sum + o.totalAmount, 0);
 
+  const currentStoreName = activeShop?.name || initialSellerStore.name;
+
   return (
     <div className="space-y-6 animate-fade-in font-sans">
+      {/* Create Shop Banner for New Users */}
+      {!activeShop && (
+        <div className="rounded-2xl border border-brandRed/20 bg-gradient-to-r from-promoHighlight via-white to-white p-5 shadow-sm space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-start gap-3 max-w-xl">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brandRed text-white shadow-md shadow-brandRed/20">
+                <Store size={20} />
+              </div>
+              <div>
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-brandRed">
+                  <Sparkles size={12} /> Store Setup Required
+                </span>
+                <h2 className="text-base font-bold text-slate-900 mt-0.5">
+                  Create Your Campus Shop in 4 Simple Steps
+                </h2>
+                <p className="text-xs text-slate-500 font-normal mt-0.5 leading-relaxed">
+                  Set up your store name, logo, products, and details on our standalone page to unlock digital shop ownership &amp; Supabase database sync.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              to="/create-shop"
+              className="flex items-center gap-2 rounded-xl bg-brandRed px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition shrink-0"
+            >
+              <span>Create Shop</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Overview</h1>
           <p className="text-xs text-slate-500 font-normal mt-0.5">
-            Store performance for <strong className="text-slate-700 font-semibold">{initialSellerStore.name}</strong>.
+            Store performance for <strong className="text-slate-700 font-semibold">{currentStoreName}</strong>.
           </p>
         </div>
 
         <div className="flex gap-2">
           <Link
-            to="/shop-owner/inventory"
+            to="/create-shop"
             className="flex items-center gap-1.5 rounded-lg bg-brandRed px-3.5 py-2 text-xs font-semibold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition"
           >
             <Plus size={14} />
-            <span>Add Product</span>
+            <span>Create / Add Shop</span>
           </Link>
           <Link
             to="/shop-owner/settings"

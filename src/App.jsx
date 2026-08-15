@@ -167,7 +167,7 @@ function CreateShopRoute() {
 
   return (
     <CreateShopPage
-      onClose={() => navigate("/")}
+      onClose={() => navigate("/shop-owner/dashboard")}
     />
   );
 }
@@ -179,10 +179,10 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
 
       {/* Authentication & Onboarding Routes */}
-      <Route path="/signup/*" element={<CreateShopRoute />} />
+      <Route path="/signup" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/become-shop-owner/*" element={<Navigate to="/signup" replace />} />
-      <Route path="/create-shop/*" element={<Navigate to="/signup" replace />} />
+      <Route path="/create-shop/*" element={<CreateShopRoute />} />
 
       {/* Shop Owner Management Portal Routes */}
       <Route path="/shop-owner" element={<ShopOwnerLayout />}>

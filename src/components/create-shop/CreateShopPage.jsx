@@ -12,10 +12,10 @@ import { benefits } from "./data";
 import { formatINR } from "./utils";
 
 const STEP_PATHS = {
-  1: "/signup",
-  2: "/signup/details",
-  3: "/signup/products",
-  4: "/signup/launch",
+  1: "/create-shop",
+  2: "/create-shop/details",
+  3: "/create-shop/products",
+  4: "/create-shop/launch",
 };
 
 const PATH_TO_STEP = {
@@ -41,7 +41,7 @@ const initialForm = {
   cover: null,
 };
 
-export default function CreateShopPage({ onClose }) {
+export default function CreateShopPage({ onClose, onComplete }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -119,6 +119,9 @@ export default function CreateShopPage({ onClose }) {
     }
 
     setLaunchedShop(newShopData);
+    if (onComplete) {
+      onComplete(newShopData);
+    }
   };
 
   const entryFee = form.entryFee === "standard" ? 50 : 0;

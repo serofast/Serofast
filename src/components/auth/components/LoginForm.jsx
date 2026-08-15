@@ -72,21 +72,30 @@ export default function LoginForm() {
     return required.every((key) => String(values[key] || "").trim());
   };
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const redirectTarget = searchParams.get("redirect") || "/shop-owner/dashboard";
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (validate()) setSubmitted(true);
+    localStorage.setItem("serofast_user_logged_in", "true");
+    setSubmitted(true);
+  };
+
+  const handleGoogleLogin = () => {
+    localStorage.setItem("serofast_user_logged_in", "true");
+    setSubmitted(true);
   };
 
   if (submitted) {
     return (
-      <div className="py-6 text-center animate-in zoom-in-95 duration-200">
+      <div className="py-6 text-center animate-in zoom-in-95 duration-200 font-sans">
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-md shadow-emerald-500/20">
           <CheckCircle2 size={28} />
         </div>
         <h2 className="mt-4 text-xl font-bold text-slate-900">
-          Welcome Back, Shop Owner
+          Welcome Back
         </h2>
-        <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500">
+        <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500 font-normal">
           Loading your store workspace...
         </p>
 
@@ -165,7 +174,8 @@ export default function LoginForm() {
 
       <button
         type="button"
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+        onClick={handleGoogleLogin}
+        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
       >
         <Chrome size={16} className="text-rose-600" />
         Continue with Google
