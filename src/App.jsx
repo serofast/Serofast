@@ -27,6 +27,23 @@ import {
 import { CreateShopPage } from "./components/create-shop";
 import { AuthPage } from "./components/auth";
 
+import {
+  SellerLayout,
+  SellerDashboardPage,
+  SellerProductsPage,
+  SellerOrdersPage,
+  SellerStoreSettingsPage,
+  SellerPayoutsPage,
+} from "./components/seller";
+
+import {
+  AdminLayout,
+  AdminDashboardPage,
+  AdminShopsPage,
+  AdminStudentsPage,
+  AdminOrdersPage,
+} from "./components/admin";
+
 import { shops, products } from "./data/landing";
 
 const pageContainer =
@@ -148,23 +165,45 @@ function AuthRoute({ mode }) {
 export default function App() {
   return (
     <Routes>
+      {/* Public Landing Page */}
       <Route path="/" element={<LandingPage />} />
 
+      {/* Create Shop Onboarding Flow */}
       <Route
         path="/create-shop/*"
         element={<CreateShopRoute />}
       />
 
+      {/* Auth Routes */}
       <Route
         path="/login"
         element={<AuthRoute mode="login" />}
       />
-
       <Route
         path="/signup"
         element={<AuthRoute mode="signup" />}
       />
 
+      {/* Seller Portal Routes */}
+      <Route path="/seller" element={<SellerLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<SellerDashboardPage />} />
+        <Route path="products" element={<SellerProductsPage />} />
+        <Route path="orders" element={<SellerOrdersPage />} />
+        <Route path="settings" element={<SellerStoreSettingsPage />} />
+        <Route path="payouts" element={<SellerPayoutsPage />} />
+      </Route>
+
+      {/* Admin Portal Routes */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboardPage />} />
+        <Route path="shops" element={<AdminShopsPage />} />
+        <Route path="students" element={<AdminStudentsPage />} />
+        <Route path="orders" element={<AdminOrdersPage />} />
+      </Route>
+
+      {/* Fallback */}
       <Route
         path="*"
         element={<Navigate to="/" replace />}

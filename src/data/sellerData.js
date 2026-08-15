@@ -1,0 +1,131 @@
+export const initialSellerStore = {
+  name: "Urban Styles Minimal",
+  tagline: "Contemporary fashion for the modern minimalist",
+  category: "Fashion & Apparel",
+  status: "online", // "online" | "offline"
+  ownerName: "Sarah Jenkins",
+  email: "sarah@urbanstyles.com",
+  phone: "+91 98765 43210",
+  address: "Shop #14, Main Market Road, Near SRM Campus, Chennai",
+  deliveryRadiusKm: 5,
+  minOrderAmount: 199,
+  logoUrl: "https://i.pravatar.cc/120?img=47",
+  coverUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=85",
+  rating: 4.9,
+  reviewsCount: 128,
+  oneTimeFeePaid: true,
+};
+
+export const initialSellerProducts = [
+  {
+    id: "prod-1",
+    name: "Men's Minimalist Casual Shirt",
+    category: "Fashion",
+    price: 999,
+    originalPrice: 1499,
+    stock: 24,
+    status: "In Stock",
+    salesCount: 42,
+    image: "https://images.unsplash.com/photo-1603252110481-7ba873bf42ab?auto=format&fit=crop&w=700&q=85",
+  },
+  {
+    id: "prod-2",
+    name: "Women's Elegant Summer Dress",
+    category: "Fashion",
+    price: 1499,
+    originalPrice: 1999,
+    stock: 15,
+    status: "In Stock",
+    salesCount: 38,
+    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=700&q=85",
+  },
+  {
+    id: "prod-3",
+    name: "Lightweight Urban Sneakers",
+    category: "Footwear",
+    price: 1999,
+    originalPrice: 2799,
+    stock: 8,
+    status: "In Stock",
+    salesCount: 64,
+    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=85",
+  },
+  {
+    id: "prod-4",
+    name: "Classic Leather Belt",
+    category: "Accessories",
+    price: 499,
+    originalPrice: 799,
+    stock: 0,
+    status: "Out of Stock",
+    salesCount: 19,
+    image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=700&q=85",
+  },
+];
+
+export const initialSellerOrders = [
+  {
+    id: "SF-1042",
+    customerName: "Rahul Sharma",
+    phone: "+91 98123 45678",
+    address: "Hostel Block 4, Room 208, SRM Campus",
+    items: [
+      { name: "Men's Minimalist Casual Shirt", qty: 1, price: 999 },
+    ],
+    totalAmount: 999,
+    paymentMethod: "UPI Direct",
+    paymentStatus: "Paid",
+    status: "Pending", // Pending, Packing, Dispatched, Delivered, Cancelled
+    orderedAt: "10 minutes ago",
+    studentPartner: "Alex Vance (Student Promoted)",
+  },
+  {
+    id: "SF-1041",
+    customerName: "Priya Nair",
+    phone: "+91 97654 32109",
+    address: "Flat 302, Greenways Apartments",
+    items: [
+      { name: "Women's Elegant Summer Dress", qty: 1, price: 1499 },
+    ],
+    totalAmount: 1499,
+    paymentMethod: "Cash on Delivery",
+    paymentStatus: "Pending",
+    status: "Dispatched",
+    orderedAt: "45 minutes ago",
+    studentPartner: "Direct Shop Customer",
+  },
+  {
+    id: "SF-1040",
+    customerName: "Arjun Verma",
+    phone: "+91 95432 10987",
+    address: "House 12, Main Street, Town Center",
+    items: [
+      { name: "Lightweight Urban Sneakers", qty: 1, price: 1999 },
+    ],
+    totalAmount: 1999,
+    paymentMethod: "UPI Direct",
+    paymentStatus: "Paid",
+    status: "Delivered",
+    orderedAt: "2 hours ago",
+    studentPartner: "Rohan Patel (Student Promoted)",
+  },
+];
+
+export const initialSellerPayouts = [
+  {
+    id: "PAY-8801",
+    date: "14 Aug 2026",
+    amount: 4497,
+    ordersCount: 3,
+    status: "Settled",
+    method: "HDFC Bank (UPI Direct)",
+  },
+  {
+    id: "PAY-8794",
+    date: "12 Aug 2026",
+    amount: 6990,
+    ordersCount: 5,
+    status: "Settled",
+    method: "HDFC Bank (UPI Direct)",
+  },
+];
