@@ -20,22 +20,23 @@ export default function ShopOwnerOrdersPage() {
   const tabs = ["All", "Pending", "Dispatched", "Delivered"];
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
+    <div className="space-y-5 sm:space-y-6 animate-fade-in font-sans">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Customer Orders</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Customer Orders</h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">Track incoming orders and update delivery status.</p>
       </div>
 
-      <div className="flex gap-1.5 border-b border-slate-200/80 pb-2">
+      {/* Horizontally Scrollable Touch Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200/80">
         {tabs.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+            className={`min-h-[38px] rounded-lg px-3.5 py-1.5 text-xs font-semibold shrink-0 transition ${
               activeTab === tab
                 ? "bg-brandRed text-white shadow-sm"
-                : "bg-white text-slate-600 hover:bg-slate-100"
+                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/60"
             }`}
           >
             {tab}
@@ -43,7 +44,7 @@ export default function ShopOwnerOrdersPage() {
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3 sm:space-y-4">
         {filteredOrders.map((order) => (
           <div
             key={order.id}
@@ -107,7 +108,7 @@ export default function ShopOwnerOrdersPage() {
                 <button
                   type="button"
                   onClick={() => updateStatus(order.id, "Dispatched")}
-                  className="rounded-lg bg-brandRed px-3 py-1.5 text-xs font-medium text-white hover:bg-brandRedDark transition"
+                  className="min-h-[40px] w-full sm:w-auto rounded-xl bg-brandRed px-4 py-2 text-xs font-semibold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark transition cursor-pointer"
                 >
                   Dispatch Order
                 </button>
@@ -116,7 +117,7 @@ export default function ShopOwnerOrdersPage() {
                 <button
                   type="button"
                   onClick={() => updateStatus(order.id, "Delivered")}
-                  className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 transition"
+                  className="min-h-[40px] w-full sm:w-auto rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition cursor-pointer"
                 >
                   Mark Delivered
                 </button>

@@ -91,9 +91,17 @@ export default function ShopOwnerLayout() {
 
       {/* Main Layout Container */}
       <div className="flex flex-1">
+        {/* Mobile Backdrop Overlay */}
+        {mobileMenuOpen && (
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 z-20 bg-slate-900/40 backdrop-blur-xs md:hidden"
+          />
+        )}
+
         {/* Sidebar */}
         <aside
-          className={`fixed inset-y-0 left-0 z-30 w-56 transform border-r border-slate-200/80 bg-white pt-14 transition-transform duration-200 md:static md:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-30 w-64 transform border-r border-slate-200/80 bg-white pt-14 transition-transform duration-200 md:static md:w-56 md:translate-x-0 ${
             mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
