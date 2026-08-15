@@ -3,16 +3,16 @@ import { ArrowRight } from "lucide-react";
 export default function SectionHeader({ title, action, href = "#" }) {
   return (
     <div className="mb-[14px] flex items-center justify-between">
-      <h2 className="m-0 text-[19px] tracking-[-0.25px] max-560:text-[18px]">
+      <h2 className="m-0 text-[19px] font-bold tracking-[-0.25px] text-textPrimary max-560:text-[18px]">
         {title}
       </h2>
       <a
         href={href}
-        className="flex items-center gap-[11px] text-[12px] font-semibold text-brandRed"
+        className="group flex items-center gap-[11px] text-[12px] font-semibold text-brandRed transition-colors duration-200 hover:text-brandRedDark"
       >
-        {action}
-        <span className="grid h-[27px] w-[27px] place-items-center rounded-full border border-[#ddd]">
-          <ArrowRight size={16} />
+        <span>{action}</span>
+        <span className="grid h-[28px] w-[28px] place-items-center rounded-full border border-[#ddd] bg-white transition-all duration-300 group-hover:border-brandRed group-hover:bg-brandRed group-hover:text-white group-hover:translate-x-1 group-hover:shadow-sm">
+          <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5" />
         </span>
       </a>
     </div>

@@ -12,6 +12,11 @@ import {
   HeroBanner,
   ShopCard,
   ProductCard,
+  AboutSeroFastBanner,
+  EnquirySection,
+  Footer,
+  ScrollReveal,
+  ScrollToTop,
   MobileBottomNav,
 } from "./components/reusable";
 
@@ -33,87 +38,76 @@ function LandingPage() {
       <Header />
 
       <main>
+        {/* 1. Hero Banner (Edge-to-Edge) */}
         <section className="w-full" id="home">
           <HeroBanner />
         </section>
 
+        {/* 2. Top Rated Shops */}
         <section className={`${pageContainer} pt-12 max-800:pt-8`} id="shops">
-          <SectionHeader
-            title="Top Rated Shops"
-            action="View all shops"
-            href="#shops"
-          />
+          <ScrollReveal variant="fade-down" delay={50}>
+            <SectionHeader
+              title="Top Rated Shops"
+              action="View all shops"
+              href="#shops"
+            />
+          </ScrollReveal>
 
           <div className="grid grid-cols-6 gap-3 max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 max-1100:[&>*:nth-child(n+4)]:hidden">
-            {shops.map((shop) => (
-              <ShopCard key={shop.name} shop={shop} />
+            {shops.map((shop, idx) => (
+              <ScrollReveal
+                key={shop.name}
+                variant="fade-up"
+                delay={idx * 75}
+                duration={650}
+              >
+                <ShopCard shop={shop} />
+              </ScrollReveal>
             ))}
           </div>
         </section>
 
+        {/* 3. Popular Products */}
         <section
-          className={`${pageContainer} pt-[27px] pb-[38px]`}
+          className={`${pageContainer} pt-[32px] pb-[44px]`}
           id="products"
         >
-          <SectionHeader
-            title="Popular Products"
-            action="View all products"
-            href="#products"
-          />
+          <ScrollReveal variant="fade-down" delay={50}>
+            <SectionHeader
+              title="Popular Products"
+              action="View all products"
+              href="#products"
+            />
+          </ScrollReveal>
 
           <div className="grid grid-cols-6 gap-[13px] max-1100:grid-cols-3 max-800:grid-cols-2 max-560:gap-2 max-1100:[&>*:nth-child(n+4)]:hidden">
-            {products.map((product) => (
-              <ProductCard
+            {products.map((product, idx) => (
+              <ScrollReveal
                 key={product.name}
-                product={product}
-              />
+                variant="fade-up"
+                delay={idx * 75}
+                duration={650}
+              >
+                <ProductCard product={product} />
+              </ScrollReveal>
             ))}
           </div>
         </section>
 
-        <section
-          className={`${pageContainer} pb-[90px] max-560:pb-[35px]`}
-        >
-          <div className="flex items-center justify-between gap-10 rounded-bento-lg bg-promoHighlight px-[38px] py-8 max-800:flex-col max-800:items-start max-560:px-5 max-560:py-6">
-            <div>
-              <span className="text-[11px] font-extrabold tracking-[0.14em] text-brandRed">
-                WHY SER0FAST
-              </span>
-
-              <h2 className="my-2 max-w-[600px] text-[29px] max-560:text-[24px]">
-                Everything you love, from shops you trust.
-              </h2>
-
-              <p className="m-0 max-w-[620px] text-[14px] leading-[1.6] text-textSecondary">
-                Discover local fashion, electronics, home essentials and more
-                without jumping between different stores.
-              </p>
-            </div>
-
-            <div className="grid min-w-[360px] grid-cols-2 gap-3 max-800:min-w-0 max-800:w-full max-560:grid-cols-1">
-              <div className="flex items-center gap-2 text-[12px] font-semibold">
-                <Truck size={20} className="text-brandRed" />
-                <span>Fast local delivery</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-[12px] font-semibold">
-                <RotateCcw size={20} className="text-brandRed" />
-                <span>Easy 7-day returns</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-[12px] font-semibold">
-                <CreditCard size={20} className="text-brandRed" />
-                <span>Secure payments</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-[12px] font-semibold">
-                <Headphones size={20} className="text-brandRed" />
-                <span>24/7 support</span>
-              </div>
-            </div>
-          </div>
+        {/* 4. Full-Width Edge-to-Edge About SeroFast Banner */}
+        <section className="w-full" id="about">
+          <AboutSeroFastBanner />
         </section>
+
+        {/* 5. Enquiry Email Section */}
+        <EnquirySection />
       </main>
+
+      {/* 6. Footer (White Background with Complete Details) */}
+      <Footer />
+
+      {/* Floating Scroll To Top Action Button */}
+      <ScrollToTop />
 
       <MobileBottomNav />
     </div>
