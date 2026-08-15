@@ -1,0 +1,10 @@
+import { useParams } from 'react-router-dom';
+import { ShieldCheck, Banknote, PackageSearch, ShoppingBag } from 'lucide-react';
+import { Card, PageHeader, StatusBadge } from '../../shared/ui';
+import { shops } from '../../shared/adminData';
+
+export default function ShopDetailsPage() {
+  const { shopId } = useParams();
+  const shop = shops.find((item) => item.id === shopId) || shops[0];
+  return <div><PageHeader title={shop.name} description="Shop profile, marketplace performance, verification and seller operations."/><div className="grid gap-5 xl:grid-cols-4"><Card className="p-5"><PackageSearch className="text-brandRed"/><p className="mt-4 text-sm text-textSecondary">Products</p><p className="text-2xl font-bold">{shop.products}</p></Card><Card className="p-5"><ShoppingBag className="text-brandRed"/><p className="mt-4 text-sm text-textSecondary">Orders</p><p className="text-2xl font-bold">{shop.orders}</p></Card><Card className="p-5"><Banknote className="text-brandRed"/><p className="mt-4 text-sm text-textSecondary">Revenue</p><p className="text-2xl font-bold">{shop.revenue}</p></Card><Card className="p-5"><ShieldCheck className="text-brandRed"/><p className="mt-4 text-sm text-textSecondary">Verification</p><StatusBadge value={shop.verification}/></Card></div><div className="mt-6 grid gap-5 lg:grid-cols-2"><Card className="p-6"><h2 className="text-lg font-semibold">Shop information</h2><div className="mt-5 space-y-4">{[['Owner',shop.owner],['Category',shop.category],['Joined',shop.joined],['Rating',`★ ${shop.rating}`],['Status',shop.status]].map(([label,value])=><div key={label} className="flex justify-between gap-4 border-b border-lightBorder pb-3 text-sm"><span className="text-textMuted">{label}</span><span className="font-semibold">{value}</span></div>)}</div></Card><Card className="p-6"><h2 className="text-lg font-semibold">Verification</h2><div className="mt-5 grid gap-3 sm:grid-cols-2">{['Identity Verified','Business Verified','Bank Verified','Phone Verified','Email Verified'].map((item)=><div key={item} className="rounded-xl bg-lightBackground p-4 text-sm font-semibold">{item}</div>)}</div></Card></div></div>;
+}

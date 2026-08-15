@@ -1,0 +1,1 @@
+export function validateShopApplication(values){const errors={};if(!values.name?.trim())errors.name='Shop name is required.';if(!values.category)errors.category='Category is required.';return errors;}

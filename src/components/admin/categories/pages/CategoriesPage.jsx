@@ -1,0 +1,11 @@
+import { useState } from 'react';
+import { Plus, Pencil } from 'lucide-react';
+import { Card, PageHeader, StatusBadge } from '../../shared/ui';
+import { categories as seed } from '../../shared/adminData';
+
+export default function CategoriesPage() {
+  const [rows,setRows] = useState(seed);
+  const [name,setName] = useState('');
+  function addCategory() { if(!name.trim()) return; setRows((current)=>[...current,{id:`CAT-${current.length+1}`,name,parent:'—',children:0,shops:0,products:0,status:'Draft'}]); setName(''); }
+  return <div><PageHeader title="Categories" description="Manage marketplace taxonomy, category status and navigation structure."/><div className="grid gap-6 lg:grid-cols-[1fr_330px]"><Card className="overflow-hidden"><div className="overflow-x-auto"><table className="min-w-full text-left"><thead className="bg-lightBackground"><tr>{['Category','Parent','Subcategories','Shops','Products','Status',''].map(x=><th key={x} className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-textMuted">{x}</th>)}</tr></thead><tbody className="divide-y divide-lightBorder">{rows.map(row=><tr key={row.id}><td className="px-5 py-4 font-semibold">{row.name}</td><td className="px-5 py-4 text-sm text-textSecondary">{row.parent}</td><td className="px-5 py-4 text-sm">{row.children}</td><td className="px-5 py-4 text-sm">{row.shops}</td><td className="px-5 py-4 text-sm">{row.products}</td><td className="px-5 py-4"><StatusBadge value={row.status}/></td><td className="px-5 py-4"><button className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder hover:border-brandRed"><Pencil size={15}/></button></td></tr>)}</tbody></table></div></Card><Card className="p-5"><h2 className="text-lg font-semibold">Add category</h2><p className="mt-1 text-sm text-textSecondary">New categories begin as Draft until published.</p><input value={name} onChange={e=>setName(e.target.value)} className="mt-5 h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed" placeholder="Category name"/><button onClick={addCategory} className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-brandRed text-sm font-semibold text-white"><Plus size={16}/>Add Category</button></Card></div></div>;
+}

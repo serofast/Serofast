@@ -1,0 +1,7 @@
+import { useState } from 'react';
+import { Card, Kpi, PageHeader } from '../../shared/ui';
+
+export default function CommissionsPage() {
+  const [rate,setRate]=useState('10');
+  return <div><PageHeader title="Commissions" description="Manage marketplace commission defaults and overrides for categories or specific shops."/><div className="grid gap-4 md:grid-cols-3"><Kpi label="Gross Marketplace Sales" value="₹12.48L" change="+12.4%"/><Kpi label="Platform Commission" value="₹1.24L" change="+8.4%"/><Kpi label="Seller Earnings" value="₹11.24L" change="+10.2%"/></div><div className="mt-6 grid gap-6 lg:grid-cols-2"><Card className="p-6"><h2 className="text-lg font-semibold">Default commission</h2><p className="mt-1 text-sm text-textSecondary">Applied when no category or shop override exists.</p><div className="mt-5 flex gap-2"><input value={rate} onChange={e=>setRate(e.target.value)} className="h-11 w-28 rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed"/><button className="rounded-lg bg-brandRed px-4 text-sm font-semibold text-white">Save</button></div></Card><Card className="p-6"><h2 className="text-lg font-semibold">Overrides</h2><div className="mt-5 space-y-3">{[['Fashion','8%'],['Electronics','9%'],['Urban Styles','6%']].map(([name,value])=><div key={name} className="flex items-center justify-between rounded-xl bg-lightBackground p-3"><span className="text-sm text-textSecondary">{name}</span><b>{value}</b></div>)}</div></Card></div></div>;
+}
