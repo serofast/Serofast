@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="favTopGradient" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#FF242A"/>
+      <stop offset="55%" stop-color="#E51920"/>
+      <stop offset="100%" stop-color="#B70E14"/>
+    </linearGradient>
+    <linearGradient id="favBottomGradient" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#E51920"/>
+      <stop offset="50%" stop-color="#C50F16"/>
+      <stop offset="100%" stop-color="#8F050A"/>
+    </linearGradient>
+    <filter id="favShadow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#D22125" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <!-- Centered Logo inside 512x512 Icon Frame -->
+  <g transform="translate(18, 50) scale(0.48)" filter="url(#favShadow)">
+    <polygon points="42,92 960,162 242,212" fill="url(#favTopGradient)"/>
+    <polygon points="384,316 960,162 516,522" fill="url(#favBottomGradient)"/>
+  </g>
+</svg>

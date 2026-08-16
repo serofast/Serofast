@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { initialSellerStore } from "../../data/sellerData";
 import ShopOwnerBottomNav from "./ShopOwnerBottomNav";
+import { Logo } from "../reusable";
 
 export default function ShopOwnerLayout() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -79,9 +80,9 @@ export default function ShopOwnerLayout() {
       {/* Top Nav — Clean: Brand + Notification + Profile */}
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
         {/* Left: Brand */}
-        <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-brandRed text-white font-bold text-sm shadow-xs">S</span>
-          <span className="text-sm font-bold tracking-tight text-slate-900">SEROFAST STORE</span>
+        <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5 group">
+          <Logo size="xs" iconClassName="group-hover:scale-105" />
+          <span className="text-sm font-bold tracking-tight text-slate-900">SEROFAST <span className="text-xs text-slate-500 font-semibold ml-0.5">STORE</span></span>
         </Link>
 
         {/* Right: Notification + Profile */}

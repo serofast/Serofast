@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" fill="none">
+  <defs>
+    <linearGradient id="seroTopGradient" x1="0%" y1="0%" x2="100%" y2="80%">
+      <stop offset="0%" stop-color="#FF242A"/>
+      <stop offset="55%" stop-color="#E51920"/>
+      <stop offset="100%" stop-color="#B70E14"/>
+    </linearGradient>
+    <linearGradient id="seroBottomGradient" x1="15%" y1="0%" x2="85%" y2="100%">
+      <stop offset="0%" stop-color="#E51920"/>
+      <stop offset="50%" stop-color="#C50F16"/>
+      <stop offset="100%" stop-color="#8F050A"/>
+    </linearGradient>
+    <filter id="subtleGlow" x="-10%" y="-10%" width="120%" height="120%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#D22125" flood-opacity="0.18" />
+    </filter>
+  </defs>
+  <g filter="url(#subtleGlow)">
+    <!-- Top Supersonic Dart / Fin -->
+    <polygon points="42,92 960,162 242,212" fill="url(#seroTopGradient)"/>
+    <!-- Bottom Origami Wing -->
+    <polygon points="384,316 960,162 516,522" fill="url(#seroBottomGradient)"/>
+  </g>
+</svg>

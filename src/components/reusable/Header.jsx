@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Logo from "./Logo";
 import { Search, Smartphone, Store, UserRound, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { categories } from "../../data/landing";
@@ -52,12 +53,10 @@ export default function Header({ onOpenAppTeaser }) {
       <div className="mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:py-2 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
         <Link
           to="/"
-          className="group inline-flex items-center gap-2.5 text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] max-560:text-[18px]"
+          className="group inline-flex items-center gap-2 text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] max-560:text-[18px]"
           aria-label="SeroFast home"
         >
-          <span className="inline-block -rotate-12 text-[31px] leading-none transition-transform duration-300 group-hover:-rotate-45 group-hover:scale-110">
-            ➤
-          </span>
+          <Logo size="sm" iconClassName="transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
           <span className="tracking-tight">SEROFAST</span>
         </Link>
 

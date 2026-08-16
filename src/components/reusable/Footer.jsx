@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "./Logo";
 import {
   Store,
   GraduationCap,
@@ -70,7 +71,7 @@ export default function Footer() {
               className="inline-flex items-center gap-2 text-[22px] font-extrabold tracking-tight text-brandRed"
               aria-label="SeroFast home"
             >
-              <span className="inline-block -rotate-12 text-[30px] leading-none">➤</span>
+              <Logo size="sm" />
               <span>SEROFAST</span>
             </Link>
 
