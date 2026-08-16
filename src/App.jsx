@@ -32,13 +32,7 @@ import {
   ShopOwnerPayoutsPage,
 } from "./components/shop-owner";
 
-import {
-  AdminLayout,
-  AdminDashboardPage,
-  AdminShopsPage,
-  AdminStudentsPage,
-  AdminOrdersPage,
-} from "./components/admin";
+import { AdminRoutes } from "./components/admin";
 
 import { shops, products } from "./data/landing";
 
@@ -199,16 +193,7 @@ export default function App() {
       <Route path="/seller/*" element={<Navigate to="/shop-owner/dashboard" replace />} />
 
       {/* Platform Administration Portal Routes */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboardPage />} />
-        <Route path="campus-shops" element={<AdminShopsPage />} />
-        <Route path="shops" element={<Navigate to="../campus-shops" replace />} />
-        <Route path="student-promoters" element={<AdminStudentsPage />} />
-        <Route path="students" element={<Navigate to="../student-promoters" replace />} />
-        <Route path="platform-orders" element={<AdminOrdersPage />} />
-        <Route path="orders" element={<Navigate to="../platform-orders" replace />} />
-      </Route>
+      <Route path="/admin/*" element={<AdminRoutes />} />
 
       {/* Fallback Catch-All */}
       <Route path="*" element={<Navigate to="/" replace />} />
