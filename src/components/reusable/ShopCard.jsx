@@ -53,9 +53,9 @@ export default function ShopCard({ shop, onOpenAppTeaser }) {
         </p>
         
         <div className="flex flex-wrap items-center justify-between gap-x-1 gap-y-1 border-t border-slate-100 pt-2 text-[9px] text-[#777]">
-          <span className="flex items-center gap-1 whitespace-nowrap">
-            <UsersRound size={13} className="text-[#999] group-hover:text-brandRed transition-colors duration-200" />
-            {shop.followers} Followers
+          <span className="flex min-w-0 items-center gap-1 whitespace-nowrap">
+            <UsersRound size={13} className="shrink-0 text-[#999] group-hover:text-brandRed transition-colors duration-200" />
+            <span className="min-w-0 truncate">{shop.followers} Followers</span>
           </span>
           <span className="flex items-center gap-1 text-slate-900 font-bold group-hover:text-brandRed shrink-0">
             <Smartphone size={11} />

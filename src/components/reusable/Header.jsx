@@ -50,7 +50,7 @@ export default function Header({ onOpenAppTeaser }) {
         aria-valuemax={100}
       />
 
-      <div className="mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:py-2 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
+      <div className="mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] pt-2.5 max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:pt-3.5 max-800:pb-1 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
         <Link
           to="/"
           className="group inline-flex items-center gap-2 text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] max-560:text-[18px]"
@@ -70,7 +70,7 @@ export default function Header({ onOpenAppTeaser }) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search products"
-            placeholder="Search campus products (App launching soon)..."
+            placeholder="Search"
             className="w-full border-0 bg-transparent px-3 text-[14px] text-textPrimary outline-none placeholder:text-[#999]"
           />
           <button
@@ -102,9 +102,9 @@ export default function Header({ onOpenAppTeaser }) {
           {/* Become a Shop Owner CTA */}
           <Link
             to="/signup"
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brandRed/30 active:scale-95 max-560:text-[12px] max-560:px-3"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brandRed/30 active:scale-95 max-560:text-[12px] max-560:px-3 max-380:text-[11px] max-380:px-2.5"
           >
-            <Store size={18} className="animate-bounce shrink-0" />
+            <Store size={18} className="animate-bounce shrink-0 max-380:hidden" />
             <span>Become a Shop Owner</span>
           </Link>
 
