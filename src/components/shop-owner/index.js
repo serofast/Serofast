@@ -4,3 +4,4 @@ export { default as ShopOwnerInventoryPage } from "./ShopOwnerInventoryPage";
 export { default as ShopOwnerOrdersPage } from "./ShopOwnerOrdersPage";
 export { default as ShopOwnerSettingsPage } from "./ShopOwnerSettingsPage";
 export { default as ShopOwnerPayoutsPage } from "./ShopOwnerPayoutsPage";
+export { default as ShopOwnerNotificationsPage } from "./ShopOwnerNotificationsPage";

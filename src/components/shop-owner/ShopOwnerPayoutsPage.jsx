@@ -1,131 +1,219 @@
 import { useState } from "react";
-import { CheckCircle2, Building2, ShieldCheck, Wallet, Landmark } from "lucide-react";
+import {
+  CheckCircle2,
+  Building2,
+  ShieldCheck,
+  Wallet,
+  Landmark,
+  Save,
+  ArrowUpRight,
+  Clock,
+  Sparkles,
+} from "lucide-react";
 import { initialSellerPayouts } from "../../data/sellerData";
+import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
 
 export default function ShopOwnerPayoutsPage() {
   const [payouts] = useState(initialSellerPayouts);
   const [upiVpa, setUpiVpa] = useState("urbanstyles@hdfcbank");
   const [accountName, setAccountName] = useState("Urban Styles Retail LLP");
+  const [bankAccount, setBankAccount] = useState("•••• •••• 9842");
+  const [ifscCode, setIfscCode] = useState("HDFC0000240");
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
 
   return (
-    <div className="space-y-5 sm:space-y-6 animate-fade-in font-sans">
-      <div>
-        <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Payouts &amp; Bank Settlement</h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">Instant UPI settlements for your store orders (0% commission).</p>
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-semibold text-brandRed tracking-tight">
+            Payouts &amp; Settlements
+          </h1>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">
+            Instant UPI &amp; bank settlements for your campus orders with 0% platform commission.
+          </p>
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-[#F3E5E5] px-3.5 py-1.5 text-xs font-semibold text-brandRed self-start sm:self-auto">
+          <ShieldCheck size={15} className="text-brandRed" />
+          <span>Verified Merchant Account</span>
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
-        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
+      {/* SeroFast Themed Financial Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Card 1: Available Balance */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Available Balance</span>
-            <Wallet size={16} className="text-emerald-600 shrink-0" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Available Balance</span>
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+              <Wallet size={20} />
+            </div>
           </div>
-          <div className="mt-1.5 text-xl font-bold text-emerald-600">₹4,497</div>
-          <span className="text-[11px] text-slate-400 font-normal">Next batch settlement</span>
+          <div>
+            <div className="text-3xl font-bold tracking-tight text-brandRed">₹4,497</div>
+            <p className="text-[11px] text-slate-500 font-medium mt-1 flex items-center gap-1">
+              <Clock size={12} className="text-brandRed" /> Auto-Settling Daily at 11:00 PM
+            </p>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs min-w-0">
+        {/* Card 2: Lifetime Settled */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Lifetime Settled</span>
-            <Landmark size={16} className="text-blue-600 shrink-0" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lifetime Settled</span>
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+              <Landmark size={20} />
+            </div>
           </div>
-          <div className="mt-1.5 text-xl font-bold text-slate-900">₹11,487</div>
-          <span className="text-[11px] text-emerald-600 font-medium">100% Retained</span>
+          <div>
+            <div className="text-3xl font-bold tracking-tight text-slate-900">₹11,487</div>
+            <span className="inline-flex items-center gap-1 text-xs text-brandRed font-semibold mt-1">
+              <CheckCircle2 size={13} /> 100% Direct Retained
+            </span>
+          </div>
         </div>
 
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 sm:p-4 shadow-2xs min-w-0">
+        {/* Card 3: Platform Fee */}
+        <div className="rounded-[35px] bg-gradient-to-br from-brandRed to-red-600 text-white p-6 shadow-[0_12px_28px_rgba(211,47,47,0.32)] flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-emerald-800 uppercase tracking-wider">Commission Fee</span>
-            <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+            <span className="text-xs font-bold text-white/90 uppercase tracking-wider">Platform Fee</span>
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/20 text-white backdrop-blur-xs">
+              <Sparkles size={20} />
+            </div>
           </div>
-          <div className="mt-1.5 text-xl font-bold text-emerald-700">0%</div>
-          <span className="text-[11px] text-emerald-800 font-normal flex items-center gap-1">
-            <ShieldCheck size={12} /> ₹50 Setup
+          <div>
+            <div className="text-3xl font-bold text-white">0% Commission</div>
+            <p className="text-[11px] text-white/90 font-normal mt-1">
+              ₹50 One-Time Setup • Zero Hidden Charges
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Settlement Account Settings Form */}
+      <AppFormCard className="max-w-full" title="Bank &amp; UPI Settlement Settings" subtitle="Configure where customer payments are deposited automatically">
+        <form onSubmit={handleSave} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AppFormField
+              label="Business / Registered Account Name"
+              icon={Building2}
+              value={accountName}
+              onChange={(val) => setAccountName(val)}
+              placeholder="e.g. Urban Styles Retail LLP"
+            />
+
+            <AppFormField
+              label="Instant UPI VPA Handle"
+              icon={Wallet}
+              value={upiVpa}
+              onChange={(val) => setUpiVpa(val)}
+              placeholder="yourname@upi / phone@paytm"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <AppFormField
+              label="Bank Account Number"
+              icon={Landmark}
+              value={bankAccount}
+              onChange={(val) => setBankAccount(val)}
+              placeholder="•••• •••• •••• 9842"
+            />
+
+            <AppFormField
+              label="IFSC Code"
+              value={ifscCode}
+              onChange={(val) => setIfscCode(val)}
+              placeholder="HDFC0000240"
+            />
+          </div>
+
+          <div className="pt-2">
+            <AppFormButton type="submit" icon={Save}>
+              {saved ? "Settlement Details Saved! ✓" : "Update Settlement Account"}
+            </AppFormButton>
+          </div>
+        </form>
+      </AppFormCard>
+
+      {/* Mobile Responsive Settlement History */}
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-lg font-semibold text-brandRed tracking-tight">
+            Settlement History
+          </h3>
+          <span className="text-xs text-slate-400 font-normal">
+            Last 30 Days
           </span>
         </div>
-      </div>
 
-      <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs space-y-3">
-        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-          <Building2 size={16} className="text-brandRed" /> UPI Settlement Details
-        </h3>        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div>
-            <label className="block font-medium text-slate-700">Business Name</label>
-            <input
-              type="text"
-              value={accountName}
-              onChange={(e) => setAccountName(e.target.value)}
-              className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-medium"
-            />
-          </div>
+        {/* Mobile View (< sm viewports) */}
+        <div className="space-y-3 sm:hidden">
+          {payouts.map((p) => (
+            <div
+              key={p.id}
+              className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-slate-900">{p.id}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-100 px-3 py-0.5 text-[10px] font-semibold text-brandRed">
+                  <CheckCircle2 size={12} /> {p.status}
+                </span>
+              </div>
 
-          <div>
-            <label className="block font-medium text-slate-700">Instant UPI VPA Handle</label>
-            <input
-              type="text"
-              value={upiVpa}
-              onChange={(e) => setUpiVpa(e.target.value)}
-              className="mt-1 min-h-[44px] w-full rounded-lg border border-slate-200 p-2.5 text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-brandRed/10 font-mono font-medium"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Card Stack (< sm) */}
-      <div className="space-y-3 sm:hidden">
-        <div className="font-bold text-slate-900 text-xs px-1">Settlement History</div>
-        {payouts.map((p) => (
-          <div key={p.id} className="rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-2xs space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="font-mono text-slate-900 font-bold">{p.id}</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                <CheckCircle2 size={11} /> {p.status}
-              </span>
+              <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                <div>
+                  <span className="text-xs font-semibold text-slate-800 block">{p.date}</span>
+                  <span className="text-[11px] text-slate-400 font-normal block mt-0.5">{p.method}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-lg font-bold text-brandRed leading-none block">₹{p.amount}</span>
+                  <span className="text-[10px] text-slate-400 font-normal mt-0.5 flex items-center justify-end gap-0.5">
+                    Direct UPI <ArrowUpRight size={10} className="text-brandRed" />
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between items-center text-slate-600">
-              <span className="min-w-0">
-                <span className="block truncate">{p.date}</span>
-                <span className="text-[10px] text-slate-400 block truncate">{p.method}</span>
-              </span>
-              <span className="font-bold text-slate-900 text-sm shrink-0">₹{p.amount}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Desktop Table (>= sm) */}
-      <div className="hidden sm:block overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-2xs">
-        <div className="p-3.5 border-b border-slate-100 font-bold text-slate-900 text-xs">
-          Settlement History
+          ))}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-100 bg-slate-50 font-semibold uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Settlement ID</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Amount</th>
-                <th className="px-4 py-3">Method</th>
-                <th className="px-4 py-3 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {payouts.map((p) => (
-                <tr key={p.id}>
-                  <td className="px-4 py-3 font-mono text-slate-900">{p.id}</td>
-                  <td className="px-4 py-3 text-slate-600">{p.date}</td>
-                  <td className="px-4 py-3 font-semibold text-slate-900">₹{p.amount}</td>
-                  <td className="px-4 py-3 text-slate-600">{p.method}</td>
-                  <td className="px-4 py-3 text-right">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                      <CheckCircle2 size={11} /> {p.status}
-                    </span>
-                  </td>
+        {/* Desktop View (>= sm viewports) */}
+        <div className="hidden sm:block overflow-hidden rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-slate-100 bg-[#FAF8F5] font-semibold text-slate-600">
+                <tr>
+                  <th className="px-5 py-4">Settlement ID</th>
+                  <th className="px-5 py-4">Date &amp; Time</th>
+                  <th className="px-5 py-4">Amount</th>
+                  <th className="px-5 py-4">Transfer Method</th>
+                  <th className="px-5 py-4 text-right">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {payouts.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50/50 transition">
+                    <td className="px-5 py-4 font-mono text-slate-900 font-bold">{p.id}</td>
+                    <td className="px-5 py-4 text-slate-600">{p.date}</td>
+                    <td className="px-5 py-4 font-bold text-brandRed text-sm">₹{p.amount}</td>
+                    <td className="px-5 py-4 text-slate-600">{p.method}</td>
+                    <td className="px-5 py-4 text-right">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-[11px] font-semibold text-brandRed">
+                        <CheckCircle2 size={12} /> {p.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

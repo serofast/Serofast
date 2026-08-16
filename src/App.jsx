@@ -30,6 +30,7 @@ import {
   ShopOwnerOrdersPage,
   ShopOwnerSettingsPage,
   ShopOwnerPayoutsPage,
+  ShopOwnerNotificationsPage,
 } from "./components/shop-owner";
 
 import { AdminRoutes } from "./components/admin";
@@ -188,6 +189,7 @@ export default function App() {
         <Route path="orders" element={<ShopOwnerOrdersPage />} />
         <Route path="settings" element={<ShopOwnerSettingsPage />} />
         <Route path="payouts" element={<ShopOwnerPayoutsPage />} />
+        <Route path="notifications" element={<ShopOwnerNotificationsPage />} />
       </Route>
 
       {/* Legacy Seller Route Redirects */}
