@@ -80,13 +80,13 @@ export default function EnquirySection() {
                   <label className="block text-[12px] font-bold uppercase tracking-wider text-[#666]">
                     Select Enquiry Type
                   </label>
-                  <div className="mt-2.5 flex flex-wrap gap-2">
+                  <div className="mt-2.5 flex flex-wrap gap-2 max-560:flex-col max-560:gap-2.5">
                     {categories.map((cat) => (
                       <button
                         key={cat}
                         type="button"
                         onClick={() => setCategory(cat)}
-                        className={`rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-all duration-200 ${
+                        className={`rounded-full px-3.5 py-1.5 text-[12px] font-bold transition-all duration-200 max-560:py-2 ${
                           category === cat
                             ? "bg-brandRed text-white shadow-sm"
                             : "border border-[#e0e0e0] bg-white text-[#555] hover:border-brandRed hover:text-brandRed"
