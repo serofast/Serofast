@@ -228,7 +228,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        <main className="mx-auto min-h-[calc(100vh-68px)] max-w-[1600px] px-4 py-6 sm:px-6 xl:px-8 xl:py-8">
+        <main className="mx-auto min-h-[calc(100vh-68px)] w-full min-w-0 max-w-[1600px] overflow-x-hidden px-4 py-6 sm:px-6 xl:px-8 xl:py-8">
           <AdminBreadcrumbs />
           {children}
         </main>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Card, Kpi, PageHeader, StatusBadge } from "../../shared/ui";
+import { Card, Kpi, PageHeader, StatGrid, StatusBadge, StatusCard } from "../../shared/ui";
 import {
   auditLogs,
   dashboardStats,
@@ -42,32 +42,38 @@ export default function DashboardPage() {
       {
         label: "Pending returns",
         value: returns.filter((item) => item.status === "Requested").length,
-        href: "/admin/returns",
+        href: "/admin/returns?status=Requested",
+        description: "Awaiting operations review",
       },
       {
         label: "Pending refunds",
         value: refunds.filter((item) => item.status === "Pending").length,
-        href: "/admin/finance/refunds",
+        href: "/admin/finance/refunds?status=Pending",
+        description: "Customer funds to process",
       },
       {
         label: "Pending withdrawals",
         value: withdrawals.filter((item) => item.status === "Pending").length,
         href: "/admin/finance/withdrawals",
+        description: "Seller payouts to review",
       },
       {
         label: "Low stock",
         value: inventory.filter((item) => item.status !== "Active").length,
-        href: "/admin/inventory",
+        href: "/admin/inventory?status=Low%20Stock",
+        description: "Stock needs replenishment",
       },
       {
         label: "Support tickets",
         value: supportTickets.filter((item) => item.status !== "Resolved").length,
         href: "/admin/support",
+        description: "Open operational conversations",
       },
       {
         label: "Risk alerts",
         value: riskAlerts.filter((item) => item.status !== "Dismissed").length,
         href: "/admin/risk",
+        description: "Marketplace safety review",
       },
     ],
     [],
@@ -86,17 +92,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <StatGrid>
         {dashboardStats.map((item) => (
           <Link
             key={item.label}
             to={statRoutes[item.label] ?? "/admin/analytics"}
-            className="rounded-2xl focus:outline-none focus:ring-2 focus:ring-brandRed/30"
+            className="block h-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-brandRed/30"
           >
             <Kpi {...item} />
           </Link>
         ))}
-      </div>
+      </StatGrid>
 
       <section className="mt-6" aria-labelledby="attention-heading">
         <div className="mb-3 flex items-center justify-between">
@@ -105,22 +111,26 @@ export default function DashboardPage() {
           </h2>
           <span className="text-xs text-textMuted">Live frontend snapshot</span>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <StatGrid>
           {attentionStats.map((item) => (
             <Link
               key={item.label}
               to={item.href}
-              className="rounded-xl border border-lightBorder bg-white p-4 shadow-bento transition hover:border-brandRed hover:shadow-hover"
+              className="block h-full rounded-2xl focus:outline-none focus:ring-2 focus:ring-brandRed/30"
             >
-              <p className="text-xs text-textMuted">{item.label}</p>
-              <p className="mt-2 text-2xl font-bold">{item.value}</p>
+              <StatusCard
+                label={item.label}
+                value={item.value}
+                description={item.description}
+                tone={item.value > 0 ? "rose" : "green"}
+              />
             </Link>
           ))}
-        </div>
+        </StatGrid>
       </section>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(300px,.7fr)]">
-        <Card className="p-5">
+        <Card className="h-full p-5 xl:min-h-[430px]">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold">Sales overview</h2>
@@ -176,7 +186,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <Card className="h-full p-5 xl:min-h-[430px]">
           <h2 className="text-lg font-semibold">Order overview</h2>
           <div className="mt-5 space-y-4">
             {["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"].map(

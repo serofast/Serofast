@@ -116,18 +116,18 @@ export function Kpi({ label, value, change, tone = "red" }) {
   const toneClassName = kpiTones[tone] ?? kpiTones.red;
 
   return (
-    <Card className="p-5">
-      <div className="flex justify-between gap-3">
-        <div>
-          <p className="text-sm text-textSecondary">{label}</p>
+    <Card className="flex h-full min-h-[164px] flex-col p-5">
+      <div className="flex flex-1 justify-between gap-3">
+        <div className="min-w-0">
+          <p className="min-h-10 text-sm leading-5 text-textSecondary">{label}</p>
           <p className="mt-2 text-2xl font-bold">{value}</p>
         </div>
-        <div className={`rounded-xl p-2.5 ${toneClassName}`}>
+        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClassName}`}>
           <Icon name="activity" />
         </div>
       </div>
       {change && (
-        <p className="mt-3 text-xs font-semibold text-emerald-600">{change}</p>
+        <p className="mt-auto pt-3 text-xs font-semibold text-emerald-600">{change}</p>
       )}
     </Card>
   );
@@ -228,7 +228,7 @@ export function Drawer({ open, onClose, title, children }) {
         className="absolute inset-0 bg-black/25"
         onClick={onClose}
       />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-xl overflow-y-auto border-l border-lightBorder bg-white p-6 shadow-float sm:p-8">
+      <aside className="absolute inset-x-0 bottom-0 max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border-t border-lightBorder bg-white p-5 shadow-float sm:p-6 md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:max-w-xl md:rounded-none md:border-l md:border-t-0 md:p-8">
         <div className="mb-6 flex justify-between">
           <h2 className="text-xl font-bold">{title}</h2>
           <button
@@ -293,13 +293,13 @@ export function FilterBar({
   onClear = () => {},
 }) {
   return (
-    <div className="mb-4 flex flex-col gap-3 lg:flex-row">
+    <div className="mb-4 flex min-w-0 flex-col gap-3 lg:flex-row">
       <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
-      <div className="flex gap-2">
+      <div className="flex min-w-0 gap-2 sm:min-w-[260px]">
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value)}
-          className="h-11 rounded-lg border border-lightBorder bg-white px-3 text-sm"
+          className="h-11 min-w-0 flex-1 rounded-lg border border-lightBorder bg-white px-3 text-sm"
         >
           <option value="">All statuses</option>
           {options.map((option) => (
@@ -321,6 +321,52 @@ export function FilterBar({
   );
 }
 
+export function StatGrid({ children, className = "" }) {
+  return (
+    <div
+      className={`grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function StatusCard({
+  label,
+  value,
+  description,
+  tone = "red",
+  onClick,
+}) {
+  const toneClassName = kpiTones[tone] ?? kpiTones.red;
+  const Component = onClick ? "button" : "div";
+
+  return (
+    <Component
+      type={onClick ? "button" : undefined}
+      onClick={onClick}
+      className={`flex h-full min-h-[126px] w-full flex-col rounded-2xl border border-lightBorder bg-lightSurface p-4 text-left shadow-bento transition ${
+        onClick
+          ? "cursor-pointer hover:-translate-y-0.5 hover:border-brandRed/40 hover:shadow-float focus:outline-none focus:ring-2 focus:ring-brandRed/20"
+          : ""
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="min-h-10 text-sm font-semibold leading-5 text-textSecondary">
+          {label}
+        </p>
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${toneClassName}`}>
+          <Icon name="activity" size={16} />
+        </span>
+      </div>
+      <p className="mt-2 text-2xl font-bold text-textPrimary">{value}</p>
+      {description && (
+        <p className="mt-auto pt-2 text-xs leading-5 text-textMuted">{description}</p>
+      )}
+    </Component>
+  );
+}
+
 export function Pagination({
   page = 1,
   pageCount = 1,
@@ -333,12 +379,12 @@ export function Pagination({
   const end = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex flex-col gap-3 border-t border-lightBorder px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex min-w-0 flex-col gap-3 border-t border-lightBorder px-4 py-3 text-sm lg:flex-row lg:items-center lg:justify-between">
       <p className="text-textMuted">
         Showing {start}–{end} of {totalCount}
       </p>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-start">
         <label className="flex items-center gap-2 text-textSecondary">
           <span className="sr-only sm:not-sr-only">Rows</span>
           <select
@@ -359,7 +405,7 @@ export function Pagination({
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(1)}
-          className="h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          className="hidden h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center"
         >
           First
         </button>
@@ -386,7 +432,7 @@ export function Pagination({
           type="button"
           disabled={page >= pageCount}
           onClick={() => onPageChange(pageCount)}
-          className="h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          className="hidden h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center"
         >
           Last
         </button>

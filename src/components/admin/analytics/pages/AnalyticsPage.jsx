@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Kpi, PageHeader } from "../../shared/ui";
+import { Card, Kpi, PageHeader, StatGrid } from "../../shared/ui";
 import { salesSeries, shops } from "../../shared/adminData";
 
 const customerMetrics = [
@@ -56,14 +56,14 @@ export default function AnalyticsPage() {
         />
       </Card>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <StatGrid>
         <Kpi label="Revenue" value="₹12.48L" change={`For ${range}`} />
         <Kpi label="Orders" value="428" change="+8.2%" />
         <Kpi label="Customers" value="18,492" change="+9.8%" />
         <Kpi label="AOV" value="₹2,916" change="+3.4%" />
         <Kpi label="Conversion" value="4.82%" change="+0.6%" />
         <Kpi label="Refund Rate" value="1.46%" change="-0.2%" />
-      </div>
+      </StatGrid>
 
       <Card className="mt-6 p-5 sm:p-6">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">

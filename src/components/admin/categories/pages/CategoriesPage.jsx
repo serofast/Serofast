@@ -95,7 +95,7 @@ export default function CategoriesPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
         <Card className="overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="min-w-[850px] text-left">
               <thead className="bg-lightBackground">
                 <tr>
@@ -163,6 +163,39 @@ export default function CategoriesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="divide-y divide-lightBorder md:hidden">
+            {rows.map((row, index) => (
+              <article key={row.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{row.name}</p>
+                    <p className="mt-1 text-xs text-textMuted">
+                      {row.products} products · {row.shops} shops
+                    </p>
+                  </div>
+                  <StatusBadge value={row.status} />
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <button type="button" onClick={() => setEditing({ ...row })}
+                    className="min-h-10 rounded-lg bg-brandRed px-3 text-xs font-semibold text-white">
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => setPendingToggle(row)}
+                    className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold">
+                    {row.status === "Active" ? "Deactivate" : "Activate"}
+                  </button>
+                  <button type="button" disabled={index === 0} onClick={() => move(index, -1)}
+                    className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold disabled:opacity-40">
+                    Move up
+                  </button>
+                  <button type="button" disabled={index === rows.length - 1} onClick={() => move(index, 1)}
+                    className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold disabled:opacity-40">
+                    Move down
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
         </Card>
 

@@ -18,6 +18,7 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
   const [rows, setRows] = useState(() => [...seed]);
   const [search, setSearchState] = useState("");
   const [status, setStatusState] = useState("");
+  const [quickFilter, setQuickFilterState] = useState(null);
   const [sortKey, setSortKey] = useState("");
   const [sortDirection, setSortDirection] = useState("asc");
   const [page, setPage] = useState(1);
@@ -44,8 +45,9 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
           String(value ?? "").toLowerCase().includes(normalizedSearch),
         );
       const matchesStatus = !status || row.status === status;
+      const matchesQuickFilter = !quickFilter || quickFilter(row);
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesQuickFilter;
     });
 
     if (!sortKey) {
@@ -56,7 +58,7 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
       const result = compareValues(left[sortKey], right[sortKey]);
       return sortDirection === "asc" ? result : -result;
     });
-  }, [rows, search, sortDirection, sortKey, status]);
+  }, [quickFilter, rows, search, sortDirection, sortKey, status]);
 
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const safePage = Math.min(page, pageCount);
@@ -78,6 +80,13 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
 
   function setStatus(value) {
     setStatusState(value);
+    setQuickFilterState(null);
+    setPage(1);
+  }
+
+  function setQuickFilter(predicate) {
+    setStatusState("");
+    setQuickFilterState(() => predicate ?? null);
     setPage(1);
   }
 
@@ -143,6 +152,7 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
   function clearFilters() {
     setSearchState("");
     setStatusState("");
+    setQuickFilterState(null);
     setSortKey("");
     setSortDirection("asc");
     setPage(1);
@@ -163,6 +173,8 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
     setSearch,
     status,
     setStatus,
+    quickFilter,
+    setQuickFilter,
     statuses,
     sortKey,
     sortDirection,

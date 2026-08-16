@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Card,
   ConfirmDialog,
@@ -7,6 +8,8 @@ import {
   FilterBar,
   LoadingState,
   PageHeader,
+  StatGrid,
+  StatusCard,
   Toast,
 } from "../ui";
 import ResourceTable from "./ResourceTable";
@@ -25,6 +28,84 @@ function createStableId(title) {
   return `${prefix}-${Date.now().toString().slice(-6)}`;
 }
 
+const moneyValue = (value) => Number(String(value ?? "").replace(/[^0-9.]/g, "")) || 0;
+
+const defaultSummaryCards = {
+  Shops: [
+    { label: "Total Shops", predicate: () => true, tone: "blue", description: "All seller accounts" },
+    { label: "Active", status: "Active", tone: "green", description: "Currently selling" },
+    { label: "Pending Approval", status: "Pending", tone: "amber", description: "Documents need review" },
+    { label: "Suspended", status: "Suspended", tone: "rose", description: "Selling access restricted" },
+  ],
+  Customers: [
+    { label: "Total Customers", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "High Value", predicate: (row) => moneyValue(row.spent) >= 40000, tone: "purple", description: "Spend above ₹40,000" },
+    { label: "Blocked", status: "Blocked", tone: "rose", description: "Account access restricted" },
+  ],
+  Products: [
+    { label: "Total Products", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "Low Stock", status: "Low Stock", tone: "amber", description: "Replenishment needed" },
+    { label: "Out of Stock", status: "Out of Stock", tone: "rose", description: "Unavailable for sale" },
+  ],
+  Orders: [
+    { label: "All Orders", predicate: () => true, tone: "blue" },
+    { label: "Processing", status: "Processing", tone: "amber" },
+    { label: "Shipped", status: "Shipped", tone: "blue" },
+    { label: "Delivered", status: "Delivered", tone: "green" },
+    { label: "Returned", status: "Returned", tone: "rose" },
+  ],
+  Inventory: [
+    { label: "Tracked Items", predicate: () => true, tone: "blue" },
+    { label: "Low Stock", status: "Low Stock", tone: "amber" },
+    { label: "Out of Stock", status: "Out of Stock", tone: "rose" },
+    { label: "Fast Moving", predicate: (row) => row.velocity === "Fast", tone: "green" },
+    { label: "Slow Moving", predicate: (row) => row.velocity === "Slow", tone: "purple" },
+  ],
+  Returns: [
+    { label: "Requested", status: "Requested", tone: "amber" },
+    { label: "Approved", status: "Approved", tone: "green" },
+    { label: "Refund Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.refund), 0).toLocaleString("en-IN")}`, tone: "purple", description: "Across current requests" },
+  ],
+  Reviews: [
+    { label: "Total Reviews", predicate: () => true, tone: "blue" },
+    { label: "Published", status: "Published", tone: "green" },
+    { label: "Reported", status: "Reported", tone: "rose", description: "Moderation required" },
+    { label: "Average Rating", value: (rows) => rows.length ? (rows.reduce((sum, row) => sum + Number(row.rating || 0), 0) / rows.length).toFixed(1) : "0.0", tone: "amber" },
+  ],
+  Delivery: [
+    { label: "All Shipments", predicate: () => true, tone: "blue" },
+    { label: "Processing", status: "Processing", tone: "amber" },
+    { label: "Shipped", status: "Shipped", tone: "blue" },
+    { label: "Delayed", status: "Delayed", tone: "rose", description: "Needs intervention" },
+  ],
+  Transactions: [
+    { label: "All Transactions", predicate: () => true, tone: "blue" },
+    { label: "Completed", status: "Completed", tone: "green" },
+    { label: "Pending", status: "Pending", tone: "amber" },
+    { label: "Gross Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.amount), 0).toLocaleString("en-IN")}`, tone: "purple" },
+  ],
+  Refunds: [
+    { label: "All Refunds", predicate: () => true, tone: "blue" },
+    { label: "Pending", status: "Pending", tone: "amber" },
+    { label: "Processed", status: "Processed", tone: "green" },
+    { label: "Refund Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.amount), 0).toLocaleString("en-IN")}`, tone: "purple" },
+  ],
+  Support: [
+    { label: "All Tickets", predicate: () => true, tone: "blue" },
+    { label: "Open", status: "Open", tone: "amber" },
+    { label: "In Progress", status: "In Progress", tone: "blue" },
+    { label: "High Priority", predicate: (row) => row.priority === "High", tone: "rose", description: "Needs prompt response" },
+  ],
+  "Admin Users": [
+    { label: "Total Admins", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "Inactive", status: "Inactive", tone: "rose" },
+    { label: "Recently Active", predicate: (row) => Boolean(row.lastLogin), tone: "purple" },
+  ],
+};
+
 export default function ResourcePage({
   title,
   description,
@@ -32,12 +113,26 @@ export default function ResourcePage({
   columns = [],
   createLabel,
   searchPlaceholder,
+  summaryCards = [],
 }) {
   const [drawerState, setDrawerState] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
   const resource = useResourceList(seed);
+  const [searchParams, setSearchParams] = useSearchParams();
   const entityName = singularize(title);
+  const operationalCards = summaryCards.length > 0
+    ? summaryCards
+    : (defaultSummaryCards[title] ?? []);
+
+  useEffect(() => {
+    const requestedStatus = searchParams.get("status") ?? "";
+    if (requestedStatus !== resource.status) {
+      resource.setStatus(requestedStatus);
+    }
+    // Apply direct dashboard links when the URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     if (!toast) {
@@ -119,6 +214,31 @@ export default function ResourcePage({
     setDrawerState(null);
   }
 
+  function selectSummary(card) {
+    if (card.status) {
+      resource.setStatus(card.status);
+      setSearchParams({ status: card.status }, { replace: true });
+      return;
+    }
+    if (card.predicate) {
+      resource.setQuickFilter(card.predicate);
+      setSearchParams({}, { replace: true });
+    }
+  }
+
+  function changeStatus(value) {
+    resource.setStatus(value);
+    setSearchParams(value ? { status: value } : {}, { replace: true });
+  }
+
+  function summaryValue(card) {
+    if (typeof card.value === "function") return card.value(resource.rows);
+    if (card.value !== undefined) return card.value;
+    if (card.predicate) return resource.rows.filter(card.predicate).length;
+    if (card.status) return resource.rows.filter((row) => row.status === card.status).length;
+    return resource.rows.length;
+  }
+
   return (
     <div className="min-w-0">
       <PageHeader
@@ -128,11 +248,26 @@ export default function ResourcePage({
         onAction={() => setDrawerState({ mode: "create" })}
       />
 
+      {operationalCards.length > 0 && (
+        <StatGrid className="mb-5">
+          {operationalCards.map((card) => (
+            <StatusCard
+              key={card.label}
+              label={card.label}
+              value={summaryValue(card)}
+              description={card.description}
+              tone={card.tone}
+              onClick={card.status || card.predicate ? () => selectSummary(card) : undefined}
+            />
+          ))}
+        </StatGrid>
+      )}
+
       <FilterBar
         value={resource.search}
         setValue={resource.setSearch}
         status={resource.status}
-        setStatus={resource.setStatus}
+        setStatus={changeStatus}
         options={resource.statuses}
         onClear={resource.clearFilters}
         placeholder={searchPlaceholder}
@@ -280,8 +415,12 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
         logging will be connected in a later phase.
       </p>
 
+      <div className="grid gap-4 sm:grid-cols-2">
       {editableColumns.slice(0, 6).map((column) => (
-        <label key={column.key} className="block">
+        <label
+          key={column.key}
+          className={`block ${/(description|reason|review|address|subject)/i.test(column.key) ? "sm:col-span-2" : ""}`}
+        >
           <span className="mb-1.5 block text-sm font-semibold">
             {column.label}
           </span>
@@ -308,6 +447,7 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
           )}
         </label>
       ))}
+      </div>
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button

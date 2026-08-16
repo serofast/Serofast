@@ -4,9 +4,10 @@ import {
   ConfirmDialog,
   Drawer,
   EmptyState,
-  Kpi,
   PageHeader,
+  StatGrid,
   StatusBadge,
+  StatusCard,
   Toast,
 } from "../../shared/ui";
 import { withdrawals } from "../../shared/adminData";
@@ -20,6 +21,10 @@ export default function WithdrawalsPage() {
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
+  const [activeStatus, setActiveStatus] = useState("");
+  const displayedRows = activeStatus
+    ? rows.filter((row) => row.status === activeStatus)
+    : rows;
 
   function requestAction(row, status) {
     setReason("");
@@ -51,23 +56,26 @@ export default function WithdrawalsPage() {
         description="Review, approve, reject, and monitor seller payout requests."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <StatGrid>
         {statuses.map((status) => (
-          <Kpi
+          <StatusCard
             key={status}
             label={status}
             value={rows.filter((row) => row.status === status).length}
-            change={status === "Pending" ? "Needs review" : "Current requests"}
+            description={status === "Pending" ? "Needs review" : "Current requests"}
+            tone={status === "Pending" ? "amber" : status === "Rejected" ? "rose" : "green"}
+            onClick={() => setActiveStatus((current) => current === status ? "" : status)}
           />
         ))}
-      </div>
+      </StatGrid>
 
       <Card className="mt-6 overflow-hidden">
-        {rows.length === 0 ? (
+        {displayedRows.length === 0 ? (
           <EmptyState title="No withdrawal requests" />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-[900px] text-left">
+          <>
+          <div className="hidden overflow-x-auto md:block">
+            <table className="min-w-[860px] text-left">
               <thead className="bg-lightBackground">
                 <tr>
                   {["Request", "Shop", "Owner", "Amount", "Method", "Status", "Actions"].map(
@@ -83,7 +91,7 @@ export default function WithdrawalsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-lightBorder">
-                {rows.map((row) => (
+                {displayedRows.map((row) => (
                   <tr key={row.id}>
                     <td className="px-5 py-4 text-sm font-semibold">{row.id}</td>
                     <td className="px-5 py-4 text-sm">{row.shop}</td>
@@ -127,6 +135,30 @@ export default function WithdrawalsPage() {
               </tbody>
             </table>
           </div>
+          <div className="divide-y divide-lightBorder md:hidden">
+            {displayedRows.map((row) => (
+              <article key={row.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold">{row.shop}</p>
+                    <p className="mt-1 truncate text-xs text-textMuted">{row.id} · {row.owner}</p>
+                  </div>
+                  <StatusBadge value={row.status} />
+                </div>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs text-textMuted">Amount</p>
+                    <p className="font-bold">{row.amount}</p>
+                  </div>
+                  <button type="button" onClick={() => setSelected(row)}
+                    className="min-h-10 rounded-lg bg-brandRed px-4 text-xs font-semibold text-white">
+                    Review
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+          </>
         )}
       </Card>
 
