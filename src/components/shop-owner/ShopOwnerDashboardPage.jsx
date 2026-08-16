@@ -11,18 +11,20 @@ import {
   ArrowRight,
   Store,
 } from "lucide-react";
-import { initialSellerOrders, initialSellerProducts, initialSellerStore } from "../../data/sellerData";
 import Logo from "../reusable/Logo";
 
 export default function ShopOwnerDashboardPage() {
-  const [orders, setOrders] = useState(initialSellerOrders);
   const [activeShop, setActiveShop] = useState(null);
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem("serofast_active_shop");
       if (stored) {
-        setActiveShop(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        setActiveShop(parsed);
+        // Load shop's orders if any exist, default to 0/empty list for newly created shop
+        setOrders(parsed.orders || []);
       }
     } catch (e) {
       console.warn("Storage read error", e);
@@ -37,9 +39,11 @@ export default function ShopOwnerDashboardPage() {
 
   const totalRevenue = orders
     .filter((o) => o.status !== "Cancelled")
-    .reduce((sum, o) => sum + o.totalAmount, 0);
+    .reduce((sum, o) => sum + (o.totalAmount || 0), 0);
 
-  const currentStoreName = activeShop?.name || initialSellerStore.name;
+  const pendingOrdersCount = orders.filter((o) => o.status === "Pending").length;
+  const productsCount = activeShop?.selectedProducts?.length || 0;
+  const currentStoreName = activeShop?.name || "Your Campus Shop";
 
   // IF THE USER LOGGED IN AND HAS NO SHOP: SHOW ONLY "CREATE SHOP TO CONTINUE" CARD (NO DETAILS OR METRICS)
   if (!activeShop) {
@@ -84,7 +88,7 @@ export default function ShopOwnerDashboardPage() {
     );
   }
 
-  // SHOP EXISTS: SHOW DASHBOARD METRICS AND ORDERS
+  // SHOP EXISTS: SHOW DASHBOARD METRICS AND ORDERS (INITIALIZED TO 0 FOR NEW SHOP)
   return (
     <div className="space-y-5 sm:space-y-6 animate-fade-in font-sans font-sansation">
       {/* Header */}
@@ -131,7 +135,9 @@ export default function ShopOwnerDashboardPage() {
             <ShoppingBag size={16} className="text-slate-700" />
           </div>
           <div className="mt-2 text-xl font-bold text-slate-900">{orders.length}</div>
-          <span className="mt-0.5 text-[11px] text-slate-500 font-normal">3 Pending dispatch</span>
+          <span className="mt-0.5 text-[11px] text-slate-500 font-normal">
+            {pendingOrdersCount > 0 ? `${pendingOrdersCount} Pending dispatch` : "0 Pending orders"}
+          </span>
         </div>
 
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs min-w-0">
@@ -139,8 +145,8 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Products</span>
             <Package size={16} className="text-blue-600" />
           </div>
-          <div className="mt-2 text-xl font-bold text-slate-900">{initialSellerProducts.length}</div>
-          <span className="mt-0.5 text-[11px] text-emerald-600 font-medium">3 In Stock</span>
+          <div className="mt-2 text-xl font-bold text-slate-900">{productsCount}</div>
+          <span className="mt-0.5 text-[11px] text-emerald-600 font-medium">{productsCount} In Stock</span>
         </div>
 
         <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs min-w-0">
@@ -148,8 +154,8 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Promoters</span>
             <UsersRound size={16} className="text-purple-600" />
           </div>
-          <div className="mt-2 text-xl font-bold text-slate-900">2</div>
-          <span className="mt-0.5 text-[11px] text-purple-600 font-medium">Active referrals</span>
+          <div className="mt-2 text-xl font-bold text-slate-900">0</div>
+          <span className="mt-0.5 text-[11px] text-purple-600 font-medium">0 Active referrals</span>
         </div>
       </div>
 
@@ -163,17 +169,42 @@ export default function ShopOwnerDashboardPage() {
           </Link>
         </div>
 
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 text-xs"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900">{order.id}</span>
+        {orders.length === 0 ? (
+          <div className="py-8 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+            <ShoppingBag className="mx-auto text-slate-300 mb-2" size={32} />
+            <p className="text-xs font-semibold text-slate-600">No Orders Yet</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Incoming campus orders will appear here in real-time once customers start placing orders.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 text-xs"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-900">{order.id}</span>
+                    <span
+                      className={`sm:hidden rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        order.status === "Delivered"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : order.status === "Dispatched"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-amber-100 text-amber-800"
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </div>
+                  <span className="font-medium text-slate-800">{order.customerName}</span>
+                  <span className="text-slate-500 font-normal text-[11px] truncate">{order.address}</span>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-200/60">
+                  <span className="font-bold text-slate-900 text-sm sm:text-xs">₹{order.totalAmount}</span>
                   <span
-                    className={`sm:hidden rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                    className={`hidden sm:inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
                       order.status === "Delivered"
                         ? "bg-emerald-100 text-emerald-700"
                         : order.status === "Dispatched"
@@ -183,61 +214,44 @@ export default function ShopOwnerDashboardPage() {
                   >
                     {order.status}
                   </span>
+
+                  {order.status === "Pending" && (
+                    <button
+                      type="button"
+                      onClick={() => updateOrderStatus(order.id, "Packing")}
+                      className="min-h-[36px] rounded-full bg-brandRed px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brandRedDark transition active:scale-95"
+                    >
+                      Accept
+                    </button>
+                  )}
+                  {order.status === "Packing" && (
+                    <button
+                      type="button"
+                      onClick={() => updateOrderStatus(order.id, "Dispatched")}
+                      className="min-h-[36px] rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition active:scale-95"
+                    >
+                      Dispatch
+                    </button>
+                  )}
+                  {order.status === "Dispatched" && (
+                    <button
+                      type="button"
+                      onClick={() => updateOrderStatus(order.id, "Delivered")}
+                      className="min-h-[36px] rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition active:scale-95"
+                    >
+                      Deliver
+                    </button>
+                  )}
+                  {order.status === "Delivered" && (
+                    <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                      <CheckCircle2 size={14} /> Delivered
+                    </span>
+                  )}
                 </div>
-                <span className="font-medium text-slate-800">{order.customerName}</span>
-                <span className="text-slate-500 font-normal text-[11px] truncate">{order.address}</span>
               </div>
-
-              <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-200/60">
-                <span className="font-bold text-slate-900 text-sm sm:text-xs">₹{order.totalAmount}</span>
-                <span
-                  className={`hidden sm:inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                    order.status === "Delivered"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : order.status === "Dispatched"
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-amber-100 text-amber-800"
-                  }`}
-                >
-                  {order.status}
-                </span>
-
-                {order.status === "Pending" && (
-                  <button
-                    type="button"
-                    onClick={() => updateOrderStatus(order.id, "Packing")}
-                    className="min-h-[36px] rounded-full bg-brandRed px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-brandRedDark transition active:scale-95"
-                  >
-                    Accept
-                  </button>
-                )}
-                {order.status === "Packing" && (
-                  <button
-                    type="button"
-                    onClick={() => updateOrderStatus(order.id, "Dispatched")}
-                    className="min-h-[36px] rounded-full bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition active:scale-95"
-                  >
-                    Dispatch
-                  </button>
-                )}
-                {order.status === "Dispatched" && (
-                  <button
-                    type="button"
-                    onClick={() => updateOrderStatus(order.id, "Delivered")}
-                    className="min-h-[36px] rounded-full bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition active:scale-95"
-                  >
-                    Deliver
-                  </button>
-                )}
-                {order.status === "Delivered" && (
-                  <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                    <CheckCircle2 size={14} /> Delivered
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
