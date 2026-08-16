@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Menu, Search, Bell, LogOut, X, ChevronDown } from "lucide-react";
 import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
+import { Logo } from "../../reusable";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -47,12 +48,10 @@ export default function AdminLayout({ children }) {
           <Link
             to="/"
             onClick={close}
-            className="flex items-center gap-2 text-lg font-extrabold text-brandRed"
+            className="flex items-center gap-2 text-lg font-extrabold text-brandRed group"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brandRed text-sm text-white">
-              S
-            </span>
-            SEROFAST
+            <Logo size="xs" iconClassName="group-hover:scale-105" />
+            <span className="tracking-tight">SEROFAST</span>
           </Link>
 
           <button

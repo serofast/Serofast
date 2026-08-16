@@ -16,3 +16,4 @@ export { default as PlatformDemoUI } from "./PlatformDemoUI";
 export { default as FaqAccordion } from "./FaqAccordion";
 export { default as AppTeaserModal } from "./AppTeaserModal";
 export { default as LiveActivityTicker } from "./LiveActivityTicker";
+export { default as Logo } from "./Logo";
