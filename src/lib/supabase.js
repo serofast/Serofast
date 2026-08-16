@@ -172,12 +172,21 @@ export async function fetchOwnerProfile() {
 export async function fetchWarehouseProducts() {
   if (supabase) {
     try {
-      const { data, error } = await supabase
+      // 1. Try warehouse_products table
+      const { data: wData, error: wError } = await supabase
+        .from("warehouse_products")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!wError && wData?.length) return wData;
+
+      // 2. Fallback to products table if warehouse_products is empty
+      const { data: pData, error: pError } = await supabase
         .from("products")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error && data) return data;
+      if (!pError && pData?.length) return pData;
     } catch {
       // Graceful fallback
     }
@@ -257,16 +266,20 @@ export async function createShopInSupabase(shopData) {
 
 /* ── Link Selected Products to Shop ─────────────────────── */
 
-async function linkProductsToShop(shopId, productIds) {
+export async function linkProductsToShop(shopId, productIds) {
   if (!supabase || !productIds?.length) return;
 
   try {
-    for (const pid of productIds) {
-      await supabase
-        .from("products")
-        .update({ shop_id: shopId })
-        .eq("id", pid);
-    }
+    const payload = productIds.map((pid) => ({
+      shop_id: shopId,
+      warehouse_product_id: pid,
+      allocated_stock: 10,
+      is_active: true,
+    }));
+
+    await supabase.from("shop_products").upsert(payload, {
+      onConflict: "shop_id,warehouse_product_id",
+    });
   } catch {
     // Graceful fallback
   }
