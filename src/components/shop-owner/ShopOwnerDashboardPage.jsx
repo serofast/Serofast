@@ -51,7 +51,7 @@ export default function ShopOwnerDashboardPage() {
         {/* Animated Logo Stack */}
         <div className="flex flex-col items-center justify-center text-center">
           <Logo size={64} iconClassName="drop-shadow-xs" />
-          <span className="mt-2 font-sansation text-[32px] sm:text-[36px] font-semibold tracking-[-0.5px] text-brandRed leading-none">
+          <span className="mt-2 font-sansation text-[32px] sm:text-[36px] font-normal tracking-[-0.5px] text-brandRed leading-none">
             SEROFAST
           </span>
         </div>
@@ -64,7 +64,7 @@ export default function ShopOwnerDashboardPage() {
             <Store size={28} />
           </div>
 
-          <h2 className="text-2xl font-semibold text-brandRed tracking-tight">
+          <h2 className="text-2xl font-normal text-brandRed tracking-tight">
             No Shop Found
           </h2>
 
@@ -126,8 +126,8 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Revenue</span>
             <DollarSign size={18} className="text-brandRed" />
           </div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">₹{totalRevenue.toLocaleString("en-IN")}</div>
-          <span className="mt-0.5 text-[11px] text-brandRed font-medium block">100% Direct Retained</span>
+          <div className="mt-2 text-2xl font-normal text-slate-900">₹{totalRevenue.toLocaleString("en-IN")}</div>
+          <span className="mt-0.5 text-[11px] text-brandRed font-normal block">100% Direct Retained</span>
         </div>
 
         <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
@@ -135,7 +135,7 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Orders</span>
             <ShoppingBag size={18} className="text-slate-700" />
           </div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">{orders.length}</div>
+          <div className="mt-2 text-2xl font-normal text-slate-900">{orders.length}</div>
           <span className="mt-0.5 text-[11px] text-slate-500 font-normal block">
             {pendingOrdersCount > 0 ? `${pendingOrdersCount} Pending dispatch` : "0 Pending orders"}
           </span>
@@ -146,8 +146,8 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Products</span>
             <Package size={18} className="text-brandRed" />
           </div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">{productsCount}</div>
-          <span className="mt-0.5 text-[11px] text-brandRed font-medium block">{productsCount} In Stock</span>
+          <div className="mt-2 text-2xl font-normal text-slate-900">{productsCount}</div>
+          <span className="mt-0.5 text-[11px] text-brandRed font-normal block">{productsCount} In Stock</span>
         </div>
 
         <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
@@ -155,7 +155,7 @@ export default function ShopOwnerDashboardPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Promoters</span>
             <UsersRound size={18} className="text-slate-700" />
           </div>
-          <div className="mt-2 text-2xl font-semibold text-slate-900">0</div>
+          <div className="mt-2 text-2xl font-normal text-slate-900">0</div>
           <span className="mt-0.5 text-[11px] text-slate-500 font-normal block">0 Active referrals</span>
         </div>
       </div>
@@ -163,7 +163,7 @@ export default function ShopOwnerDashboardPage() {
       {/* Live Customer Orders Container */}
       <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-semibold text-slate-900">Live Customer Orders</h3>
+          <h3 className="text-base font-normal text-slate-800">Live Customer Orders</h3>
           <Link to="/shop-owner/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
             <span>View All</span>
             <ArrowRight size={12} />
@@ -185,9 +185,9 @@ export default function ShopOwnerDashboardPage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-900">{order.id}</span>
+                    <span className="font-medium text-slate-900">{order.id}</span>
                     <span
-                      className={`sm:hidden rounded-full px-2.5 py-0.5 text-[10px] font-medium ${
+                      className={`sm:hidden rounded-full px-2.5 py-0.5 text-[10px] font-normal ${
                         order.status === "Delivered"
                           ? "bg-rose-100 text-brandRed"
                           : order.status === "Dispatched"
@@ -198,14 +198,14 @@ export default function ShopOwnerDashboardPage() {
                       {order.status}
                     </span>
                   </div>
-                  <span className="font-medium text-slate-800">{order.customerName}</span>
+                  <span className="font-normal text-slate-800">{order.customerName}</span>
                   <span className="text-slate-500 font-normal text-[11px] truncate">{order.address}</span>
                 </div>
 
                 <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-200/60">
-                  <span className="font-bold text-slate-900 text-sm sm:text-xs">₹{order.totalAmount}</span>
+                  <span className="font-semibold text-slate-900 text-sm sm:text-xs">₹{order.totalAmount}</span>
                   <span
-                    className={`hidden sm:inline-block rounded-full px-2.5 py-0.5 text-[10px] font-medium ${
+                    className={`hidden sm:inline-block rounded-full px-2.5 py-0.5 text-[10px] font-normal ${
                       order.status === "Delivered"
                         ? "bg-rose-100 text-brandRed"
                         : order.status === "Dispatched"
@@ -244,7 +244,7 @@ export default function ShopOwnerDashboardPage() {
                     </button>
                   )}
                   {order.status === "Delivered" && (
-                    <span className="text-xs text-brandRed font-medium flex items-center gap-1">
+                    <span className="text-xs text-brandRed font-normal flex items-center gap-1">
                       <CheckCircle2 size={14} /> Delivered
                     </span>
                   )}
