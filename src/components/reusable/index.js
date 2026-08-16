@@ -17,3 +17,4 @@ export { default as FaqAccordion } from "./FaqAccordion";
 export { default as AppTeaserModal } from "./AppTeaserModal";
 export { default as LiveActivityTicker } from "./LiveActivityTicker";
 export { default as Logo } from "./Logo";
+export { default as AppBackButton } from "./AppBackButton";

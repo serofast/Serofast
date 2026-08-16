@@ -174,6 +174,7 @@ export default function App() {
 
       {/* Authentication & Onboarding Routes */}
       <Route path="/signup" element={<RegisterPage />} />
+      <Route path="/register" element={<Navigate to="/signup" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/become-shop-owner/*" element={<Navigate to="/signup" replace />} />
       <Route path="/create-shop/*" element={<CreateShopRoute />} />

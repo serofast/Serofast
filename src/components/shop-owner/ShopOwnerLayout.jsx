@@ -80,9 +80,9 @@ export default function ShopOwnerLayout() {
       {/* Top Nav — Clean: Brand + Notification + Profile */}
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
         {/* Left: Brand */}
-        <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5 group">
-          <Logo size="xs" iconClassName="group-hover:scale-105" />
-          <span className="text-sm font-bold tracking-tight text-slate-900">SEROFAST <span className="text-xs text-slate-500 font-semibold ml-0.5">STORE</span></span>
+        <Link to="/shop-owner/dashboard" className="group inline-flex items-center gap-2 text-[19px] sm:text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02]">
+          <Logo size="sm" iconClassName="transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
+          <span className="tracking-tight">SEROFAST</span>
         </Link>
 
         {/* Right: Notification + Profile */}
@@ -213,61 +213,7 @@ export default function ShopOwnerLayout() {
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 sm:p-6 max-w-5xl mx-auto pb-20 md:pb-6">
-          {hasShop ? (
-            <Outlet />
-          ) : (
-            /* Unregistered Shop: Show Create Shop Action Dialog Box */
-            <div className="my-8 flex flex-col items-center justify-center text-center animate-fade-in font-sans">
-              <div className="w-full max-w-xl rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-10 shadow-lg space-y-6">
-                <div className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-brandRed/10 text-brandRed shadow-inner">
-                  <Store size={40} />
-                </div>
-
-                <div className="space-y-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-100 px-3.5 py-1 text-xs font-bold text-brandRed">
-                    <Sparkles size={13} /> Action Required
-                  </span>
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                    Welcome to SeroFast Seller Portal
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-normal max-w-md mx-auto leading-relaxed">
-                    You haven't set up your campus shop yet. Complete the quick 5-step setup to start stocking products, receiving campus orders, and unlocking your dashboard.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                      <Shield size={14} className="text-emerald-600" /> 0% Fee
-                    </div>
-                    <p className="text-[11px] text-slate-500">100% of order profits retained.</p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                      <Package size={14} className="text-brandRed" /> Warehouse
-                    </div>
-                    <p className="text-[11px] text-slate-500">Pick up to 20 stock products.</p>
-                  </div>
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5 space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                      <Zap size={14} className="text-amber-600" /> Auto Payout
-                    </div>
-                    <p className="text-[11px] text-slate-500">Instant UPI settlement.</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => navigate("/create-shop")}
-                  className="min-h-[56px] w-full flex items-center justify-center gap-2.5 rounded-2xl bg-brandRed px-6 text-sm font-bold text-white shadow-xl shadow-brandRed/25 hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer"
-                >
-                  <Store size={18} />
-                  <span>Create Your Shop Now</span>
-                  <ArrowRight size={18} />
-                </button>
-              </div>
-            </div>
-          )}
+          <Outlet />
         </main>
       </div>
 
