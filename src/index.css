@@ -11,11 +11,14 @@
   --color-brandRedDark: #b71c1c;
   --color-primaryLight: #e8494c;
 
-  /* Surfaces */
-  --color-lightBackground: #fefefe;
-  --color-lightSurface: #ffffff;
-  --color-lightBorder: #f3f4f6;
-  --color-promoHighlight: #fff1f1;
+  /* Surfaces & Backgrounds */
+  --color-lightBackground: #FAF8F5;
+  --color-lightSurface: #FFFFFF;
+  --color-lightSurfaceCard: #FFFFFF;
+  --color-neutralGray: #F7F8FA;
+  --color-neutralLight: #F3F4F6;
+  --color-lightBorder: #E5E7EB;
+  --color-promoHighlight: #FFF1F1;
 
   /* Text */
   --color-textPrimary: #000000;

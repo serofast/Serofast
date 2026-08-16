@@ -80,9 +80,9 @@ export default function ShopOwnerLayout() {
       {/* Top Nav — Clean: Brand + Notification + Profile */}
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
         {/* Left: Brand */}
-        <Link to="/shop-owner/dashboard" className="flex items-center gap-2.5 group">
-          <Logo size="xs" iconClassName="group-hover:scale-105" />
-          <span className="text-sm font-bold tracking-tight text-slate-900">SEROFAST <span className="text-xs text-slate-500 font-semibold ml-0.5">STORE</span></span>
+        <Link to="/shop-owner/dashboard" className="group inline-flex items-center gap-2 text-[19px] sm:text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02]">
+          <Logo size="sm" iconClassName="transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
+          <span className="tracking-tight">SEROFAST</span>
         </Link>
 
         {/* Right: Notification + Profile */}

@@ -48,9 +48,9 @@ export default function AdminLayout({ children }) {
           <Link
             to="/"
             onClick={close}
-            className="flex items-center gap-2 text-lg font-extrabold text-brandRed group"
+            className="flex items-center gap-2 text-[20px] font-extrabold text-brandRed group"
           >
-            <Logo size="xs" iconClassName="group-hover:scale-105" />
+            <Logo size="sm" iconClassName="group-hover:scale-105" />
             <span className="tracking-tight">SEROFAST</span>
           </Link>
 

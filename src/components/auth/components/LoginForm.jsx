@@ -1,68 +1,21 @@
 import { useState } from "react";
 import {
-  ArrowRight,
-  Eye,
-  EyeOff,
   Mail,
   LockKeyhole,
+  Eye,
+  EyeOff,
   CheckCircle2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginShopOwner } from "../../../lib/supabase";
 
-function Field({ label, icon: Icon, children, error }) {
-  return (
-    <label className="block font-sans">
-      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
-        {label}
-      </span>
-      <div
-        className={`relative flex min-h-[48px] items-center rounded-xl border bg-white px-3.5 transition-all duration-200 ${
-          error
-            ? "border-red-400 ring-2 ring-red-500/10"
-            : "border-slate-200 focus-within:border-brandRed focus-within:ring-2 focus-within:ring-brandRed/10"
-        }`}
-      >
-        <Icon size={18} className="mr-2.5 shrink-0 text-slate-400" />
-        {children}
-      </div>
-      {error ? (
-        <span className="mt-1 block text-xs text-red-500 font-medium">{error}</span>
-      ) : null}
-    </label>
-  );
-}
-
-function PasswordInput({ value, onChange, placeholder, name, error }) {
-  const [show, setShow] = useState(false);
-
-  return (
-    <Field label="Password" icon={LockKeyhole} error={error}>
-      <input
-        name={name}
-        type={show ? "text" : "password"}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
-        autoComplete="current-password"
-      />
-      <button
-        type="button"
-        onClick={() => setShow((current) => !current)}
-        className="ml-2 grid h-7 w-7 place-items-center rounded-full text-slate-400 hover:text-brandRed transition"
-        aria-label={show ? "Hide password" : "Show password"}
-      >
-        {show ? <EyeOff size={16} /> : <Eye size={16} />}
-      </button>
-    </Field>
-  );
-}
-
 export default function LoginForm() {
   const [submitted, setSubmitted] = useState(false);
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const navigate = useNavigate();
 
   const update = (key, value) =>
@@ -70,8 +23,13 @@ export default function LoginForm() {
 
   const validate = () => {
     const errs = {};
-    if (!values.email?.trim()) errs.email = "Email is required";
-    if (!values.password?.trim()) errs.password = "Password is required";
+    if (!values.email?.trim()) errs.email = "Please enter your email";
+    else if (!values.email.includes("@") || !values.email.includes(".")) {
+      errs.email = "Please enter a valid email";
+    }
+    if (!values.password || values.password.length < 6) {
+      errs.password = "Password must be at least 6 characters";
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -79,7 +37,10 @@ export default function LoginForm() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (validate()) {
-      const result = await loginShopOwner({ email: values.email, password: values.password });
+      const result = await loginShopOwner({
+        email: values.email,
+        password: values.password,
+      });
       setSubmitted(true);
       setTimeout(() => {
         if (result.shop) {
@@ -87,83 +48,144 @@ export default function LoginForm() {
         } else {
           navigate("/create-shop");
         }
-      }, 900);
+      }, 800);
     }
   };
 
   if (submitted) {
     return (
-      <div className="py-6 text-center animate-scale-up font-sans">
-        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-md shadow-emerald-500/20">
+      <div className="py-6 text-center animate-scale-up font-sans font-sansation">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-100 text-emerald-600 shadow-sm">
           <CheckCircle2 size={28} />
         </div>
-        <h2 className="mt-4 text-xl font-bold text-slate-900">
+        <h2 className="mt-4 text-xl font-bold text-slate-800">
           Welcome Back
         </h2>
-        <p className="mx-auto mt-1 max-w-xs text-xs text-slate-500 font-normal">
-          Loading your store workspace...
+        <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500 font-normal">
+          Logging into SeroFast...
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 font-sans">
-      <div>
-        <h2 className="text-xl font-extrabold tracking-tight text-slate-900">
-          Shop Owner Sign In
-        </h2>
-        <p className="mt-1 text-xs text-slate-500 font-normal">
-          Sign in to manage your campus shop catalog, orders &amp; payouts.
-        </p>
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-col font-sans font-sansation">
+      {/* Title */}
+      <h2 className="text-center text-[22px] font-semibold text-brandRed tracking-tight">
+        Login
+      </h2>
 
-      <Field label="Email Address" icon={Mail} error={errors.email}>
-        <input
-          value={values.email || ""}
-          onChange={(event) => update("email", event.target.value)}
-          type="email"
-          placeholder="yourname@gmail.com"
-          className="min-w-0 flex-1 border-0 bg-transparent text-xs sm:text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400"
-          autoComplete="email"
-        />
-      </Field>
+      <div className="h-[28px]" />
 
+      {/* 1. EMAIL TEXT FIELD */}
       <div>
-        <div className="mb-1 flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-            Password
-          </span>
-          <a href="#forgot" className="text-xs font-semibold text-brandRed hover:underline">
-            Forgot?
-          </a>
+        <div
+          className={`flex h-12 items-center rounded-[30px] bg-white px-4 transition-all duration-200 ${
+            emailFocused
+              ? "border-[1.5px] border-brandRed shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]"
+              : "border border-[#E5E7EB] shadow-[-4px_5px_8px_rgba(211,47,47,0.15),-7px_8px_15px_rgba(211,47,47,0.07)]"
+          }`}
+        >
+          <Mail size={20} className="mr-2.5 shrink-0 text-[#8FA0B8]" />
+          <input
+            value={values.email}
+            onChange={(e) => update("email", e.target.value)}
+            onFocus={() => setEmailFocused(true)}
+            onBlur={() => setEmailFocused(false)}
+            type="email"
+            placeholder="Email"
+            className="w-full border-0 bg-transparent text-[14px] font-normal text-slate-900 outline-none placeholder:text-[#8FA0B8] placeholder:text-[13px] placeholder:font-medium"
+            autoComplete="email"
+          />
         </div>
-        <PasswordInput
-          name="current-password"
-          value={values.password || ""}
-          onChange={(value) => update("password", value)}
-          placeholder="••••••••"
-          error={errors.password}
-        />
+        {errors.email && (
+          <span className="mt-1.5 ml-4 block text-xs text-red-500 font-normal">
+            {errors.email}
+          </span>
+        )}
       </div>
 
+      <div className="h-[20px]" />
+
+      {/* 2. PASSWORD TEXT FIELD */}
+      <div>
+        <div
+          className={`flex h-12 items-center rounded-[30px] bg-white px-4 transition-all duration-200 ${
+            passwordFocused
+              ? "border-[1.5px] border-brandRed shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]"
+              : "border border-[#E5E7EB] shadow-[-4px_5px_8px_rgba(211,47,47,0.15),-7px_8px_15px_rgba(211,47,47,0.07)]"
+          }`}
+        >
+          <LockKeyhole size={20} className="mr-2.5 shrink-0 text-[#8FA0B8]" />
+          <input
+            value={values.password}
+            onChange={(e) => update("password", e.target.value)}
+            onFocus={() => setPasswordFocused(true)}
+            onBlur={() => setPasswordFocused(false)}
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className="w-full border-0 bg-transparent text-[14px] font-normal text-slate-900 outline-none placeholder:text-[#8FA0B8] placeholder:text-[13px] placeholder:font-medium"
+            autoComplete="current-password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="ml-2 text-[#8FA0B8] hover:text-brandRed transition cursor-pointer"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
+        {errors.password && (
+          <span className="mt-1.5 ml-4 block text-xs text-red-500 font-normal">
+            {errors.password}
+          </span>
+        )}
+      </div>
+
+      <div className="h-[26px]" />
+
+      {/* 3. LOGIN BUTTON */}
       <button
         type="submit"
-        className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-xs font-bold text-white shadow-md shadow-brandRed/20 transition hover:bg-brandRedDark active:scale-95 cursor-pointer mt-2"
+        className="flex h-12 w-full items-center justify-center rounded-[30px] bg-brandRed text-[15px] font-semibold tracking-[0.2px] text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] transition-all duration-150 active:scale-[0.98] cursor-pointer hover:bg-brandRedDark"
       >
-        <span>Sign In</span>
-        <ArrowRight size={16} />
+        Login
       </button>
 
-      <p className="text-center text-xs text-slate-500 pt-2 font-normal">
-        New store owner?{" "}
+      <div className="h-[18px]" />
+
+      {/* 4. DIVIDER */}
+      <div className="flex items-center">
+        <div className="flex-1 border-t border-[#E5E7EB]" />
+        <span className="px-3 text-[11px] font-bold text-[#8FA0B8]">OR</span>
+        <div className="flex-1 border-t border-[#E5E7EB]" />
+      </div>
+
+      <div className="h-[18px]" />
+
+      {/* 5. GOOGLE SIGN IN BUTTON */}
+      <button
+        type="button"
+        onClick={() => alert("Google Sign-In integration ready")}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white text-[13px] font-semibold text-slate-800 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
+      >
+        <span className="text-xl font-bold text-brandRed leading-none">G</span>
+        <span>Continue with Google</span>
+      </button>
+
+      <div className="h-[24px]" />
+
+      {/* 6. REGISTER LINK */}
+      <div className="flex items-center justify-center text-[13px]">
+        <span className="text-slate-500 font-medium">Don't have an account?&nbsp;</span>
         <Link
           to="/signup"
-          className="font-bold text-brandRed hover:underline"
+          className="font-semibold text-brandRed hover:underline"
         >
-          Become a Shop Owner
+          Register
         </Link>
-      </p>
+      </div>
     </form>
   );
 }
