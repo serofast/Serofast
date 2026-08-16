@@ -15,7 +15,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
           Verified Shop Owner Platform
         </div>
 
-        <h1 className="animate-fade-in-up animation-delay-100 m-0 mb-3 text-[clamp(34px,4vw,50px)] font-extrabold leading-[1.08] tracking-tight text-textPrimary">
+        <h1 className="animate-fade-in-up animation-delay-100 m-0 mb-3 text-[clamp(30px,4vw,50px)] font-extrabold leading-[1.08] tracking-tight text-textPrimary">
           Empower Your Store.
           <br />
           <span className="text-brandRed">Become a Shop Owner</span>
@@ -45,7 +45,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
         <div className="animate-fade-in-up animation-delay-400 flex flex-wrap items-stretch gap-2.5 sm:gap-3">
           <Link
             to="/signup"
-            className="inline-flex h-12 min-w-[170px] items-center justify-center gap-2 rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition-all hover:bg-brandRedDark hover:shadow-lg active:scale-95 max-560:flex-1 max-560:min-w-0"
+            className="inline-flex h-12 min-w-[170px] items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-brandRed px-6 text-xs font-bold text-white shadow-md shadow-brandRed/20 transition-all hover:bg-brandRedDark hover:shadow-lg active:scale-95 max-560:w-full max-560:min-w-0"
           >
             <Store size={16} />
             <span>Become a Shop Owner</span>
@@ -54,7 +54,7 @@ export default function HeroBanner({ onOpenAppTeaser }) {
           
           <Link
             to="/login"
-            className="inline-flex h-12 min-w-[140px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 text-xs font-bold text-slate-800 shadow-2xs transition-all hover:border-brandRed hover:text-brandRed active:scale-95 max-560:flex-1 max-560:min-w-0"
+            className="inline-flex h-12 min-w-[140px] items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-5 text-xs font-bold text-slate-800 shadow-2xs transition-all hover:border-brandRed hover:text-brandRed active:scale-95 max-560:w-full max-560:min-w-0"
           >
             <span>Shop Owner Login</span>
           </Link>

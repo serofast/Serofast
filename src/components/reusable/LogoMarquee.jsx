@@ -20,7 +20,7 @@ export default function LogoMarquee() {
       <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-24 bg-gradient-to-r from-white via-white/80 to-transparent" />
       <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-24 bg-gradient-to-l from-white via-white/80 to-transparent" />
 
-      <div className="mb-6 flex items-center justify-center gap-2 text-center text-xs font-extrabold uppercase tracking-widest text-[#777]">
+      <div className="mb-6 flex items-center justify-center gap-2 text-center text-xs font-extrabold uppercase tracking-widest text-[#777] max-560:mb-4 max-560:text-[10px] max-560:tracking-wide">
         <Sparkles size={14} className="text-brandRed" />
         <span>Trusted by 500+ Verified Hyperlocal Partner Stores &amp; Campus Hubs</span>
       </div>

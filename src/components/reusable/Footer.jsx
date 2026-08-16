@@ -18,8 +18,8 @@ export default function Footer() {
     <footer className="w-full border-t border-[#eaeaea] bg-white text-textPrimary">
       {/* Top Banner inside footer highlighting core guarantees */}
       <div className="border-b border-[#f4f4f4] bg-[#fafafa]">
-        <div className="mx-auto grid w-[min(1280px,calc(100%_-_48px))] grid-cols-1 gap-4 py-6 sm:grid-cols-2 lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto grid w-[min(1280px,calc(100%_-_48px))] grid-cols-2 gap-4 py-6 lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-2.5">
+          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed">
               <Store size={20} />
             </div>
@@ -29,7 +29,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
               <GraduationCap size={20} />
             </div>
@@ -39,7 +39,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
               <Truck size={20} />
             </div>
@@ -49,7 +49,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
               <ShieldCheck size={20} />
             </div>
@@ -63,9 +63,9 @@ export default function Footer() {
 
       {/* Main Footer Links Columns */}
       <div className="mx-auto w-[min(1280px,calc(100%_-_48px))] py-12 lg:py-16 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 max-560:grid-cols-2 max-560:gap-x-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {/* Col 1: Brand Info */}
-          <div className="lg:col-span-2 space-y-4 pr-0 lg:pr-8">
+          <div className="max-560:col-span-2 lg:col-span-2 space-y-4 pr-0 lg:pr-8">
             <Link
               to="/"
               className="inline-flex items-center gap-2 text-[22px] font-extrabold tracking-tight text-brandRed"
@@ -171,7 +171,7 @@ export default function Footer() {
           </div>
 
           {/* Col 4: Customer & Guarantees */}
-          <div>
+          <div className="max-560:col-span-2">
             <h4 className="text-[14px] font-bold uppercase tracking-wider text-textPrimary">
               Customer Promises
             </h4>
