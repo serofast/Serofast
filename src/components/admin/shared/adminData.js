@@ -98,19 +98,27 @@ export const inventory = rowsToRecords(generic.inventory, [
 ]);
 export const coupons = rowsToRecords(generic.coupons, [
   'id', 'code', 'type', 'value', 'minOrder', 'usage', 'status',
-]);
+]).map((coupon) => ({ ...coupon, expires: '31 Aug 2026' }));
 export const campaigns = rowsToRecords(generic.campaigns, [
   'id', 'name', 'audience', 'budget', 'reach', 'status',
-]);
+]).map((campaign, index) => ({
+  ...campaign,
+  starts: index === 0 ? '16 Aug 2026' : '01 Sep 2026',
+  ends: index === 0 ? '31 Aug 2026' : '30 Sep 2026',
+}));
 export const banners = rowsToRecords(generic.banners, [
   'id', 'title', 'placement', 'status', 'priority',
-]);
+]).map((banner) => ({
+  ...banner,
+  start: '16 Aug 2026',
+  end: '31 Aug 2026',
+}));
 export const supportTickets = rowsToRecords(generic.support, [
   'id', 'subject', 'requester', 'type', 'priority', 'status',
-]);
+]).map((ticket) => ({ ...ticket, assigned: 'Rohan Support', updated: '16 Aug 2026' }));
 export const adminUsers = rowsToRecords(generic.admins, [
   'id', 'name', 'email', 'role', 'status',
-]);
+]).map((admin) => ({ ...admin, lastLogin: '16 Aug 2026, 09:30' }));
 export const auditLogs = rowsToRecords(generic.audit, [
   'id', 'actor', 'action', 'target', 'module', 'time',
 ]);
@@ -128,7 +136,7 @@ export const notificationTemplates = rowsToRecords(generic.notifications, [
 
 export const riskAlerts = rowsToRecords(generic.risk, [
   'id', 'type', 'entity', 'score', 'status',
-]);
+]).map((alert) => ({ ...alert, time: '16 Aug 2026, 08:45' }));
 
 export const shopApprovals = shops
   .filter((shop) => shop.status === 'Pending')

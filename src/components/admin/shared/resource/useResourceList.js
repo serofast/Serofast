@@ -1,20 +1,189 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
-export function useResourceList(seed = []) {
-  const [rows, setRows] = useState(seed);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+function compareValues(leftValue, rightValue) {
+  const left = leftValue ?? "";
+  const right = rightValue ?? "";
 
-  const statuses = useMemo(() => [...new Set(rows.map((row) => row.status).filter(Boolean))], [rows]);
-  const filteredRows = useMemo(() => rows.filter((row) => {
-    const matchesSearch = !search || JSON.stringify(row).toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = !status || row.status === status;
-    return matchesSearch && matchesStatus;
-  }), [rows, search, status]);
-
-  function updateRow(id, patch) {
-    setRows((current) => current.map((row) => row.id === id ? { ...row, ...patch } : row));
+  if (typeof left === "number" && typeof right === "number") {
+    return left - right;
   }
 
-  return { rows, filteredRows, search, setSearch, status, setStatus, statuses, updateRow };
+  return String(left).localeCompare(String(right), undefined, {
+    numeric: true,
+    sensitivity: "base",
+  });
+}
+
+export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
+  const [rows, setRows] = useState(() => [...seed]);
+  const [search, setSearchState] = useState("");
+  const [status, setStatusState] = useState("");
+  const [sortKey, setSortKey] = useState("");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setRows([...seed]);
+  }, [seed]);
+
+  const statuses = useMemo(
+    () => [...new Set(rows.map((row) => row.status).filter(Boolean))],
+    [rows],
+  );
+
+  const filteredRows = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+    const matchingRows = rows.filter((row) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        Object.values(row).some((value) =>
+          String(value ?? "").toLowerCase().includes(normalizedSearch),
+        );
+      const matchesStatus = !status || row.status === status;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    if (!sortKey) {
+      return matchingRows;
+    }
+
+    return [...matchingRows].sort((left, right) => {
+      const result = compareValues(left[sortKey], right[sortKey]);
+      return sortDirection === "asc" ? result : -result;
+    });
+  }, [rows, search, sortDirection, sortKey, status]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const visibleRows = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filteredRows.slice(start, start + pageSize);
+  }, [filteredRows, pageSize, safePage]);
+
+  useEffect(() => {
+    if (page > pageCount) {
+      setPage(pageCount);
+    }
+  }, [page, pageCount]);
+
+  function setSearch(value) {
+    setSearchState(value);
+    setPage(1);
+  }
+
+  function setStatus(value) {
+    setStatusState(value);
+    setPage(1);
+  }
+
+  function changeSort(key) {
+    if (sortKey === key) {
+      setSortDirection((current) => (current === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDirection("asc");
+    }
+    setPage(1);
+  }
+
+  function changePageSize(value) {
+    setPageSize(Number(value));
+    setPage(1);
+  }
+
+  function updateRow(id, patch) {
+    setRows((current) =>
+      current.map((row) => (row.id === id ? { ...row, ...patch } : row)),
+    );
+  }
+
+  function createRow(record) {
+    setRows((current) => [record, ...current]);
+    setPage(1);
+  }
+
+  function removeRows(ids) {
+    const idSet = new Set(ids);
+    setRows((current) => current.filter((row) => !idSet.has(row.id)));
+    setSelectedIds([]);
+  }
+
+  function updateRows(ids, patch) {
+    const idSet = new Set(ids);
+    setRows((current) =>
+      current.map((row) => (idSet.has(row.id) ? { ...row, ...patch } : row)),
+    );
+    setSelectedIds([]);
+  }
+
+  function toggleSelected(id) {
+    setSelectedIds((current) =>
+      current.includes(id)
+        ? current.filter((selectedId) => selectedId !== id)
+        : [...current, id],
+    );
+  }
+
+  function toggleVisibleRows() {
+    const visibleIds = visibleRows.map((row) => row.id);
+    const allSelected = visibleIds.every((id) => selectedIds.includes(id));
+
+    setSelectedIds((current) =>
+      allSelected
+        ? current.filter((id) => !visibleIds.includes(id))
+        : [...new Set([...current, ...visibleIds])],
+    );
+  }
+
+  function clearFilters() {
+    setSearchState("");
+    setStatusState("");
+    setSortKey("");
+    setSortDirection("asc");
+    setPage(1);
+  }
+
+  function retry() {
+    setError(null);
+    setLoading(true);
+    window.setTimeout(() => setLoading(false), 250);
+  }
+
+  return {
+    rows,
+    filteredRows,
+    visibleRows,
+    totalCount: filteredRows.length,
+    search,
+    setSearch,
+    status,
+    setStatus,
+    statuses,
+    sortKey,
+    sortDirection,
+    changeSort,
+    page: safePage,
+    setPage,
+    pageSize,
+    changePageSize,
+    pageCount,
+    selectedIds,
+    setSelectedIds,
+    toggleSelected,
+    toggleVisibleRows,
+    updateRow,
+    updateRows,
+    createRow,
+    removeRows,
+    clearFilters,
+    loading,
+    error,
+    retry,
+    setError,
+  };
 }

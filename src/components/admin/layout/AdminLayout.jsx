@@ -4,6 +4,7 @@ import { Menu, Search, Bell, LogOut, X, ChevronDown } from "lucide-react";
 import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
 import { Logo } from "../../reusable";
+import AdminBreadcrumbs from "./AdminBreadcrumbs";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -31,8 +32,20 @@ function SidebarItem({ item, close }) {
 
 export default function AdminLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState("");
   const navigate = useNavigate();
   const close = () => setMobileOpen(false);
+
+  function handleGlobalSearch(event) {
+    event.preventDefault();
+    const query = globalSearch.trim();
+
+    if (query) {
+      navigate(`/admin/analytics/search?q=${encodeURIComponent(query)}`);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-lightBackground text-textPrimary">
@@ -124,13 +137,19 @@ export default function AdminLayout({ children }) {
             </button>
 
             <div className="flex flex-1 items-center gap-3">
-              <label className="hidden h-10 w-full max-w-[380px] items-center gap-2 rounded-lg border border-lightBorder bg-white px-3 md:flex">
+              <form
+                onSubmit={handleGlobalSearch}
+                className="hidden h-10 w-full max-w-[380px] items-center gap-2 rounded-lg border border-lightBorder bg-white px-3 focus-within:border-brandRed md:flex"
+              >
                 <Search size={16} className="text-textMuted" />
                 <input
+                  aria-label="Search the marketplace"
+                  value={globalSearch}
+                  onChange={(event) => setGlobalSearch(event.target.value)}
                   className="w-full bg-transparent text-sm outline-none placeholder:text-textMuted"
                   placeholder="Search the marketplace..."
                 />
-              </label>
+              </form>
 
               <div className="hidden lg:block">
                 <p className="text-sm font-semibold">SeroFast Admin</p>
@@ -140,16 +159,38 @@ export default function AdminLayout({ children }) {
               </div>
             </div>
 
-            <button
-              type="button"
-              className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder"
-              aria-label="Notifications"
-            >
-              <Bell size={17} />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setNotificationsOpen((current) => !current)}
+                className="relative grid h-10 w-10 place-items-center rounded-lg border border-lightBorder"
+                aria-label="Notifications"
+                aria-expanded={notificationsOpen}
+              >
+                <Bell size={17} />
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brandRed" />
+              </button>
+              {notificationsOpen && (
+                <div className="absolute right-0 top-12 z-20 w-72 rounded-xl border border-lightBorder bg-white p-3 shadow-float">
+                  <p className="text-sm font-semibold">Admin notifications</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      navigate("/admin/notifications");
+                    }}
+                    className="mt-3 w-full rounded-lg bg-promoHighlight p-3 text-left text-sm text-textSecondary"
+                  >
+                    3 operational templates need review
+                  </button>
+                </div>
+              )}
+            </div>
 
             <button
               type="button"
+              onClick={() => setProfileOpen((current) => !current)}
+              aria-expanded={profileOpen}
               className="hidden items-center gap-2 rounded-xl border border-lightBorder px-3 py-2 sm:flex"
             >
               <span className="grid h-8 w-8 place-items-center rounded-full bg-brandRed text-xs font-bold text-white">
@@ -163,10 +204,32 @@ export default function AdminLayout({ children }) {
               </span>
               <ChevronDown size={14} className="text-textMuted" />
             </button>
+            {profileOpen && (
+              <div className="absolute right-4 top-16 z-20 w-52 rounded-xl border border-lightBorder bg-white p-2 shadow-float">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    navigate("/admin/settings");
+                  }}
+                  className="min-h-10 w-full rounded-lg px-3 text-left text-sm hover:bg-promoHighlight"
+                >
+                  Admin settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="min-h-10 w-full rounded-lg px-3 text-left text-sm text-brandRed hover:bg-promoHighlight"
+                >
+                  Exit Admin
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
         <main className="mx-auto min-h-[calc(100vh-68px)] max-w-[1600px] px-4 py-6 sm:px-6 xl:px-8 xl:py-8">
+          <AdminBreadcrumbs />
           {children}
         </main>
       </div>
