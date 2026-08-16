@@ -126,7 +126,7 @@ export default function RegisterForm() {
       await registerShopOwner(values);
       setSubmitted(true);
       setTimeout(() => {
-        navigate("/create-shop");
+        navigate("/shop-owner/dashboard");
       }, 900);
     }
   };

@@ -43,11 +43,7 @@ export default function LoginForm() {
       });
       setSubmitted(true);
       setTimeout(() => {
-        if (result.shop) {
-          navigate("/shop-owner/dashboard");
-        } else {
-          navigate("/create-shop");
-        }
+        navigate("/shop-owner/dashboard");
       }, 800);
     }
   };
