@@ -1,7 +1,110 @@
-import { useMemo, useState } from "react";
-import { PageHeader, FilterBar, Drawer } from "../ui";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import {
+  Card,
+  ConfirmDialog,
+  Drawer,
+  ErrorState,
+  FilterBar,
+  LoadingState,
+  PageHeader,
+  StatGrid,
+  StatusCard,
+  Toast,
+} from "../ui";
 import ResourceTable from "./ResourceTable";
 import { useResourceList } from "./useResourceList";
+
+function singularize(title) {
+  if (title.endsWith("ies")) {
+    return `${title.slice(0, -3)}y`;
+  }
+
+  return title.endsWith("s") ? title.slice(0, -1) : title;
+}
+
+function createStableId(title) {
+  const prefix = title.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase();
+  return `${prefix}-${Date.now().toString().slice(-6)}`;
+}
+
+const moneyValue = (value) => Number(String(value ?? "").replace(/[^0-9.]/g, "")) || 0;
+
+const defaultSummaryCards = {
+  Shops: [
+    { label: "Total Shops", predicate: () => true, tone: "blue", description: "All seller accounts" },
+    { label: "Active", status: "Active", tone: "green", description: "Currently selling" },
+    { label: "Pending Approval", status: "Pending", tone: "amber", description: "Documents need review" },
+    { label: "Suspended", status: "Suspended", tone: "rose", description: "Selling access restricted" },
+  ],
+  Customers: [
+    { label: "Total Customers", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "High Value", predicate: (row) => moneyValue(row.spent) >= 40000, tone: "purple", description: "Spend above ₹40,000" },
+    { label: "Blocked", status: "Blocked", tone: "rose", description: "Account access restricted" },
+  ],
+  Products: [
+    { label: "Total Products", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "Low Stock", status: "Low Stock", tone: "amber", description: "Replenishment needed" },
+    { label: "Out of Stock", status: "Out of Stock", tone: "rose", description: "Unavailable for sale" },
+  ],
+  Orders: [
+    { label: "All Orders", predicate: () => true, tone: "blue" },
+    { label: "Processing", status: "Processing", tone: "amber" },
+    { label: "Shipped", status: "Shipped", tone: "blue" },
+    { label: "Delivered", status: "Delivered", tone: "green" },
+    { label: "Returned", status: "Returned", tone: "rose" },
+  ],
+  Inventory: [
+    { label: "Tracked Items", predicate: () => true, tone: "blue" },
+    { label: "Low Stock", status: "Low Stock", tone: "amber" },
+    { label: "Out of Stock", status: "Out of Stock", tone: "rose" },
+    { label: "Fast Moving", predicate: (row) => row.velocity === "Fast", tone: "green" },
+    { label: "Slow Moving", predicate: (row) => row.velocity === "Slow", tone: "purple" },
+  ],
+  Returns: [
+    { label: "Requested", status: "Requested", tone: "amber" },
+    { label: "Approved", status: "Approved", tone: "green" },
+    { label: "Refund Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.refund), 0).toLocaleString("en-IN")}`, tone: "purple", description: "Across current requests" },
+  ],
+  Reviews: [
+    { label: "Total Reviews", predicate: () => true, tone: "blue" },
+    { label: "Published", status: "Published", tone: "green" },
+    { label: "Reported", status: "Reported", tone: "rose", description: "Moderation required" },
+    { label: "Average Rating", value: (rows) => rows.length ? (rows.reduce((sum, row) => sum + Number(row.rating || 0), 0) / rows.length).toFixed(1) : "0.0", tone: "amber" },
+  ],
+  Delivery: [
+    { label: "All Shipments", predicate: () => true, tone: "blue" },
+    { label: "Processing", status: "Processing", tone: "amber" },
+    { label: "Shipped", status: "Shipped", tone: "blue" },
+    { label: "Delayed", status: "Delayed", tone: "rose", description: "Needs intervention" },
+  ],
+  Transactions: [
+    { label: "All Transactions", predicate: () => true, tone: "blue" },
+    { label: "Completed", status: "Completed", tone: "green" },
+    { label: "Pending", status: "Pending", tone: "amber" },
+    { label: "Gross Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.amount), 0).toLocaleString("en-IN")}`, tone: "purple" },
+  ],
+  Refunds: [
+    { label: "All Refunds", predicate: () => true, tone: "blue" },
+    { label: "Pending", status: "Pending", tone: "amber" },
+    { label: "Processed", status: "Processed", tone: "green" },
+    { label: "Refund Value", value: (rows) => `₹${rows.reduce((sum, row) => sum + moneyValue(row.amount), 0).toLocaleString("en-IN")}`, tone: "purple" },
+  ],
+  Support: [
+    { label: "All Tickets", predicate: () => true, tone: "blue" },
+    { label: "Open", status: "Open", tone: "amber" },
+    { label: "In Progress", status: "In Progress", tone: "blue" },
+    { label: "High Priority", predicate: (row) => row.priority === "High", tone: "rose", description: "Needs prompt response" },
+  ],
+  "Admin Users": [
+    { label: "Total Admins", predicate: () => true, tone: "blue" },
+    { label: "Active", status: "Active", tone: "green" },
+    { label: "Inactive", status: "Inactive", tone: "rose" },
+    { label: "Recently Active", predicate: (row) => Boolean(row.lastLogin), tone: "purple" },
+  ],
+};
 
 export default function ResourcePage({
   title,
@@ -9,102 +112,358 @@ export default function ResourcePage({
   seed = [],
   columns = [],
   createLabel,
+  searchPlaceholder,
+  summaryCards = [],
 }) {
-  const [selected, setSelected] = useState(null);
-  const {
-    filteredRows,
-    search,
-    setSearch,
-    status,
-    setStatus,
-    statuses,
-    updateRow,
-  } = useResourceList(seed);
+  const [drawerState, setDrawerState] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [toast, setToast] = useState("");
+  const resource = useResourceList(seed);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const entityName = singularize(title);
+  const operationalCards = summaryCards.length > 0
+    ? summaryCards
+    : (defaultSummaryCards[title] ?? []);
 
-  function handleToggle(row) {
+  useEffect(() => {
+    const requestedStatus = searchParams.get("status") ?? "";
+    if (requestedStatus !== resource.status) {
+      resource.setStatus(requestedStatus);
+    }
+    // Apply direct dashboard links when the URL changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!toast) {
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => setToast(""), 3000);
+    return () => window.clearTimeout(timeout);
+  }, [toast]);
+
+  const selectedRecord = useMemo(
+    () =>
+      drawerState?.id
+        ? resource.rows.find((row) => row.id === drawerState.id)
+        : null,
+    [drawerState, resource.rows],
+  );
+
+  function requestStatusToggle(row) {
     const nextStatus = row.status === "Active" ? "Suspended" : "Active";
-    updateRow(row.id, { status: nextStatus });
+    setPendingAction({
+      type: "status",
+      ids: [row.id],
+      nextStatus,
+      title: `${nextStatus === "Active" ? "Activate" : "Suspend"} ${entityName}`,
+      description: `${row.id} will be marked ${nextStatus.toLowerCase()}. This frontend state can be changed again later.`,
+    });
+  }
+
+  function requestBulkStatus(nextStatus) {
+    setPendingAction({
+      type: "status",
+      ids: resource.selectedIds,
+      nextStatus,
+      title: `${nextStatus} selected ${title.toLowerCase()}`,
+      description: `${resource.selectedIds.length} selected record(s) will be updated.`,
+    });
+  }
+
+  function requestBulkDelete() {
+    setPendingAction({
+      type: "delete",
+      ids: resource.selectedIds,
+      title: `Remove selected ${title.toLowerCase()}`,
+      description:
+        "The selected records will be removed from this frontend session. A production backend must enforce and audit this action.",
+    });
+  }
+
+  function confirmAction() {
+    if (pendingAction.type === "delete") {
+      resource.removeRows(pendingAction.ids);
+      setToast(`${pendingAction.ids.length} ${title.toLowerCase()} removed.`);
+    } else {
+      resource.updateRows(pendingAction.ids, {
+        status: pendingAction.nextStatus,
+      });
+      setToast(
+        `${pendingAction.ids.length} record(s) marked ${pendingAction.nextStatus.toLowerCase()}.`,
+      );
+    }
+
+    setPendingAction(null);
+  }
+
+  function saveRecord(values) {
+    if (drawerState?.mode === "create") {
+      const record = {
+        id: createStableId(title),
+        ...values,
+      };
+      resource.createRow(record);
+      setToast(`${entityName} created in local Admin state.`);
+    } else {
+      resource.updateRow(drawerState.id, values);
+      setToast(`${entityName} updated.`);
+    }
+
+    setDrawerState(null);
+  }
+
+  function selectSummary(card) {
+    if (card.status) {
+      resource.setStatus(card.status);
+      setSearchParams({ status: card.status }, { replace: true });
+      return;
+    }
+    if (card.predicate) {
+      resource.setQuickFilter(card.predicate);
+      setSearchParams({}, { replace: true });
+    }
+  }
+
+  function changeStatus(value) {
+    resource.setStatus(value);
+    setSearchParams(value ? { status: value } : {}, { replace: true });
+  }
+
+  function summaryValue(card) {
+    if (typeof card.value === "function") return card.value(resource.rows);
+    if (card.value !== undefined) return card.value;
+    if (card.predicate) return resource.rows.filter(card.predicate).length;
+    if (card.status) return resource.rows.filter((row) => row.status === card.status).length;
+    return resource.rows.length;
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       <PageHeader
         title={title}
-        desc={description}
+        description={description}
         action={createLabel}
-        onAction={() => setSelected({ mode: "create" })}
+        onAction={() => setDrawerState({ mode: "create" })}
       />
+
+      {operationalCards.length > 0 && (
+        <StatGrid className="mb-5">
+          {operationalCards.map((card) => (
+            <StatusCard
+              key={card.label}
+              label={card.label}
+              value={summaryValue(card)}
+              description={card.description}
+              tone={card.tone}
+              onClick={card.status || card.predicate ? () => selectSummary(card) : undefined}
+            />
+          ))}
+        </StatGrid>
+      )}
 
       <FilterBar
-        value={search}
-        setValue={setSearch}
-        status={status}
-        setStatus={setStatus}
-        options={statuses}
-        onClear={() => {
-          setSearch("");
-          setStatus("");
-        }}
+        value={resource.search}
+        setValue={resource.setSearch}
+        status={resource.status}
+        setStatus={changeStatus}
+        options={resource.statuses}
+        onClear={resource.clearFilters}
+        placeholder={searchPlaceholder}
       />
 
-      <ResourceTable
-        columns={columns}
-        rows={filteredRows}
-        onView={setSelected}
-        onToggle={handleToggle}
-      />
+      {resource.selectedIds.length > 0 && (
+        <Card className="mb-4 flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-semibold">
+            {resource.selectedIds.length} selected
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => requestBulkStatus("Active")}
+              className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold hover:border-emerald-500 hover:text-emerald-700"
+            >
+              Activate
+            </button>
+            <button
+              type="button"
+              onClick={() => requestBulkStatus("Suspended")}
+              className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold hover:border-brandRed hover:text-brandRed"
+            >
+              Suspend
+            </button>
+            <button
+              type="button"
+              onClick={requestBulkDelete}
+              className="min-h-10 rounded-lg bg-brandRed px-3 text-xs font-semibold text-white hover:bg-brandRedDark"
+            >
+              Remove
+            </button>
+            <button
+              type="button"
+              onClick={() => resource.setSelectedIds([])}
+              className="min-h-10 px-3 text-xs font-semibold text-textSecondary"
+            >
+              Clear selection
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {resource.loading ? (
+        <Card>
+          <LoadingState />
+        </Card>
+      ) : resource.error ? (
+        <Card>
+          <ErrorState message={resource.error} onRetry={resource.retry} />
+        </Card>
+      ) : (
+        <ResourceTable
+          columns={columns}
+          rows={resource.visibleRows}
+          onView={(row) => setDrawerState({ mode: "edit", id: row.id })}
+          onToggle={requestStatusToggle}
+          sortKey={resource.sortKey}
+          sortDirection={resource.sortDirection}
+          onSort={resource.changeSort}
+          selectedIds={resource.selectedIds}
+          onToggleSelected={resource.toggleSelected}
+          onToggleAll={resource.toggleVisibleRows}
+          page={resource.page}
+          pageCount={resource.pageCount}
+          pageSize={resource.pageSize}
+          totalCount={resource.totalCount}
+          onPageChange={resource.setPage}
+          onPageSizeChange={resource.changePageSize}
+          onClearFilters={resource.clearFilters}
+        />
+      )}
 
       <Drawer
-        open={Boolean(selected)}
-        onClose={() => setSelected(null)}
-        title={selected?.mode === "create" ? `Create ${title.slice(0, -1)}` : `Manage ${title.slice(0, -1)}`}
+        open={Boolean(drawerState)}
+        onClose={() => setDrawerState(null)}
+        title={drawerState?.mode === "create" ? `Create ${entityName}` : `Manage ${entityName}`}
       >
-        {selected?.mode === "create" ? (
-          <ResourceCreateForm title={title} />
-        ) : (
-          <ResourceDetails record={selected} />
-        )}
+        <ResourceForm
+          columns={columns}
+          record={selectedRecord}
+          mode={drawerState?.mode}
+          onCancel={() => setDrawerState(null)}
+          onSave={saveRecord}
+        />
       </Drawer>
+
+      <ConfirmDialog
+        open={Boolean(pendingAction)}
+        title={pendingAction?.title}
+        description={pendingAction?.description}
+        confirmLabel={pendingAction?.type === "delete" ? "Remove" : "Confirm change"}
+        tone={pendingAction?.nextStatus === "Active" ? "success" : "danger"}
+        onConfirm={confirmAction}
+        onClose={() => setPendingAction(null)}
+      />
+
+      <Toast message={toast} onClose={() => setToast("")} />
     </div>
   );
 }
 
-function ResourceCreateForm({ title }) {
+function ResourceForm({ columns, record, mode, onCancel, onSave }) {
+  const editableColumns = columns.filter(
+    (column) => !["id", "created", "joined", "updated", "date"].includes(column.key),
+  );
+  const [values, setValues] = useState(() => ({ ...record }));
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    setValues({ ...record });
+    setErrors({});
+  }, [record, mode]);
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const nextErrors = {};
+
+    editableColumns.slice(0, 6).forEach((column) => {
+      if (!String(values[column.key] ?? "").trim()) {
+        nextErrors[column.key] = `${column.label} is required.`;
+      }
+    });
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    onSave(values);
+  }
+
+  if (editableColumns.length === 0) {
+    return (
+      <p className="text-sm text-textSecondary">
+        This record has no editable fields in the current frontend schema.
+      </p>
+    );
+  }
+
   return (
-    <div className="space-y-5">
-      <p className="text-sm leading-6 text-textSecondary">
-        This form is the Phase 4 frontend boundary. Connect its submit action
-        to the domain service when the backend is implemented.
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <p className="rounded-xl bg-promoHighlight p-3 text-sm text-textSecondary">
+        Changes are stored in local Phase 4 state. Backend persistence and audit
+        logging will be connected in a later phase.
       </p>
 
-      {['Name', 'Category', 'Status'].map((field) => (
-        <label key={field} className="block">
-          <span className="mb-1.5 block text-sm font-semibold">{field}</span>
+      <div className="grid gap-4 sm:grid-cols-2">
+      {editableColumns.slice(0, 6).map((column) => (
+        <label
+          key={column.key}
+          className={`block ${/(description|reason|review|address|subject)/i.test(column.key) ? "sm:col-span-2" : ""}`}
+        >
+          <span className="mb-1.5 block text-sm font-semibold">
+            {column.label}
+          </span>
           <input
+            value={values[column.key] ?? ""}
+            onChange={(event) => {
+              setValues((current) => ({
+                ...current,
+                [column.key]: event.target.value,
+              }));
+              setErrors((current) => ({ ...current, [column.key]: "" }));
+            }}
+            aria-invalid={Boolean(errors[column.key])}
+            aria-describedby={`${column.key}-error`}
             className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
-            placeholder={`Enter ${field.toLowerCase()}`}
           />
+          {errors[column.key] && (
+            <span
+              id={`${column.key}-error`}
+              className="mt-1 block text-xs font-semibold text-brandRed"
+            >
+              {errors[column.key]}
+            </span>
+          )}
         </label>
       ))}
+      </div>
 
-      <button className="min-h-11 w-full rounded-lg bg-brandRed text-sm font-semibold text-white">
-        Save {title.slice(0, -1)}
-      </button>
-    </div>
-  );
-}
-
-function ResourceDetails({ record }) {
-  return (
-    <div className="space-y-4">
-      {Object.entries(record || {})
-        .filter(([key]) => key !== "mode")
-        .map(([key, value]) => (
-          <div key={key} className="flex items-start justify-between gap-5 border-b border-lightBorder pb-3 text-sm">
-            <span className="capitalize text-textMuted">{key.replace(/([A-Z])/g, " $1")}</span>
-            <span className="max-w-[58%] text-right font-semibold">{String(value)}</span>
-          </div>
-        ))}
-    </div>
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="min-h-11 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+        >
+          {mode === "create" ? "Create record" : "Save changes"}
+        </button>
+      </div>
+    </form>
   );
 }

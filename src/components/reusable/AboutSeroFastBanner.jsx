@@ -206,47 +206,47 @@ export default function AboutSeroFastBanner() {
 
         {/* Edge-to-edge Metrics / Trust Highlights Strip */}
         <ScrollReveal variant="scale-up" delay={200} className="mt-8 sm:mt-12">
-          <div className="grid grid-cols-2 gap-3 rounded-[20px] border border-[#f0e2e2] bg-white/90 p-4 shadow-sm backdrop-blur-md sm:grid-cols-4 sm:gap-4 sm:p-5 max-560:gap-2">
-            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed sm:h-11 sm:w-11">
+          <div className="grid grid-cols-2 gap-3 rounded-[20px] border border-[#f0e2e2] bg-white/90 p-4 shadow-sm backdrop-blur-md sm:grid-cols-2 sm:gap-4 sm:p-5 lg:grid-cols-4 max-560:gap-2">
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0 max-560:gap-2">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed sm:h-11 sm:w-11 max-560:h-8 max-560:w-8">
                 <Coins size={20} className="sm:hidden" />
                 <Coins size={22} className="hidden sm:block" />
               </div>
-              <div>
-                <strong className="block text-[17px] font-extrabold text-textPrimary">₹50 Only</strong>
+              <div className="min-w-0">
+                <strong className="block text-[17px] font-extrabold text-textPrimary max-560:text-[15px] max-380:text-[13px]">₹50 Only</strong>
                 <span className="text-[11px] text-textSecondary">To launch local digital shop</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:h-11 sm:w-11">
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0 max-560:gap-2">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 sm:h-11 sm:w-11 max-560:h-8 max-560:w-8">
                 <Award size={20} className="sm:hidden" />
                 <Award size={22} className="hidden sm:block" />
               </div>
               <div className="min-w-0">
-                <strong className="block text-[17px] font-extrabold text-textPrimary">Certificates</strong>
+                <strong className="block text-[17px] font-extrabold text-textPrimary max-560:text-[15px] max-380:text-[13px]">Certificates</strong>
                 <span className="text-[11px] text-textSecondary">&amp; awards for students</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-11 sm:w-11">
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0 max-560:gap-2">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600 sm:h-11 sm:w-11 max-560:h-8 max-560:w-8">
                 <Zap size={20} className="sm:hidden" />
                 <Zap size={22} className="hidden sm:block" />
               </div>
               <div className="min-w-0">
-                <strong className="block text-[17px] font-extrabold text-textPrimary">In Hours</strong>
+                <strong className="block text-[17px] font-extrabold text-textPrimary max-560:text-[15px] max-380:text-[13px]">In Hours</strong>
                 <span className="text-[11px] text-textSecondary">Fast local doorstep delivery</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11">
+            <div className="flex items-center gap-2.5 p-1.5 sm:gap-3.5 sm:p-2 min-w-0 max-560:gap-2">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600 sm:h-11 sm:w-11 max-560:h-8 max-560:w-8">
                 <Truck size={20} className="sm:hidden" />
                 <Truck size={22} className="hidden sm:block" />
               </div>
               <div className="min-w-0">
-                <strong className="block text-[17px] font-extrabold text-textPrimary">₹0 Shipping</strong>
+                <strong className="block text-[17px] font-extrabold text-textPrimary max-560:text-[15px] max-380:text-[13px]">₹0 Shipping</strong>
                 <span className="text-[11px] text-textSecondary">No delivery charges</span>
               </div>
             </div>
