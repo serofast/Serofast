@@ -59,7 +59,7 @@ export default function ShopApprovalPage() {
         description="Review seller applications, documents, verification, and business information."
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
         {stats.map(([label, value]) => (
           <Kpi key={label} label={label} value={value} change="Current queue" />
         ))}

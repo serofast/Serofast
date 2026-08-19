@@ -53,7 +53,7 @@ export default function RolesPage() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <Card className="p-3">
+        <Card className="min-w-0 overflow-hidden p-3">
           <div className="flex gap-2 overflow-x-auto lg:block lg:space-y-1">
             {roles.map((role) => (
               <button

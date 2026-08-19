@@ -33,7 +33,7 @@ export default function RiskDashboardPage() {
         description="Review frontend risk signals. Actual detection and enforcement belong to backend security services."
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-5">
         {[
           ["Open Alerts", rows.filter((row) => row.status === "Open").length],
           ["High Risk", rows.filter((row) => row.score === "High").length],
