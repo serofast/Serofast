@@ -231,8 +231,8 @@ export default function CategoriesPage() {
         </Card>
 
         <Card className="h-fit p-5">
-          <h2 className="text-lg font-semibold">Add category</h2>
-          <p className="mt-1 text-sm text-textSecondary">
+          <h2 className="text-base font-normal text-slate-800">Add category</h2>
+          <p className="mt-1 text-xs text-slate-500 font-normal">
             New categories begin as Draft until activated.
           </p>
           <form onSubmit={addCategory} noValidate>
@@ -246,7 +246,7 @@ export default function CategoriesPage() {
                 }}
                 aria-invalid={Boolean(nameError)}
                 placeholder="Category name"
-                className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed"
+                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] px-4 text-xs outline-none focus:border-brandRed"
               />
               {nameError && (
                 <span className="mt-1 block text-xs font-semibold text-brandRed">
@@ -256,7 +256,7 @@ export default function CategoriesPage() {
             </label>
             <button
               type="submit"
-              className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-brandRed text-sm font-semibold text-white"
+              className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[30px] bg-brandRed text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
             >
               <Plus size={16} /> Add Category
             </button>
@@ -268,23 +268,23 @@ export default function CategoriesPage() {
         {editing && (
           <form onSubmit={saveCategory} className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold">Category name</span>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Category name</span>
               <input
                 value={editing.name}
                 onChange={(event) =>
                   setEditing((current) => ({ ...current, name: event.target.value }))
                 }
-                className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm"
+                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] px-4 text-xs outline-none focus:border-brandRed"
               />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold">Parent category</span>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Parent category</span>
               <select
                 value={editing.parent}
                 onChange={(event) =>
                   setEditing((current) => ({ ...current, parent: event.target.value }))
                 }
-                className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm"
+                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
               >
                 <option>—</option>
                 {rows
@@ -292,17 +292,17 @@ export default function CategoriesPage() {
                   .map((row) => <option key={row.id}>{row.name}</option>)}
               </select>
             </label>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setEditing(null)}
-                className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+                className="h-10 rounded-[30px] border border-[#E5E7EB] px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="min-h-11 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white"
+                className="h-10 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
               >
                 Save Category
               </button>

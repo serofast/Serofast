@@ -116,11 +116,11 @@ export default function BannerFormPage() {
               onChange={(value) => updateField("title", value)}
             />
             <label className="block">
-              <span className="mb-1.5 block text-sm font-semibold">Placement</span>
+              <span className="mb-1.5 block text-xs font-semibold text-slate-700">Placement</span>
               <select
                 value={form.placement}
                 onChange={(event) => updateField("placement", event.target.value)}
-                className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm"
+                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
               >
                 {["Hero", "Promotion", "Category", "Homepage"].map((placement) => (
                   <option key={placement}>{placement}</option>
@@ -167,13 +167,13 @@ export default function BannerFormPage() {
           </div>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold">Banner Image</span>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-700">Banner Image</span>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onChange={handleImageChange}
               aria-invalid={Boolean(errors.image)}
-              className="block min-h-12 w-full rounded-lg border border-dashed border-lightBorder p-3 text-sm"
+              className="block min-h-12 w-full rounded-[24px] border border-dashed border-[#E5E7EB] bg-[#FAF8F5] p-3 text-xs"
             />
             {errors.image && (
               <span className="mt-1 block text-xs font-semibold text-brandRed">
@@ -184,21 +184,21 @@ export default function BannerFormPage() {
 
           {previewUrl && (
             <div>
-              <p className="mb-2 text-sm font-semibold">Image preview</p>
+              <p className="mb-2 text-xs font-semibold text-slate-700">Image preview</p>
               <img
                 src={previewUrl}
                 alt="Selected banner preview"
-                className="aspect-[16/6] w-full rounded-xl border border-lightBorder object-cover"
+                className="aspect-[16/6] w-full rounded-[24px] border border-[#E5E7EB] object-cover"
               />
             </div>
           )}
 
           <label className="block max-w-xs">
-            <span className="mb-1.5 block text-sm font-semibold">Status</span>
+            <span className="mb-1.5 block text-xs font-semibold text-slate-700">Status</span>
             <select
               value={form.status}
               onChange={(event) => updateField("status", event.target.value)}
-              className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm"
+              className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
             >
               {["Draft", "Scheduled", "Active", "Disabled"].map((status) => (
                 <option key={status}>{status}</option>
@@ -210,13 +210,13 @@ export default function BannerFormPage() {
             <button
               type="button"
               onClick={() => navigate("/admin/marketing/banners")}
-              className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+              className="h-10 rounded-[30px] border border-[#E5E7EB] px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="min-h-11 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+              className="h-10 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
             >
               Save Banner
             </button>
@@ -234,13 +234,13 @@ function InputField({ label, error, onChange, type = "text", ...props }) {
 
   return (
     <label htmlFor={id} className="block">
-      <span className="mb-1.5 block text-sm font-semibold">{label}</span>
+      <span className="mb-1.5 block text-xs font-semibold text-slate-700">{label}</span>
       <input
         id={id}
         type={type}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
-        className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
+        className="h-11 w-full rounded-[30px] border border-[#E5E7EB] px-4 text-xs outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
         {...props}
       />
       {error && (

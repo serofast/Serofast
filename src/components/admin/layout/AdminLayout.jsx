@@ -5,6 +5,7 @@ import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
 import { Logo } from "../../reusable";
 import AdminBreadcrumbs from "./AdminBreadcrumbs";
+import AdminBottomNav from "./AdminBottomNav";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -245,6 +246,8 @@ export default function AdminLayout({ children }) {
           {children}
         </main>
       </div>
+
+      <AdminBottomNav />
     </div>
   );
 }
