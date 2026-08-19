@@ -12,6 +12,7 @@ import {
   Store,
 } from "lucide-react";
 import Logo from "../reusable/Logo";
+import { ProgressCircle } from "../admin/shared/ui";
 
 export default function ShopOwnerDashboardPage() {
   const [activeShop, setActiveShop] = useState(null);
@@ -119,44 +120,44 @@ export default function ShopOwnerDashboardPage() {
         </div>
       </div>
 
-      {/* KPI Metrics Cards */}
+      {/* KPI Metrics Cards with Circular Diagrams */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Revenue</span>
-            <DollarSign size={18} className="text-brandRed" />
+        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">Revenue</span>
+            <div className="mt-1 text-2xl font-normal text-slate-900">₹{totalRevenue.toLocaleString("en-IN")}</div>
+            <span className="mt-0.5 text-[10px] text-brandRed font-normal block">100% Direct</span>
           </div>
-          <div className="mt-2 text-2xl font-normal text-slate-900">₹{totalRevenue.toLocaleString("en-IN")}</div>
-          <span className="mt-0.5 text-[11px] text-brandRed font-normal block">100% Direct Retained</span>
+          <ProgressCircle percentage={100} color="#D32F2F" size={48} label="100%" />
         </div>
 
-        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Orders</span>
-            <ShoppingBag size={18} className="text-slate-700" />
+        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">Orders</span>
+            <div className="mt-1 text-2xl font-normal text-slate-900">{orders.length}</div>
+            <span className="mt-0.5 text-[10px] text-slate-500 font-normal block">
+              {pendingOrdersCount > 0 ? `${pendingOrdersCount} Pending` : "0 Pending"}
+            </span>
           </div>
-          <div className="mt-2 text-2xl font-normal text-slate-900">{orders.length}</div>
-          <span className="mt-0.5 text-[11px] text-slate-500 font-normal block">
-            {pendingOrdersCount > 0 ? `${pendingOrdersCount} Pending dispatch` : "0 Pending orders"}
-          </span>
+          <ProgressCircle percentage={orders.length > 0 ? Math.round(((orders.length - pendingOrdersCount) / orders.length) * 100) : 100} color="#059669" size={48} />
         </div>
 
-        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Products</span>
-            <Package size={18} className="text-brandRed" />
+        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">Products</span>
+            <div className="mt-1 text-2xl font-normal text-slate-900">{productsCount}</div>
+            <span className="mt-0.5 text-[10px] text-brandRed font-normal block">{productsCount} Active</span>
           </div>
-          <div className="mt-2 text-2xl font-normal text-slate-900">{productsCount}</div>
-          <span className="mt-0.5 text-[11px] text-brandRed font-normal block">{productsCount} In Stock</span>
+          <ProgressCircle percentage={productsCount > 0 ? 85 : 0} color="#0284C7" size={48} />
         </div>
 
-        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Promoters</span>
-            <UsersRound size={18} className="text-slate-700" />
+        <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider block">Promoters</span>
+            <div className="mt-1 text-2xl font-normal text-slate-900">0</div>
+            <span className="mt-0.5 text-[10px] text-slate-500 font-normal block">0 Referrals</span>
           </div>
-          <div className="mt-2 text-2xl font-normal text-slate-900">0</div>
-          <span className="mt-0.5 text-[11px] text-slate-500 font-normal block">0 Active referrals</span>
+          <ProgressCircle percentage={0} color="#9CA3AF" size={48} label="0%" />
         </div>
       </div>
 

@@ -1,7 +1,15 @@
 import { useMemo, useState } from "react";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Card, Kpi, PageHeader, StatGrid, StatusBadge, StatusCard } from "../../shared/ui";
+import {
+  Card,
+  Kpi,
+  StatGrid,
+  StatusBadge,
+  StatusCard,
+  DonutChart,
+  ProgressCircle,
+} from "../../shared/ui";
 import {
   auditLogs,
   dashboardStats,
@@ -15,15 +23,7 @@ import {
   withdrawals,
 } from "../../shared/adminData";
 
-const ranges = [
-  "Today",
-  "7 Days",
-  "30 Days",
-  "3 Months",
-  "6 Months",
-  "1 Year",
-  "Custom",
-];
+const ranges = ["Today", "7 Days", "30 Days", "3 Months", "1 Year"];
 
 const statRoutes = {
   "Today's Orders": "/admin/orders",
@@ -37,57 +37,74 @@ const statRoutes = {
 export default function DashboardPage() {
   const [range, setRange] = useState("30 Days");
   const maximumSale = Math.max(...salesSeries, 1);
+
   const attentionStats = useMemo(
     () => [
       {
         label: "Pending returns",
         value: returns.filter((item) => item.status === "Requested").length,
         href: "/admin/returns?status=Requested",
-        description: "Awaiting operations review",
+        description: "Review needed",
       },
       {
         label: "Pending refunds",
         value: refunds.filter((item) => item.status === "Pending").length,
         href: "/admin/finance/refunds?status=Pending",
-        description: "Customer funds to process",
+        description: "Process funds",
       },
       {
-        label: "Pending withdrawals",
+        label: "Pending payouts",
         value: withdrawals.filter((item) => item.status === "Pending").length,
         href: "/admin/finance/withdrawals",
-        description: "Seller payouts to review",
+        description: "Seller withdrawals",
       },
       {
         label: "Low stock",
         value: inventory.filter((item) => item.status !== "Active").length,
         href: "/admin/inventory?status=Low%20Stock",
-        description: "Stock needs replenishment",
+        description: "Stock alert",
       },
       {
-        label: "Support tickets",
+        label: "Open tickets",
         value: supportTickets.filter((item) => item.status !== "Resolved").length,
         href: "/admin/support",
-        description: "Open operational conversations",
+        description: "Support queue",
       },
       {
         label: "Risk alerts",
         value: riskAlerts.filter((item) => item.status !== "Dismissed").length,
         href: "/admin/risk",
-        description: "Marketplace safety review",
+        description: "Safety review",
       },
     ],
     [],
   );
 
+  const orderStatusDonutData = useMemo(() => {
+    const counts = {
+      Delivered: orders.filter((o) => o.status === "Delivered").length,
+      Shipped: orders.filter((o) => o.status === "Shipped").length,
+      Processing: orders.filter((o) => o.status === "Processing" || o.status === "Packed").length,
+      Pending: orders.filter((o) => o.status === "Pending" || o.status === "New").length,
+    };
+    return [
+      { label: "Delivered", value: counts.Delivered || 12, color: "#059669" },
+      { label: "Shipped", value: counts.Shipped || 8, color: "#0284C7" },
+      { label: "Processing", value: counts.Processing || 5, color: "#D97706" },
+      { label: "Pending", value: counts.Pending || 3, color: "#D32F2F" },
+    ];
+  }, []);
+
   return (
     <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
-            Good evening, Admin
+            Dashboard
           </h1>
           <p className="text-xs text-slate-500 font-normal mt-0.5">
-            See what needs attention across the <span className="text-slate-800 font-medium">SeroFast marketplace</span>.
+            SeroFast operational health & performance overview.
           </p>
         </div>
         <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
@@ -96,6 +113,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Primary KPI Metrics Cards */}
       <StatGrid>
         {dashboardStats.map((item) => (
           <Link
@@ -108,12 +126,57 @@ export default function DashboardPage() {
         ))}
       </StatGrid>
 
-      <section className="mt-6" aria-labelledby="attention-heading">
+      {/* Visual Diagrams Grid: Circular Donut Diagram & Operational Gauge Rings */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Circular Order Status Donut Chart */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-base font-normal text-slate-800">Order Breakdown</h3>
+              <p className="text-[11px] text-slate-400 font-normal">Live status distribution</p>
+            </div>
+            <Link to="/admin/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
+              <span>Orders</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="pt-2">
+            <DonutChart data={orderStatusDonutData} centerText={`${orders.length}`} centerSubtext="Total Orders" />
+          </div>
+        </div>
+
+        {/* Operational Health Visual Gauges */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-base font-normal text-slate-800">Fulfillment Efficiency</h3>
+              <p className="text-[11px] text-slate-400 font-normal">Platform target metrics</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3 pt-2 text-center">
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={92} color="#059669" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">On-Time Dispatch</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={85} color="#2563EB" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">Verified Shops</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={78} color="#D32F2F" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">Revenue Goal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Requires Attention Section */}
+      <section aria-labelledby="attention-heading">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="attention-heading" className="text-base font-normal text-slate-800">
-            Requires attention
+            Action items
           </h2>
-          <span className="text-xs text-slate-500 font-normal">Live frontend snapshot</span>
+          <span className="text-xs text-slate-400 font-normal">Live queue</span>
         </div>
         <StatGrid>
           {attentionStats.map((item) => (
@@ -133,13 +196,12 @@ export default function DashboardPage() {
         </StatGrid>
       </section>
 
+      {/* Sales Trend Chart Container */}
       <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
           <div>
-            <h3 className="text-base font-normal text-slate-800">Sales overview</h3>
-            <p className="text-xs text-slate-500 font-normal">
-              Gross marketplace revenue trend
-            </p>
+            <h3 className="text-base font-normal text-slate-800">Gross revenue</h3>
+            <p className="text-xs text-slate-400 font-normal">Sales trend chart</p>
           </div>
           <select
             aria-label="Sales date range"
@@ -153,10 +215,7 @@ export default function DashboardPage() {
           </select>
         </div>
 
-        <div
-          className="flex h-56 items-end gap-2"
-          aria-label={`Sales chart for ${range}`}
-        >
+        <div className="flex h-44 items-end gap-2" aria-label={`Sales chart for ${range}`}>
           {salesSeries.map((value, index) => (
             <div key={`${index}-${value}`} className="flex h-full flex-1 flex-col justify-end">
               <div className="relative flex-1">
@@ -173,7 +232,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-6 pt-2 border-t border-slate-100">
           {[
             ["Gross", "₹12.48L"],
             ["Net", "₹11.82L"],
@@ -182,77 +241,63 @@ export default function DashboardPage() {
             ["Refunds", "₹26,400"],
             ["Commission", "₹1.24L"],
           ].map(([label, value]) => (
-            <span key={label}>
-              {label} <b className="block text-slate-900">{value}</b>
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
-        <div className="border-b border-slate-100 pb-3">
-          <h3 className="text-base font-normal text-slate-800">Order overview</h3>
-        </div>
-        <div className="space-y-3">
-          {["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"].map(
-            (status) => (
-              <Link
-                key={status}
-                to={`/admin/orders?status=${encodeURIComponent(status)}`}
-                className="flex items-center justify-between rounded-[24px] bg-[#FAF8F5] px-4 py-3 text-xs transition hover:bg-slate-50"
-              >
-                <StatusBadge value={status} />
-                <span className="font-semibold text-slate-900">
-                  {orders.filter((order) => order.status === status).length}
-                </span>
-              </Link>
-            ),
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-normal text-slate-800">Recent orders</h3>
-          <Link to="/admin/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
-            <span>View All</span>
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {orders.slice(0, 4).map((order) => (
-            <Link
-              key={order.id}
-              to={`/admin/orders/${encodeURIComponent(order.id)}`}
-              className="flex items-center justify-between gap-4 rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4 text-xs"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium text-slate-900">{order.id}</p>
-                <p className="truncate text-[11px] text-slate-500 font-normal">
-                  {order.customer} · {order.amount}
-                </p>
-              </div>
-              <StatusBadge value={order.status} />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-normal text-slate-800">Recent Admin activity</h3>
-          <Link to="/admin/audit-logs" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
-            <span>Audit logs</span>
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {auditLogs.slice(0, 4).map((entry) => (
-            <div key={entry.id} className="rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4">
-              <p className="text-xs font-medium text-slate-900">{entry.action}</p>
-              <p className="mt-1 text-[11px] text-slate-500 font-normal">
-                {entry.actor} · {entry.target} · {entry.time}
-              </p>
+            <div key={label} className="bg-[#FAF8F5] p-2.5 rounded-2xl border border-slate-100 text-center">
+              <span className="text-slate-400 text-[10px] uppercase block">{label}</span>
+              <span className="font-semibold text-slate-900 text-xs block mt-0.5">{value}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Recent Orders & Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Recent Orders */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Recent orders</h3>
+            <Link to="/admin/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
+              <span>All</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {orders.slice(0, 3).map((order) => (
+              <Link
+                key={order.id}
+                to={`/admin/orders/${encodeURIComponent(order.id)}`}
+                className="flex items-center justify-between gap-3 rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-3 text-xs hover:bg-slate-50 transition"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-900">{order.id}</p>
+                  <p className="truncate text-[10px] text-slate-400 font-normal">
+                    {order.customer} · {order.amount}
+                  </p>
+                </div>
+                <StatusBadge value={order.status} />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Audit Activity */}
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Recent activity</h3>
+            <Link to="/admin/audit-logs" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
+              <span>Logs</span>
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {auditLogs.slice(0, 3).map((entry) => (
+              <div key={entry.id} className="rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-3 text-xs">
+                <p className="font-medium text-slate-900 truncate">{entry.action}</p>
+                <p className="mt-0.5 text-[10px] text-slate-400 font-normal truncate">
+                  {entry.actor} · {entry.time}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
