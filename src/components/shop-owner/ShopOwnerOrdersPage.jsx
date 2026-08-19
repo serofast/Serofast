@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { CheckCircle2, MapPin, Phone, UserCheck, ShoppingBag, Truck, Send, BellRing } from "lucide-react";
+import { CheckCircle2, MapPin, Phone, UserCheck, ShoppingBag, Truck, Send, BellRing, Eye, X, FileText } from "lucide-react";
 import { initialSellerOrders } from "../../data/sellerData";
 import { AppFormButton, AppFormCard } from "../reusable/form";
 
 export default function ShopOwnerOrdersPage() {
   const [orders, setOrders] = useState(initialSellerOrders);
   const [activeTab, setActiveTab] = useState("All");
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const notifyShipping = (id) => {
     setOrders((prev) =>
@@ -118,15 +119,25 @@ export default function ShopOwnerOrdersPage() {
                     </span>
                   </div>
 
-                  <span
-                    className={`rounded-full px-3.5 py-1 text-xs font-semibold ${
-                      isShipped
-                        ? "bg-rose-50 border border-rose-100 text-brandRed"
-                        : "bg-amber-50 border border-amber-200 text-amber-800"
-                    }`}
-                  >
-                    ● {isShipped ? "Shipped" : "Ready to Notify"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3.5 py-1 text-xs font-semibold ${
+                        isShipped
+                          ? "bg-rose-50 border border-rose-100 text-brandRed"
+                          : "bg-amber-50 border border-amber-200 text-amber-800"
+                      }`}
+                    >
+                      ● {isShipped ? "Shipped" : "Ready to Notify"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrder(order)}
+                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                      title="View Order Details"
+                    >
+                      <Eye size={17} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -162,13 +173,21 @@ export default function ShopOwnerOrdersPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-1">
+                <div className="flex justify-between items-center pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedOrder(order)}
+                    className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brandRed transition font-medium"
+                  >
+                    <Eye size={14} /> View Full Invoice &amp; Details
+                  </button>
+
                   {!isShipped ? (
                     <AppFormButton
                       type="button"
                       icon={Send}
                       onClick={() => notifyShipping(order.id)}
-                      className="w-full sm:w-auto px-6"
+                      className="px-6"
                     >
                       Notify SeroFast for Shipping
                     </AppFormButton>
@@ -181,6 +200,93 @@ export default function ShopOwnerOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-lg rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative">
+            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-lg font-normal text-brandRed tracking-tight">Order Invoice &amp; Details</h3>
+                <p className="text-xs text-slate-500 font-normal mt-0.5">Order ID: {selectedOrder.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1 text-xs">
+              {/* Customer details */}
+              <div className="bg-[#FAF8F5] p-4 rounded-[22px] border border-[#F3E5E5] space-y-2">
+                <span className="text-slate-400 block text-[11px] font-semibold uppercase tracking-wider">Customer Info</span>
+                <div className="flex justify-between font-medium text-slate-900 text-sm">
+                  <span>{selectedOrder.customerName}</span>
+                  <span className="text-xs text-slate-500 font-normal">{selectedOrder.phone}</span>
+                </div>
+                <p className="text-slate-600 flex items-start gap-1">
+                  <MapPin size={14} className="text-brandRed shrink-0 mt-0.5" />
+                  <span>{selectedOrder.address}</span>
+                </p>
+              </div>
+
+              {/* Items Breakdown */}
+              <div className="bg-slate-50 p-4 rounded-[22px] border border-slate-100 space-y-2">
+                <span className="text-slate-400 block text-[11px] font-semibold uppercase tracking-wider">Ordered Items</span>
+                {selectedOrder.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center text-slate-800">
+                    <span>{item.qty}x {item.name}</span>
+                    <span className="font-semibold">₹{item.price}</span>
+                  </div>
+                ))}
+                <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900 text-sm">
+                  <span>Total Retained Amount</span>
+                  <span className="text-brandRed">₹{selectedOrder.totalAmount}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3.5 rounded-[18px] border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Payment Method</span>
+                  <span className="font-medium text-slate-800 text-xs block mt-0.5">{selectedOrder.paymentMethod}</span>
+                </div>
+                <div className="bg-slate-50 p-3.5 rounded-[18px] border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Student Referral</span>
+                  <span className="font-medium text-slate-800 text-xs block mt-0.5">{selectedOrder.studentPartner}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedOrder(null)}
+                className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Close
+              </button>
+              {selectedOrder.status !== "Shipped" && selectedOrder.status !== "Dispatched" && selectedOrder.status !== "Delivered" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    notifyShipping(selectedOrder.id);
+                    setSelectedOrder(null);
+                  }}
+                  className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
+                >
+                  <Send size={15} />
+                  <span>Notify Shipping</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

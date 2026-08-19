@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Banknote, PackageSearch, ShieldCheck, ShoppingBag } from "lucide-react";
+import { Banknote, PackageSearch, ShieldCheck, ShoppingBag, Eye, FileText } from "lucide-react";
 import { useParams } from "react-router-dom";
 import {
   Card,
@@ -180,30 +180,71 @@ function Verification({ status }) {
 }
 
 function Documents() {
+  const [selectedDoc, setSelectedDoc] = useState(null);
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-[600px] text-left text-xs">
         <thead>
-          <tr className="text-slate-500">
+          <tr className="text-slate-500 border-b border-slate-100">
             <th className="pb-3 font-normal">Document</th>
             <th className="pb-3 font-normal">Uploaded</th>
             <th className="pb-3 font-normal">Status</th>
-            <th className="pb-3 font-normal">Action</th>
+            <th className="pb-3 font-normal text-right">Action</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
           {["Identity proof", "Business registration", "Bank proof"].map((document) => (
-            <tr key={document}>
+            <tr key={document} className="hover:bg-slate-50/50">
               <td className="py-4 font-medium text-slate-900">{document}</td>
               <td className="py-4 text-slate-600 font-normal">12 Aug 2026</td>
               <td className="py-4"><StatusBadge value="Verified" /></td>
-              <td className="py-4 text-xs text-slate-600 font-normal">
-                Metadata available
+              <td className="py-4 text-right">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDoc(document)}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-brandRed hover:underline cursor-pointer"
+                >
+                  <Eye size={14} /> View Document
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {selectedDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-md rounded-[30px] bg-white border border-[#F3E5E5] p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h4 className="text-base font-semibold text-slate-900">{selectedDoc}</h4>
+              <button
+                type="button"
+                onClick={() => setSelectedDoc(null)}
+                className="text-slate-400 hover:text-slate-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="bg-[#FAF8F5] p-6 rounded-[20px] border border-[#F3E5E5] text-center space-y-2">
+              <div className="w-12 h-12 rounded-full bg-rose-50 text-brandRed flex items-center justify-center mx-auto">
+                <FileText size={24} />
+              </div>
+              <p className="text-xs font-semibold text-slate-800">{selectedDoc} (PDF Preview)</p>
+              <p className="text-[11px] text-slate-500 font-normal">
+                Status: Verified ✓ · Uploaded on 12 Aug 2026
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedDoc(null)}
+              className="w-full h-10 rounded-[25px] bg-brandRed text-xs font-semibold text-white shadow-sm cursor-pointer"
+            >
+              Close Document
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

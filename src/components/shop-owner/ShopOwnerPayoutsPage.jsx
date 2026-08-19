@@ -9,6 +9,10 @@ import {
   ArrowUpRight,
   Clock,
   Sparkles,
+  Eye,
+  FileText,
+  Download,
+  X,
 } from "lucide-react";
 import { initialSellerPayouts } from "../../data/sellerData";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
@@ -21,10 +25,19 @@ export default function ShopOwnerPayoutsPage() {
   const [ifscCode, setIfscCode] = useState("HDFC0000240");
   const [saved, setSaved] = useState(false);
 
+  // Settlement detail view modal state
+  const [selectedPayout, setSelectedPayout] = useState(null);
+  const [receiptDownloaded, setReceiptDownloaded] = useState(false);
+
   const handleSave = (e) => {
     e.preventDefault();
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleDownloadReceipt = (payoutId) => {
+    setReceiptDownloaded(true);
+    setTimeout(() => setReceiptDownloaded(false), 3000);
   };
 
   return (
@@ -175,9 +188,24 @@ export default function ShopOwnerPayoutsPage() {
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-medium text-brandRed leading-none block">₹{p.amount}</span>
-                  <span className="text-[10px] text-slate-400 font-normal mt-0.5 flex items-center justify-end gap-0.5">
-                    Direct UPI <ArrowUpRight size={10} className="text-brandRed" />
-                  </span>
+                  <div className="flex items-center justify-end gap-1 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPayout(p)}
+                      className="p-1 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                      title="View Settlement Details"
+                    >
+                      <Eye size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadReceipt(p.id)}
+                      className="p-1 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                      title="Download Receipt"
+                    >
+                      <FileText size={15} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -194,7 +222,8 @@ export default function ShopOwnerPayoutsPage() {
                   <th className="px-5 py-4 font-normal">Date &amp; Time</th>
                   <th className="px-5 py-4 font-normal">Amount</th>
                   <th className="px-5 py-4 font-normal">Transfer Method</th>
-                  <th className="px-5 py-4 text-right font-normal">Status</th>
+                  <th className="px-5 py-4 font-normal">Status</th>
+                  <th className="px-5 py-4 text-right font-normal">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-normal">
@@ -204,10 +233,30 @@ export default function ShopOwnerPayoutsPage() {
                     <td className="px-5 py-4 text-slate-600 font-normal">{p.date}</td>
                     <td className="px-5 py-4 font-medium text-brandRed text-sm">₹{p.amount}</td>
                     <td className="px-5 py-4 text-slate-600 font-normal">{p.method}</td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-5 py-4">
                       <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-[11px] font-normal text-brandRed">
                         <CheckCircle2 size={12} /> {p.status}
                       </span>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPayout(p)}
+                          className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                          title="View Settlement Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadReceipt(p.id)}
+                          className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                          title="Download Receipt"
+                        >
+                          <FileText size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -216,6 +265,91 @@ export default function ShopOwnerPayoutsPage() {
           </div>
         </div>
       </div>
+
+      {/* View Settlement Modal */}
+      {selectedPayout && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-md rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative">
+            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-lg font-normal text-brandRed tracking-tight">Settlement Details</h3>
+                <p className="text-xs text-slate-500 font-normal mt-0.5">Reference ID: {selectedPayout.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedPayout(null)}
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs">
+              <div className="bg-[#FAF8F5] p-4 rounded-[22px] border border-[#F3E5E5] text-center space-y-1">
+                <span className="text-slate-400 block text-[11px]">Total Net Payout</span>
+                <span className="text-2xl font-bold text-brandRed block">₹{selectedPayout.amount}</span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium pt-1">
+                  <CheckCircle2 size={13} /> {selectedPayout.status} & Direct Settled
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 p-3 rounded-[16px] border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Settlement Date</span>
+                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedPayout.date}</span>
+                </div>
+                <div className="bg-slate-50 p-3 rounded-[16px] border border-slate-100">
+                  <span className="text-slate-400 block text-[10px]">Orders Included</span>
+                  <span className="font-semibold text-slate-800 text-xs block mt-0.5">{selectedPayout.ordersCount || 3} Orders</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-3.5 rounded-[18px] border border-slate-100 space-y-2">
+                <div className="flex justify-between text-slate-600">
+                  <span>Transfer Destination:</span>
+                  <span className="font-semibold text-slate-900">{selectedPayout.method}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>UPI VPA Handle:</span>
+                  <span className="font-mono text-slate-800">{upiVpa}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>SeroFast Platform Fee:</span>
+                  <span className="font-semibold text-brandRed">₹0 (0% Free)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedPayout(null)}
+                className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDownloadReceipt(selectedPayout.id)}
+                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
+              >
+                <Download size={15} />
+                <span>Receipt PDF</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {receiptDownloaded && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-[20px] bg-slate-900 text-white px-4 py-3 text-xs font-normal shadow-lg flex items-center gap-2 animate-bounce">
+          <CheckCircle2 size={16} className="text-emerald-400" />
+          <span>Settlement receipt generated &amp; downloaded!</span>
+        </div>
+      )}
     </div>
   );
 }

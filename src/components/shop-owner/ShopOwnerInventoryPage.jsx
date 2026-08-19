@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit3, CheckCircle2, XCircle, X, Package, Loader2, ShoppingCart } from "lucide-react";
+import { Plus, Search, Edit3, CheckCircle2, XCircle, X, Package, Loader2, ShoppingCart, Eye, Trash2 } from "lucide-react";
 import { initialSellerProducts } from "../../data/sellerData";
 import { fetchWarehouseProducts } from "../../lib/supabase";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
@@ -10,6 +10,11 @@ export default function ShopOwnerInventoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // View, Edit, and Delete modal states
+  const [productToView, setProductToView] = useState(null);
+  const [productToEdit, setProductToEdit] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // Warehouse selection state
   const [warehouseProducts, setWarehouseProducts] = useState([]);
@@ -34,11 +39,45 @@ export default function ShopOwnerInventoryPage() {
           ? {
               ...p,
               status: p.status === "In Stock" ? "Out of Stock" : "In Stock",
-              stock: p.status === "In Stock" ? 0 : 10,
+              stock: p.status === "In Stock" ? 0 : (p.stock > 0 ? p.stock : 10),
             }
           : p
       )
     );
+  };
+
+  const handleOpenEdit = (product) => {
+    setProductToEdit({ ...product });
+    setProductToView(null);
+  };
+
+  const handleSaveEdit = (e) => {
+    if (e) e.preventDefault();
+    if (!productToEdit) return;
+
+    const updatedPrice = Number(productToEdit.price) || 0;
+    const updatedOriginalPrice = Number(productToEdit.originalPrice) || 0;
+    const updatedStock = Number(productToEdit.stock) || 0;
+
+    const updatedProduct = {
+      ...productToEdit,
+      price: updatedPrice,
+      originalPrice: updatedOriginalPrice,
+      stock: updatedStock,
+      status: updatedStock > 0 ? productToEdit.status : "Out of Stock",
+    };
+
+    setProducts((prev) =>
+      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+    );
+    setProductToEdit(null);
+  };
+
+  const handleDeleteProduct = (id) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    setDeleteConfirmId(null);
+    if (productToEdit?.id === id) setProductToEdit(null);
+    if (productToView?.id === id) setProductToView(null);
   };
 
   const toggleWarehouseSelection = (id) => {
@@ -231,7 +270,32 @@ export default function ShopOwnerInventoryPage() {
                   <span>{prod.status} ({prod.stock})</span>
                 </button>
 
-                <span className="text-[11px] text-slate-500 font-normal">{prod.salesCount} sold</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setProductToView(prod)}
+                    className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                    title="View Details"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEdit(prod)}
+                    className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                    title="Edit Product"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteConfirmId(prod.id)}
+                    className="p-1.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                    title="Delete Product"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             </div>
           ))
@@ -286,14 +350,32 @@ export default function ShopOwnerInventoryPage() {
                   </td>
                   <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.salesCount} sold</td>
                   <td className="px-5 py-3.5 text-right">
-                    <button
-                      type="button"
-                      onClick={() => toggleStockStatus(prod.id)}
-                      className="rounded-full p-1.5 text-slate-400 hover:text-brandRed transition cursor-pointer"
-                      title="Toggle Stock"
-                    >
-                      <Edit3 size={15} />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setProductToView(prod)}
+                        className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                        title="View Details"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(prod)}
+                        className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                        title="Edit Product"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmId(prod.id)}
+                        className="rounded-full p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        title="Delete Product"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -413,6 +495,263 @@ export default function ShopOwnerInventoryPage() {
               >
                 Add {selectedWarehouseIds.length} Selected to Shop
               </AppFormButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Product Details Modal */}
+      {productToView && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-lg rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative">
+            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-lg font-normal text-brandRed tracking-tight">Product Details</h3>
+                <p className="text-xs text-slate-500 font-normal mt-0.5">ID: {productToView.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setProductToView(null)}
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start bg-[#FAF8F5] p-4 rounded-[24px] border border-[#F3E5E5]">
+                <img
+                  src={productToView.image}
+                  alt={productToView.name}
+                  className="w-28 h-28 rounded-[20px] object-cover border border-slate-200 shrink-0"
+                />
+                <div className="space-y-1.5 text-center sm:text-left flex-1">
+                  <h4 className="text-sm font-semibold text-slate-900 leading-snug">{productToView.name}</h4>
+                  <span className="inline-block bg-white text-slate-600 px-3 py-0.5 rounded-full text-[11px] border border-slate-200">
+                    Category: {productToView.category}
+                  </span>
+                  <div className="flex items-baseline justify-center sm:justify-start gap-2 pt-1">
+                    <span className="text-lg font-semibold text-brandRed">₹{productToView.price}</span>
+                    {productToView.originalPrice && productToView.originalPrice > productToView.price && (
+                      <span className="text-xs text-slate-400 line-through">₹{productToView.originalPrice}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-50 p-3.5 rounded-[18px] border border-slate-100">
+                  <span className="text-slate-400 block text-[11px] mb-1">Stock Status</span>
+                  <span className={`inline-flex items-center gap-1 font-medium ${productToView.status === "In Stock" ? "text-emerald-600" : "text-rose-600"}`}>
+                    {productToView.status === "In Stock" ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+                    {productToView.status} ({productToView.stock} units)
+                  </span>
+                </div>
+
+                <div className="bg-slate-50 p-3.5 rounded-[18px] border border-slate-100">
+                  <span className="text-slate-400 block text-[11px] mb-1">Lifetime Sales</span>
+                  <span className="font-semibold text-slate-800 text-sm">{productToView.salesCount || 0} Sold</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(productToView.id)}
+                className="px-4 h-11 rounded-[30px] border border-rose-200 bg-rose-50 text-xs font-medium text-red-600 hover:bg-rose-100 transition cursor-pointer flex items-center gap-1.5"
+              >
+                <Trash2 size={15} />
+                <span>Delete</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenEdit(productToView)}
+                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
+              >
+                <Edit3 size={15} />
+                <span>Edit Product</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Product Dialog Modal */}
+      {productToEdit && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
+          <form
+            onSubmit={handleSaveEdit}
+            className="w-full max-w-lg max-h-[90vh] rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative"
+          >
+            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+              <div>
+                <h3 className="text-lg font-normal text-brandRed tracking-tight">Edit Product</h3>
+                <p className="text-xs text-slate-500 font-normal mt-0.5">Modify inventory details for ID: {productToEdit.id}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setProductToEdit(null)}
+                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1">
+              {/* Product Name */}
+              <div>
+                <label className="block text-xs font-normal text-slate-700 mb-1">Product Name</label>
+                <input
+                  type="text"
+                  required
+                  value={productToEdit.name}
+                  onChange={(e) => setProductToEdit({ ...productToEdit, name: e.target.value })}
+                  className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                />
+              </div>
+
+              {/* Category & Stock Status */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-normal text-slate-700 mb-1">Category</label>
+                  <input
+                    type="text"
+                    required
+                    value={productToEdit.category}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, category: e.target.value })}
+                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Status</label>
+                  <select
+                    value={productToEdit.status}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, status: e.target.value })}
+                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none bg-white"
+                  >
+                    <option value="In Stock">In Stock</option>
+                    <option value="Out of Stock">Out of Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Price, MRP Price, Stock Qty */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-normal text-slate-700 mb-1">Price (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={productToEdit.price}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, price: e.target.value })}
+                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-normal text-slate-700 mb-1">MRP Price (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productToEdit.originalPrice || ""}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, originalPrice: e.target.value })}
+                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Qty</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={productToEdit.stock}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, stock: e.target.value })}
+                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Image URL & Thumbnail Preview */}
+              <div>
+                <label className="block text-xs font-normal text-slate-700 mb-1">Image URL</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={productToEdit.image || ""}
+                    onChange={(e) => setProductToEdit({ ...productToEdit, image: e.target.value })}
+                    className="flex-1 h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
+                  />
+                  {productToEdit.image && (
+                    <img
+                      src={productToEdit.image}
+                      alt="Preview"
+                      className="w-10 h-10 rounded-[12px] object-cover border border-slate-200 shrink-0"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(productToEdit.id)}
+                className="px-3 h-11 rounded-[30px] border border-rose-200 bg-rose-50 text-xs font-medium text-red-600 hover:bg-rose-100 transition cursor-pointer flex items-center gap-1"
+              >
+                <Trash2 size={14} />
+                <span>Delete</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setProductToEdit(null)}
+                className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-sm rounded-[30px] bg-white border border-[#F3E5E5] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] text-center space-y-4">
+            <div className="w-12 h-12 rounded-full bg-rose-100 text-brandRed flex items-center justify-center mx-auto">
+              <Trash2 size={24} />
+            </div>
+            <div>
+              <h4 className="text-base font-semibold text-slate-900">Delete Product?</h4>
+              <p className="text-xs text-slate-500 font-normal mt-1">
+                Are you sure you want to remove this product from your inventory? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 h-10 rounded-[25px] border border-[#E5E7EB] text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteProduct(deleteConfirmId)}
+                className="flex-1 h-10 rounded-[25px] bg-red-600 text-xs font-semibold text-white hover:bg-red-700 transition cursor-pointer shadow-sm"
+              >
+                Yes, Delete
+              </button>
             </div>
           </div>
         </div>
