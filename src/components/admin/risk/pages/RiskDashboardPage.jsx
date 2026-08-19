@@ -27,13 +27,15 @@ export default function RiskDashboardPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Risk & Fraud"
-        description="Review frontend risk signals. Actual detection and enforcement belong to backend security services."
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">Risk & Fraud</h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Review frontend risk signals. Actual detection and enforcement belong to backend security services.
+        </p>
+      </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
           ["Open Alerts", rows.filter((row) => row.status === "Open").length],
           ["High Risk", rows.filter((row) => row.score === "High").length],
@@ -45,17 +47,17 @@ export default function RiskDashboardPage() {
         ))}
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="divide-y divide-lightBorder">
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] overflow-hidden">
+        <div className="divide-y divide-slate-100">
           {rows.map((row) => (
             <article
               key={row.id}
               className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between"
             >
               <div>
-                <p className="font-semibold">{row.type}</p>
-                <p className="mt-1 text-sm text-textSecondary">{row.entity}</p>
-                <p className="mt-1 text-xs text-textMuted">{row.time}</p>
+                <p className="text-xs font-medium text-slate-900">{row.type}</p>
+                <p className="mt-1 text-[11px] text-slate-600 font-normal">{row.entity}</p>
+                <p className="mt-1 text-[11px] text-slate-500 font-normal">{row.time}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge value={row.score} />
@@ -63,21 +65,21 @@ export default function RiskDashboardPage() {
                 <button
                   type="button"
                   onClick={() => updateAlert(row.id, "Investigating")}
-                  className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold"
+                  className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-[11px] font-medium text-slate-600 hover:border-brandRed transition cursor-pointer"
                 >
                   Investigate
                 </button>
                 <button
                   type="button"
                   onClick={() => setPendingAction({ row, status: "Dismissed" })}
-                  className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold"
+                  className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-[11px] font-medium text-slate-600 hover:border-brandRed transition cursor-pointer"
                 >
                   Dismiss
                 </button>
                 <button
                   type="button"
                   onClick={() => setPendingAction({ row, status: "Blocked" })}
-                  className="min-h-10 rounded-lg bg-brandRed px-3 text-xs font-semibold text-white"
+                  className="flex h-9 items-center justify-center rounded-[30px] bg-brandRed px-4 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark transition cursor-pointer"
                 >
                   Block
                 </button>
@@ -85,7 +87,7 @@ export default function RiskDashboardPage() {
             </article>
           ))}
         </div>
-      </Card>
+      </div>
 
       <ConfirmDialog
         open={Boolean(pendingAction)}

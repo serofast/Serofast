@@ -27,24 +27,28 @@ export default function CustomerDetailsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={customer.name}
-        description="Customer profile, account state, orders, returns, support, and activity."
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          {customer.name}
+        </h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Customer profile, account state, orders, returns, support, and activity.
+        </p>
+      </div>
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setPendingStatus(customer.status === "Blocked" ? "Active" : "Blocked")}
-          className="min-h-10 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
         >
           {customer.status === "Blocked" ? "Unblock" : "Block Customer"}
         </button>
         <button
           type="button"
           onClick={() => setToast("Frontend reset-access request prepared. Backend delivery is pending.")}
-          className="min-h-10 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
         >
           Reset Access
         </button>
@@ -59,7 +63,7 @@ export default function CustomerDetailsPage() {
               <Detail label="Orders" value={customer.orders} />
               <Detail label="Total spent" value={customer.spent} />
               <div>
-                <p className="text-xs text-textMuted">Status</p>
+                <p className="text-[11px] text-slate-500 font-normal">Status</p>
                 <div className="mt-1"><StatusBadge value={customer.status} /></div>
               </div>
               <Detail label="Average order" value={`₹${Math.round(Number(String(customer.spent).replace(/[^\d]/g, "")) / customer.orders).toLocaleString()}`} />
@@ -68,9 +72,9 @@ export default function CustomerDetailsPage() {
               <Detail label="Joined" value="12 Jan 2026" />
             </div>
           ) : (
-            <div className="rounded-xl bg-lightBackground p-5">
-              <h2 className="font-semibold">{activeTab}</h2>
-              <p className="mt-2 text-sm text-textSecondary">
+            <div className="rounded-[24px] bg-[#FAF8F5] p-5 border border-[#F3E5E5]">
+              <h3 className="text-xs font-medium text-slate-800">{activeTab}</h3>
+              <p className="mt-2 text-[11px] text-slate-500 font-normal">
                 This frontend panel is ready for customer-linked {activeTab.toLowerCase()} data from the service layer.
               </p>
             </div>
@@ -95,8 +99,8 @@ export default function CustomerDetailsPage() {
 function Detail({ label, value }) {
   return (
     <div>
-      <p className="text-xs text-textMuted">{label}</p>
-      <p className="mt-1 break-words font-semibold">{value}</p>
+      <p className="text-[11px] text-slate-500 font-normal">{label}</p>
+      <p className="mt-1 break-words text-xs font-medium text-slate-900">{value}</p>
     </div>
   );
 }

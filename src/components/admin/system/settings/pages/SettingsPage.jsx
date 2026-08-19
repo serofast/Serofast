@@ -91,23 +91,27 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title="Settings"
-        description="Configure marketplace defaults without exposing secret credentials in the browser."
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          Settings
+        </h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Configure marketplace defaults without exposing secret credentials in the browser.
+        </p>
+      </div>
 
-      <Card className="min-w-0 overflow-hidden">
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] overflow-hidden">
         <Tabs tabs={groups} activeTab={activeGroup} onChange={setActiveGroup} />
-        <div className="space-y-4 p-5 sm:p-6">
+        <div className="space-y-3 p-5 sm:p-6">
           {rows.map((setting) => (
             <div
               key={setting.id}
-              className="flex flex-col gap-3 rounded-xl border border-lightBorder p-4 sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-semibold">{setting.label}</p>
-                <p className="mt-1 text-xs text-textMuted">{activeGroup} setting</p>
+                <p className="text-xs font-medium text-slate-800">{setting.label}</p>
+                <p className="mt-0.5 text-[11px] text-slate-500 font-normal">{activeGroup} setting</p>
               </div>
               {setting.type === "toggle" ? (
                 <button
@@ -116,7 +120,7 @@ export default function SettingsPage() {
                   aria-checked={setting.value}
                   aria-label={setting.label}
                   onClick={() => updateSetting(setting.id, !setting.value)}
-                  className={`relative h-8 w-14 rounded-full ${setting.value ? "bg-brandRed" : "bg-slate-300"}`}
+                  className={`relative h-8 w-14 rounded-full transition cursor-pointer ${setting.value ? "bg-brandRed" : "bg-slate-300"}`}
                 >
                   <span
                     className={`absolute top-1 h-6 w-6 rounded-full bg-white transition ${setting.value ? "left-7" : "left-1"}`}
@@ -130,10 +134,10 @@ export default function SettingsPage() {
                     value={setting.value}
                     onChange={(event) => updateSetting(setting.id, event.target.value)}
                     aria-invalid={Boolean(errors[setting.id])}
-                    className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed"
+                    className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
                   />
                   {errors[setting.id] && (
-                    <span className="mt-1 block text-xs font-semibold text-brandRed">
+                    <span className="mt-1 block text-[11px] font-medium text-brandRed">
                       {errors[setting.id]}
                     </span>
                   )}
@@ -146,13 +150,13 @@ export default function SettingsPage() {
             <button
               type="button"
               onClick={saveSettings}
-              className="min-h-11 rounded-lg bg-brandRed px-5 text-sm font-semibold text-white hover:bg-brandRedDark"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
             >
               Save {activeGroup}
             </button>
           </div>
         </div>
-      </Card>
+      </div>
 
       <Toast message={toast} onClose={() => setToast("")} />
     </div>

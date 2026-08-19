@@ -17,15 +17,16 @@ function SidebarItem({ item, close }) {
     <NavLink
       to={item[1]}
       onClick={close}
-      className={[
-        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+      className={`flex items-center justify-between rounded-[30px] px-4 py-3 text-xs font-medium transition-all duration-200 ${
         active
-          ? "bg-brandRed text-white"
-          : "text-textSecondary hover:bg-promoHighlight hover:text-brandRed",
-      ].join(" ")}
+          ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)]"
+          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+      }`}
     >
-      <Icon name={item[2]} size={17} />
-      <span>{item[0]}</span>
+      <div className="flex items-center gap-3">
+        <Icon name={item[2]} size={20} />
+        <span>{item[0]}</span>
+      </div>
     </NavLink>
   );
 }
@@ -48,73 +49,8 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-lightBackground text-textPrimary">
-      <aside
-        className={[
-          "fixed inset-y-0 left-0 z-[70] flex w-[272px] flex-col",
-          "border-r border-lightBorder bg-lightSurface p-4 shadow-sm",
-          "transition-transform duration-200",
-          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-        ].join(" ")}
-      >
-        <div className="flex items-center justify-between px-2">
-          <Link
-            to="/"
-            onClick={close}
-            className="flex items-center gap-2 text-[20px] font-extrabold text-brandRed group"
-          >
-            <Logo size="sm" iconClassName="group-hover:scale-105" />
-            <span className="tracking-tight">SEROFAST</span>
-          </Link>
-
-          <button
-            type="button"
-            onClick={close}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder lg:hidden"
-            aria-label="Close admin navigation"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <nav className="mt-7 flex-1 overflow-y-auto pr-1">
-          {nav.map((group) => (
-            <div key={group[0]} className="mb-6">
-              <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-textMuted">
-                {group[0]}
-              </p>
-
-              <div className="space-y-1">
-                {group[1].map((item) => (
-                  <SidebarItem key={item[1]} item={item} close={close} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="border-t border-lightBorder pt-4">
-          <div className="mb-3 flex items-center gap-3 rounded-xl bg-promoHighlight p-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-brandRed text-sm font-bold text-white">
-              A
-            </span>
-            <div>
-              <p className="text-sm font-semibold">Admin</p>
-              <p className="text-xs text-textSecondary">Super Admin</p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => navigate("/")}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-textSecondary hover:bg-slate-50"
-          >
-            <LogOut size={17} />
-            Exit Admin
-          </button>
-        </div>
-      </aside>
-
+    <div className="min-h-screen bg-[#FAF8F5] text-slate-900 flex flex-col font-sans font-sansation">
+      {/* Mobile sidebar overlay */}
       {mobileOpen && (
         <button
           type="button"
@@ -124,62 +60,136 @@ export default function AdminLayout({ children }) {
         />
       )}
 
+      <aside
+        className={[
+          "fixed inset-y-0 left-0 z-[70] flex w-[272px] flex-col",
+          "border-r border-[#E5E7EB] bg-white p-4",
+          "transition-transform duration-200",
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        ].join(" ")}
+      >
+        <div className="flex items-center justify-between px-2">
+          <Link
+            to="/"
+            onClick={close}
+            className="flex items-center gap-2 text-[17px] text-brandRed group"
+          >
+            <Logo size="sm" iconClassName="group-hover:scale-105" />
+            <span className="tracking-tight font-semibold">SEROFAST</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={close}
+            className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] lg:hidden"
+            aria-label="Close admin navigation"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Store Profile Card */}
+        <div className="mt-4 rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-3.5 flex items-center gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-50 border border-rose-200 text-xs font-semibold text-brandRed">
+            A
+          </div>
+          <div className="flex flex-col min-w-0">
+            <h4 className="text-xs font-semibold text-slate-900 truncate">Admin Panel</h4>
+            <span className="text-[10.5px] font-normal flex items-center gap-1 text-brandRed">
+              Super Admin
+            </span>
+          </div>
+        </div>
+
+        <nav className="mt-5 flex-1 overflow-y-auto pr-1">
+          {nav.map((group) => (
+            <div key={group[0]} className="mb-5">
+              <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                {group[0]}
+              </p>
+
+              <div className="space-y-1.5">
+                {group[1].map((item) => (
+                  <SidebarItem key={item[1]} item={item} close={close} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className="border-t border-[#E5E7EB] pt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="flex w-full items-center gap-3 rounded-[30px] px-4 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+          >
+            <LogOut size={17} />
+            Exit Admin
+          </button>
+        </div>
+      </aside>
+
       <div className="lg:pl-[272px]">
-        <header className="sticky top-0 z-50 border-b border-lightBorder bg-lightSurface/95 backdrop-blur">
-          <div className="mx-auto flex min-h-[68px] max-w-[1600px] items-center gap-3 px-4 sm:px-6 xl:px-8">
+        <header className="sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-[#E5E7EB] bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
+          <div className="flex flex-1 items-center gap-3">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder lg:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] lg:hidden"
               aria-label="Open admin navigation"
             >
-              <Menu size={18} />
+              <Menu size={18} className="text-slate-700" />
             </button>
 
-            <div className="flex flex-1 items-center gap-3">
-              <form
-                onSubmit={handleGlobalSearch}
-                className="hidden h-10 w-full max-w-[380px] items-center gap-2 rounded-lg border border-lightBorder bg-white px-3 focus-within:border-brandRed md:flex"
-              >
-                <Search size={16} className="text-textMuted" />
-                <input
-                  aria-label="Search the marketplace"
-                  value={globalSearch}
-                  onChange={(event) => setGlobalSearch(event.target.value)}
-                  className="w-full bg-transparent text-sm outline-none placeholder:text-textMuted"
-                  placeholder="Search the marketplace..."
-                />
-              </form>
+            <form
+              onSubmit={handleGlobalSearch}
+              className="hidden h-10 w-full max-w-[380px] items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.1)] focus-within:border-brandRed focus-within:shadow-[-4px_5px_10px_rgba(211,47,47,0.2)] transition-all md:flex"
+            >
+              <Search size={16} className="text-slate-400" />
+              <input
+                aria-label="Search the marketplace"
+                value={globalSearch}
+                onChange={(event) => setGlobalSearch(event.target.value)}
+                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+                placeholder="Search the marketplace..."
+              />
+            </form>
 
-              <div className="hidden lg:block">
-                <p className="text-sm font-semibold">SeroFast Admin</p>
-                <p className="text-xs text-textMuted">
-                  Marketplace control center
-                </p>
-              </div>
+            <div className="hidden lg:block">
+              <p className="text-sm font-semibold">SeroFast Admin</p>
+              <p className="text-xs text-slate-400">
+                Marketplace control center
+              </p>
             </div>
+          </div>
 
+          <div className="flex items-center gap-2">
+            {/* Notification Link */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setNotificationsOpen((current) => !current)}
-                className="relative grid h-10 w-10 place-items-center rounded-lg border border-lightBorder"
+                className="relative grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] text-slate-600 hover:bg-slate-50 transition active:scale-95"
                 aria-label="Notifications"
                 aria-expanded={notificationsOpen}
               >
-                <Bell size={17} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brandRed" />
+                <Bell size={18} className="text-slate-700" />
+                <span className="absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white">
+                  2
+                </span>
               </button>
               {notificationsOpen && (
-                <div className="absolute right-0 top-12 z-20 w-72 rounded-xl border border-lightBorder bg-white p-3 shadow-float">
-                  <p className="text-sm font-semibold">Admin notifications</p>
+                <div className="absolute right-0 mt-2 w-56 rounded-[24px] border border-[#E5E7EB] bg-white p-2 shadow-xl z-50 text-xs animate-scale-up">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <p className="font-semibold text-slate-900">Admin notifications</p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       setNotificationsOpen(false);
                       navigate("/admin/notifications");
                     }}
-                    className="mt-3 w-full rounded-lg bg-promoHighlight p-3 text-left text-sm text-textSecondary"
+                    className="mt-1 w-full rounded-xl bg-[#FAF8F5] p-3 text-left text-xs text-slate-600 hover:bg-slate-50 transition"
                   >
                     3 operational templates need review
                   </button>
@@ -187,48 +197,50 @@ export default function AdminLayout({ children }) {
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setProfileOpen((current) => !current)}
-              aria-expanded={profileOpen}
-              className="hidden items-center gap-2 rounded-xl border border-lightBorder px-3 py-2 sm:flex"
-            >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-brandRed text-xs font-bold text-white">
-                A
-              </span>
-              <span className="text-left">
-                <span className="block text-xs font-semibold">Admin</span>
-                <span className="block text-[11px] text-textMuted">
-                  Super Admin
-                </span>
-              </span>
-              <ChevronDown size={14} className="text-textMuted" />
-            </button>
-            {profileOpen && (
-              <div className="absolute right-4 top-16 z-20 w-52 rounded-xl border border-lightBorder bg-white p-2 shadow-float">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileOpen(false);
-                    navigate("/admin/settings");
-                  }}
-                  className="min-h-10 w-full rounded-lg px-3 text-left text-sm hover:bg-promoHighlight"
-                >
-                  Admin settings
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate("/")}
-                  className="min-h-10 w-full rounded-lg px-3 text-left text-sm text-brandRed hover:bg-promoHighlight"
-                >
-                  Exit Admin
-                </button>
-              </div>
-            )}
+            {/* Profile Icon Dropdown Trigger */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setProfileOpen((current) => !current)}
+                aria-expanded={profileOpen}
+                className="grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] bg-white hover:border-brandRed transition cursor-pointer active:scale-95 shadow-2xs"
+              >
+                <div className="grid h-8 w-8 place-items-center rounded-full bg-rose-50 text-[11px] font-semibold text-brandRed">
+                  A
+                </div>
+              </button>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-56 rounded-[24px] border border-[#E5E7EB] bg-white p-2 shadow-xl z-50 text-xs animate-scale-up space-y-1">
+                  <div className="px-3 py-2 border-b border-slate-100">
+                    <span className="font-semibold text-slate-900 block truncate">Admin</span>
+                    <span className="text-[10px] text-slate-500 font-normal block truncate">Super Admin</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false);
+                      navigate("/admin/settings");
+                    }}
+                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-700 hover:bg-slate-50 transition font-normal w-full text-left"
+                  >
+                    Settings
+                  </button>
+                  <div className="border-t border-slate-100 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/")}
+                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-brandRed font-medium hover:bg-rose-50 transition cursor-pointer"
+                    >
+                      <LogOut size={14} /> Exit Admin
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
-        <main className="mx-auto min-h-[calc(100vh-68px)] w-full min-w-0 max-w-[1600px] overflow-x-hidden px-4 py-6 sm:px-6 xl:px-8 xl:py-8">
+        <main className="flex-1 p-4 sm:p-6 max-w-5xl mx-auto pb-20 md:pb-6 w-full min-w-0">
           <AdminBreadcrumbs />
           {children}
         </main>

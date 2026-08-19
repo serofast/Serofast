@@ -80,14 +80,18 @@ export default function DashboardPage() {
   );
 
   return (
-    <div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <PageHeader
-          title="Good evening, Admin"
-          description="See what needs attention across the SeroFast marketplace."
-        />
-        <div className="inline-flex items-center gap-2 text-xs text-textMuted">
-          <CalendarDays size={15} />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+            Good evening, Admin
+          </h1>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">
+            See what needs attention across the <span className="text-slate-800 font-medium">SeroFast marketplace</span>.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+          <CalendarDays size={14} />
           16 Aug 2026
         </div>
       </div>
@@ -106,10 +110,10 @@ export default function DashboardPage() {
 
       <section className="mt-6" aria-labelledby="attention-heading">
         <div className="mb-3 flex items-center justify-between">
-          <h2 id="attention-heading" className="text-lg font-bold">
+          <h2 id="attention-heading" className="text-base font-normal text-slate-800">
             Requires attention
           </h2>
-          <span className="text-xs text-textMuted">Live frontend snapshot</span>
+          <span className="text-xs text-slate-500 font-normal">Live frontend snapshot</span>
         </div>
         <StatGrid>
           {attentionStats.map((item) => (
@@ -129,129 +133,127 @@ export default function DashboardPage() {
         </StatGrid>
       </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(300px,.7fr)]">
-        <Card className="h-full p-5 xl:min-h-[430px]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Sales overview</h2>
-              <p className="text-xs text-textMuted">
-                Gross marketplace revenue trend
-              </p>
-            </div>
-            <select
-              aria-label="Sales date range"
-              value={range}
-              onChange={(event) => setRange(event.target.value)}
-              className="h-10 rounded-lg border border-lightBorder bg-white px-3 text-sm outline-none focus:border-brandRed"
-            >
-              {ranges.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="text-base font-normal text-slate-800">Sales overview</h3>
+            <p className="text-xs text-slate-500 font-normal">
+              Gross marketplace revenue trend
+            </p>
           </div>
-
-          <div
-            className="mt-6 flex h-64 items-end gap-2"
-            aria-label={`Sales chart for ${range}`}
+          <select
+            aria-label="Sales date range"
+            value={range}
+            onChange={(event) => setRange(event.target.value)}
+            className="h-9 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed cursor-pointer"
           >
-            {salesSeries.map((value, index) => (
-              <div key={`${index}-${value}`} className="flex h-full flex-1 flex-col justify-end">
-                <div className="relative flex-1">
-                  <div
-                    title={`Period ${index + 1}: ${value}`}
-                    className="absolute inset-x-0 bottom-0 min-h-1 rounded-t-lg bg-brandRed transition hover:bg-brandRedDark"
-                    style={{ height: `${(value / maximumSale) * 100}%` }}
-                  />
-                </div>
-                <span className="pt-2 text-center text-[10px] text-textMuted">
-                  {index + 1}
-                </span>
+            {ranges.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+
+        <div
+          className="flex h-56 items-end gap-2"
+          aria-label={`Sales chart for ${range}`}
+        >
+          {salesSeries.map((value, index) => (
+            <div key={`${index}-${value}`} className="flex h-full flex-1 flex-col justify-end">
+              <div className="relative flex-1">
+                <div
+                  title={`Period ${index + 1}: ${value}`}
+                  className="absolute inset-x-0 bottom-0 min-h-1 rounded-t-lg bg-brandRed transition hover:bg-brandRedDark"
+                  style={{ height: `${(value / maximumSale) * 100}%` }}
+                />
               </div>
-            ))}
-          </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-textSecondary sm:grid-cols-3 lg:grid-cols-6">
-            {[
-              ["Gross", "₹12.48L"],
-              ["Net", "₹11.82L"],
-              ["Orders", "428"],
-              ["AOV", "₹2,916"],
-              ["Refunds", "₹26,400"],
-              ["Commission", "₹1.24L"],
-            ].map(([label, value]) => (
-              <span key={label}>
-                {label} <b className="block text-textPrimary">{value}</b>
+              <span className="pt-2 text-center text-[10px] text-slate-400">
+                {index + 1}
               </span>
-            ))}
-          </div>
-        </Card>
+            </div>
+          ))}
+        </div>
 
-        <Card className="h-full p-5 xl:min-h-[430px]">
-          <h2 className="text-lg font-semibold">Order overview</h2>
-          <div className="mt-5 space-y-4">
-            {["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"].map(
-              (status) => (
-                <Link
-                  key={status}
-                  to={`/admin/orders?status=${encodeURIComponent(status)}`}
-                  className="flex min-h-10 items-center justify-between rounded-lg px-2 hover:bg-lightBackground"
-                >
-                  <StatusBadge value={status} />
-                  <span className="font-semibold">
-                    {orders.filter((order) => order.status === status).length}
-                  </span>
-                </Link>
-              ),
-            )}
-          </div>
-        </Card>
+        <div className="grid grid-cols-2 gap-3 text-xs text-slate-600 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            ["Gross", "₹12.48L"],
+            ["Net", "₹11.82L"],
+            ["Orders", "428"],
+            ["AOV", "₹2,916"],
+            ["Refunds", "₹26,400"],
+            ["Commission", "₹1.24L"],
+          ].map(([label, value]) => (
+            <span key={label}>
+              {label} <b className="block text-slate-900">{value}</b>
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent orders</h2>
-            <Link to="/admin/orders" className="text-sm font-semibold text-brandRed">
-              View all
-            </Link>
-          </div>
-          <div className="mt-4 divide-y divide-lightBorder">
-            {orders.slice(0, 4).map((order) => (
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+        <div className="border-b border-slate-100 pb-3">
+          <h3 className="text-base font-normal text-slate-800">Order overview</h3>
+        </div>
+        <div className="space-y-3">
+          {["Pending", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"].map(
+            (status) => (
               <Link
-                key={order.id}
-                to={`/admin/orders/${encodeURIComponent(order.id)}`}
-                className="flex items-center justify-between gap-4 py-3"
+                key={status}
+                to={`/admin/orders?status=${encodeURIComponent(status)}`}
+                className="flex items-center justify-between rounded-[24px] bg-[#FAF8F5] px-4 py-3 text-xs transition hover:bg-slate-50"
               >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{order.id}</p>
-                  <p className="truncate text-xs text-textMuted">
-                    {order.customer} · {order.amount}
-                  </p>
-                </div>
-                <StatusBadge value={order.status} />
+                <StatusBadge value={status} />
+                <span className="font-semibold text-slate-900">
+                  {orders.filter((order) => order.status === status).length}
+                </span>
               </Link>
-            ))}
-          </div>
-        </Card>
+            ),
+          )}
+        </div>
+      </div>
 
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Recent Admin activity</h2>
-            <Link to="/admin/audit-logs" className="text-sm font-semibold text-brandRed">
-              Audit logs
-            </Link>
-          </div>
-          <div className="mt-4 divide-y divide-lightBorder">
-            {auditLogs.slice(0, 4).map((entry) => (
-              <div key={entry.id} className="py-3">
-                <p className="text-sm font-semibold">{entry.action}</p>
-                <p className="mt-1 text-xs text-textMuted">
-                  {entry.actor} · {entry.target} · {entry.time}
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-base font-normal text-slate-800">Recent orders</h3>
+          <Link to="/admin/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
+            <span>View All</span>
+          </Link>
+        </div>
+        <div className="space-y-3">
+          {orders.slice(0, 4).map((order) => (
+            <Link
+              key={order.id}
+              to={`/admin/orders/${encodeURIComponent(order.id)}`}
+              className="flex items-center justify-between gap-4 rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4 text-xs"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-medium text-slate-900">{order.id}</p>
+                <p className="truncate text-[11px] text-slate-500 font-normal">
+                  {order.customer} · {order.amount}
                 </p>
               </div>
-            ))}
-          </div>
-        </Card>
+              <StatusBadge value={order.status} />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <h3 className="text-base font-normal text-slate-800">Recent Admin activity</h3>
+          <Link to="/admin/audit-logs" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
+            <span>Audit logs</span>
+          </Link>
+        </div>
+        <div className="space-y-3">
+          {auditLogs.slice(0, 4).map((entry) => (
+            <div key={entry.id} className="rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4">
+              <p className="text-xs font-medium text-slate-900">{entry.action}</p>
+              <p className="mt-1 text-[11px] text-slate-500 font-normal">
+                {entry.actor} · {entry.target} · {entry.time}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

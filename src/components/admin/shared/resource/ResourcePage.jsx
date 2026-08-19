@@ -274,41 +274,41 @@ export default function ResourcePage({
       />
 
       {resource.selectedIds.length > 0 && (
-        <Card className="mb-4 flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold">
+        <div className="mb-4 flex flex-col gap-3 p-4 rounded-[28px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-medium text-slate-700">
             {resource.selectedIds.length} selected
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => requestBulkStatus("Active")}
-              className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold hover:border-emerald-500 hover:text-emerald-700"
+              className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-[11px] font-medium text-slate-600 hover:border-emerald-500 hover:text-emerald-700 transition cursor-pointer"
             >
               Activate
             </button>
             <button
               type="button"
               onClick={() => requestBulkStatus("Suspended")}
-              className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold hover:border-brandRed hover:text-brandRed"
+              className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-[11px] font-medium text-slate-600 hover:border-brandRed hover:text-brandRed transition cursor-pointer"
             >
               Suspend
             </button>
             <button
               type="button"
               onClick={requestBulkDelete}
-              className="min-h-10 rounded-lg bg-brandRed px-3 text-xs font-semibold text-white hover:bg-brandRedDark"
+              className="flex h-9 items-center justify-center rounded-[30px] bg-brandRed px-3 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark transition cursor-pointer"
             >
               Remove
             </button>
             <button
               type="button"
               onClick={() => resource.setSelectedIds([])}
-              className="min-h-10 px-3 text-xs font-semibold text-textSecondary"
+              className="flex h-9 items-center justify-center px-3 text-[11px] font-medium text-slate-500 cursor-pointer"
             >
               Clear selection
             </button>
           </div>
-        </Card>
+        </div>
       )}
 
       {resource.loading ? (
@@ -346,16 +346,16 @@ export default function ResourcePage({
         onClose={() => setDrawerState(null)}
         title={drawerState?.mode === "create" ? `Create ${entityName}` : `Manage ${entityName}`}
       >
-        <ResourceForm
-          columns={columns}
-          record={selectedRecord}
-          mode={drawerState?.mode}
-          onCancel={() => setDrawerState(null)}
-          onSave={saveRecord}
-        />
-      </Drawer>
+      <ResourceForm
+        columns={columns}
+        record={selectedRecord}
+        mode={drawerState?.mode}
+        onCancel={() => setDrawerState(null)}
+        onSave={saveRecord}
+      />
+    </Drawer>
 
-      <ConfirmDialog
+    <ConfirmDialog
         open={Boolean(pendingAction)}
         title={pendingAction?.title}
         description={pendingAction?.description}
@@ -410,7 +410,7 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <p className="rounded-xl bg-promoHighlight p-3 text-sm text-textSecondary">
+      <p className="rounded-[20px] bg-[#FAF8F5] border border-[#F3E5E5] p-3 text-xs text-slate-600 font-normal">
         Changes are stored in local Phase 4 state. Backend persistence and audit
         logging will be connected in a later phase.
       </p>
@@ -421,7 +421,7 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
           key={column.key}
           className={`block ${/(description|reason|review|address|subject)/i.test(column.key) ? "sm:col-span-2" : ""}`}
         >
-          <span className="mb-1.5 block text-sm font-semibold">
+          <span className="mb-1.5 block text-xs font-medium text-slate-700">
             {column.label}
           </span>
           <input
@@ -435,12 +435,12 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
             }}
             aria-invalid={Boolean(errors[column.key])}
             aria-describedby={`${column.key}-error`}
-            className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
+            className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
           />
           {errors[column.key] && (
             <span
               id={`${column.key}-error`}
-              className="mt-1 block text-xs font-semibold text-brandRed"
+              className="mt-1 block text-[11px] font-medium text-brandRed"
             >
               {errors[column.key]}
             </span>
@@ -453,13 +453,13 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
         <button
           type="button"
           onClick={onCancel}
-          className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+          className="flex h-10 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="min-h-11 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+          className="flex h-10 items-center justify-center rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
         >
           {mode === "create" ? "Create record" : "Save changes"}
         </button>

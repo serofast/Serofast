@@ -25,7 +25,7 @@ export default function AdminBreadcrumbs() {
 
   return (
     <nav aria-label="Breadcrumb" className="mb-4 overflow-x-auto">
-      <ol className="flex min-w-max items-center gap-2 text-xs text-textMuted">
+      <ol className="flex min-w-max items-center gap-2 text-[11px] text-slate-400 font-normal">
         {segments.map((segment, index) => {
           const href = `/${segments.slice(0, index + 1).join("/")}`;
           const isCurrent = index === segments.length - 1;
@@ -35,11 +35,11 @@ export default function AdminBreadcrumbs() {
               {index > 0 && <li aria-hidden="true">/</li>}
               <li>
                 {isCurrent ? (
-                  <span aria-current="page" className="font-semibold text-textSecondary">
+                  <span aria-current="page" className="font-medium text-slate-600">
                     {formatSegment(segment)}
                   </span>
                 ) : (
-                  <Link to={href} className="hover:text-brandRed">
+                  <Link to={href} className="hover:text-brandRed transition">
                     {formatSegment(segment)}
                   </Link>
                 )}

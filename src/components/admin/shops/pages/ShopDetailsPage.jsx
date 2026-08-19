@@ -42,18 +42,24 @@ export default function ShopDetailsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={shop.shop}
-        description="Shop profile, marketplace performance, verification, documents, and seller operations."
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+            {shop.shop}
+          </h1>
+          <p className="text-xs text-slate-500 font-normal mt-0.5">
+            Shop profile, marketplace performance, verification, documents, and seller operations.
+          </p>
+        </div>
+      </div>
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {shop.status === "Pending" && (
           <button
             type="button"
             onClick={() => setPendingStatus("Active")}
-            className="min-h-10 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
           >
             Approve Shop
           </button>
@@ -61,7 +67,7 @@ export default function ShopDetailsPage() {
         <button
           type="button"
           onClick={() => setPendingStatus(shop.status === "Suspended" ? "Active" : "Suspended")}
-          className="min-h-10 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
         >
           {shop.status === "Suspended" ? "Reactivate" : "Suspend"}
         </button>
@@ -71,20 +77,20 @@ export default function ShopDetailsPage() {
             setShop((current) => ({ ...current, trusted: !current.trusted }));
             setToast(shop.trusted ? "Trusted seller mark removed." : "Shop marked as trusted.");
           }}
-          className="min-h-10 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
         >
           {shop.trusted ? "Remove Trusted" : "Mark Trusted"}
         </button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric icon={PackageSearch} label="Products" value={shop.products} />
         <Metric icon={ShoppingBag} label="Orders" value={shop.orders} />
         <Metric icon={Banknote} label="Revenue" value={shop.revenue} />
         <Metric icon={ShieldCheck} label="Verification" value={verificationStatus} badge />
       </div>
 
-      <Card className="mt-6 min-w-0 overflow-hidden">
+      <Card className="min-w-0 overflow-hidden">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
         <div className="p-5 sm:p-6">
           {activeTab === "Overview" && <Overview shop={shop} />}
@@ -107,12 +113,12 @@ export default function ShopDetailsPage() {
       >
         {pendingStatus === "Suspended" && (
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold">Internal reason</span>
+            <span className="mb-1.5 block text-xs font-medium text-slate-700">Internal reason</span>
             <textarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               rows={3}
-              className="w-full rounded-lg border border-lightBorder p-3 text-sm"
+              className="w-full rounded-[20px] border border-[#E5E7EB] p-3 text-sm outline-none focus:border-brandRed"
             />
           </label>
         )}
@@ -124,13 +130,17 @@ export default function ShopDetailsPage() {
 
 function Metric({ icon: Icon, label, value, badge = false }) {
   return (
-    <Card className="p-5">
-      <Icon className="text-brandRed" />
-      <p className="mt-4 text-sm text-textSecondary">{label}</p>
-      <div className="mt-1 text-2xl font-bold">
+    <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] min-w-0">
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+          <Icon size={16} />
+        </div>
+      </div>
+      <div className="mt-2 text-2xl font-normal text-slate-900">
         {badge ? <StatusBadge value={value} /> : value}
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -147,9 +157,9 @@ function Overview({ shop }) {
   return (
     <div className="grid gap-x-8 gap-y-4 md:grid-cols-2">
       {details.map(([label, value]) => (
-        <div key={label} className="flex justify-between gap-4 border-b border-lightBorder pb-3 text-sm">
-          <span className="text-textMuted">{label}</span>
-          <span className="text-right font-semibold">{value}</span>
+        <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3 text-xs">
+          <span className="text-slate-500 font-normal">{label}</span>
+          <span className="text-right font-medium text-slate-900">{value}</span>
         </div>
       ))}
     </div>
@@ -160,8 +170,8 @@ function Verification({ status }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {["Identity", "Business", "Bank", "Phone", "Email"].map((item, index) => (
-        <div key={item} className="rounded-xl border border-lightBorder p-4">
-          <p className="mb-2 text-sm font-semibold">{item}</p>
+        <div key={item} className="rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4">
+          <p className="mb-2 text-xs font-medium text-slate-700">{item}</p>
           <StatusBadge value={index === 2 && status === "Pending" ? "Pending" : "Verified"} />
         </div>
       ))}
@@ -172,22 +182,22 @@ function Verification({ status }) {
 function Documents() {
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-[600px] text-left text-sm">
+      <table className="min-w-[600px] text-left text-xs">
         <thead>
-          <tr className="text-xs uppercase text-textMuted">
-            <th className="pb-3">Document</th>
-            <th className="pb-3">Uploaded</th>
-            <th className="pb-3">Status</th>
-            <th className="pb-3">Action</th>
+          <tr className="text-slate-500">
+            <th className="pb-3 font-normal">Document</th>
+            <th className="pb-3 font-normal">Uploaded</th>
+            <th className="pb-3 font-normal">Status</th>
+            <th className="pb-3 font-normal">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-lightBorder">
+        <tbody className="divide-y divide-slate-100">
           {["Identity proof", "Business registration", "Bank proof"].map((document) => (
             <tr key={document}>
-              <td className="py-4 font-semibold">{document}</td>
-              <td className="py-4 text-textSecondary">12 Aug 2026</td>
+              <td className="py-4 font-medium text-slate-900">{document}</td>
+              <td className="py-4 text-slate-600 font-normal">12 Aug 2026</td>
               <td className="py-4"><StatusBadge value="Verified" /></td>
-              <td className="py-4 text-xs font-semibold text-textSecondary">
+              <td className="py-4 text-xs text-slate-600 font-normal">
                 Metadata available
               </td>
             </tr>
@@ -200,9 +210,9 @@ function Documents() {
 
 function LinkedModule({ tab, shop }) {
   return (
-    <div className="rounded-xl bg-lightBackground p-5">
-      <h3 className="font-semibold">{tab}</h3>
-      <p className="mt-2 text-sm text-textSecondary">
+    <div className="rounded-[24px] bg-[#FAF8F5] p-5 border border-[#F3E5E5]">
+      <h3 className="text-sm font-medium text-slate-800">{tab}</h3>
+      <p className="mt-2 text-xs text-slate-500 font-normal">
         {tab} for {shop.shop} is represented by the corresponding Admin module.
         Backend-linked shop-specific records will replace this Phase 4 summary.
       </p>

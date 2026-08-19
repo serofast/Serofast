@@ -55,13 +55,15 @@ export default function ProductDetailsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={editing ? `Edit ${product.product}` : product.product}
-        description="Product profile, inventory, seller information, and moderation state."
-        action={!editing ? "Edit Product" : undefined}
-        onAction={() => navigate(`/admin/products/${product.id}/edit`)}
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          {editing ? `Edit ${product.product}` : product.product}
+        </h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Product profile, inventory, seller information, and moderation state.
+        </p>
+      </div>
 
       {editing ? (
         <ProductEditor
@@ -72,12 +74,12 @@ export default function ProductDetailsPage() {
         />
       ) : (
         <>
-          <div className="mb-5 flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2">
             {product.status !== "Active" && (
               <button
                 type="button"
                 onClick={() => setPendingStatus("Active")}
-                className="min-h-10 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white"
+                className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
               >
                 Approve
               </button>
@@ -85,14 +87,14 @@ export default function ProductDetailsPage() {
             <button
               type="button"
               onClick={() => setPendingStatus(product.status === "Hidden" ? "Active" : "Hidden")}
-              className="min-h-10 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
             >
               {product.status === "Hidden" ? "Publish" : "Hide"}
             </button>
             <button
               type="button"
               onClick={() => setPendingStatus("Flagged")}
-              className="min-h-10 rounded-lg border border-lightBorder px-4 text-sm font-semibold text-brandRed"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-brandRed bg-white px-4 text-xs font-semibold text-brandRed hover:bg-rose-50 transition cursor-pointer"
             >
               Flag Product
             </button>
@@ -106,9 +108,9 @@ export default function ProductDetailsPage() {
               ) : activeTab === "Moderation" ? (
                 <ModerationChecklist />
               ) : (
-                <div className="rounded-xl bg-lightBackground p-5">
-                  <h2 className="font-semibold">{activeTab}</h2>
-                  <p className="mt-2 text-sm text-textSecondary">
+                <div className="rounded-[24px] bg-[#FAF8F5] p-5 border border-[#F3E5E5]">
+                  <h3 className="text-xs font-medium text-slate-800">{activeTab}</h3>
+                  <p className="mt-2 text-[11px] text-slate-500 font-normal">
                     This Phase 4 panel is ready for {activeTab.toLowerCase()} data
                     from the product service in the backend phase.
                   </p>
@@ -144,13 +146,13 @@ function ProductOverview({ product }) {
         ["Rating", `★ ${product.rating}`],
         ["Created", product.created],
       ].map(([label, value]) => (
-        <div key={label} className="flex justify-between gap-4 border-b border-lightBorder pb-3 text-sm">
-          <span className="text-textMuted">{label}</span>
-          <span className="text-right font-semibold">{value}</span>
+        <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3 text-xs">
+          <span className="text-slate-500 font-normal">{label}</span>
+          <span className="text-right font-medium text-slate-900">{value}</span>
         </div>
       ))}
-      <div className="flex justify-between gap-4 border-b border-lightBorder pb-3 text-sm">
-        <span className="text-textMuted">Status</span>
+      <div className="flex justify-between gap-4 border-b border-slate-100 pb-3 text-xs">
+        <span className="text-slate-500 font-normal">Status</span>
         <StatusBadge value={product.status} />
       </div>
     </div>
@@ -169,7 +171,7 @@ function ProductEditor({ draft, setDraft, onSubmit, onCancel }) {
           ["stock", "Stock", "number"],
         ].map(([key, label, type]) => (
           <label key={key} className="block">
-            <span className="mb-1.5 block text-sm font-semibold">{label}</span>
+            <span className="mb-1.5 block text-xs font-medium text-slate-700">{label}</span>
             <input
               type={type}
               min={type === "number" ? "0" : undefined}
@@ -177,7 +179,7 @@ function ProductEditor({ draft, setDraft, onSubmit, onCancel }) {
               onChange={(event) =>
                 setDraft((current) => ({ ...current, [key]: event.target.value }))
               }
-              className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed"
+              className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
             />
           </label>
         ))}
@@ -185,13 +187,13 @@ function ProductEditor({ draft, setDraft, onSubmit, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+            className="flex h-10 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="min-h-11 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white"
+            className="flex h-10 items-center justify-center rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
           >
             Save Product
           </button>
@@ -213,7 +215,7 @@ function ModerationChecklist() {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {Object.entries(checks).map(([item, checked]) => (
-        <label key={item} className="flex min-h-12 items-center gap-3 rounded-xl border border-lightBorder p-3 text-sm">
+        <label key={item} className="flex min-h-12 items-center gap-3 rounded-[20px] border border-[#F3E5E5] bg-[#FAF8F5] p-3 text-xs">
           <input
             type="checkbox"
             checked={checked}

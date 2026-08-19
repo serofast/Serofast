@@ -51,100 +51,108 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={`Order ${order.id}`}
-        description="Customer order, shop orders, payment, fulfillment, and timeline."
-      />
+    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          Order {order.id}
+        </h1>
+        <p className="text-xs text-slate-500 font-normal mt-0.5">
+          Customer order, shop orders, payment, fulfillment, and timeline.
+        </p>
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-6">
-          <Card className="p-5 sm:p-6">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-lg font-semibold">Customer Order</p>
-                <p className="text-sm text-textSecondary">
-                  {order.customer} · {order.items} items · {order.date}
-                </p>
-              </div>
-              <StatusBadge value={order.status} />
+      <div className="space-y-6">
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
+            <div>
+              <p className="text-base font-normal text-slate-800">Customer Order</p>
+              <p className="text-[11px] text-slate-500 font-normal">
+                {order.customer} · {order.items} items · {order.date}
+              </p>
             </div>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <Summary label="Payment" value={order.payment} />
-              <Summary label="Amount" value={order.amount} />
-              <Summary label="Shop orders" value={shopOrders.length} />
-              <Summary label="Delivery" value={shipment?.status ?? "Not assigned"} />
-            </div>
-          </Card>
-
-          <Card className="p-5 sm:p-6">
-            <h2 className="text-lg font-semibold">Marketplace fulfillment</h2>
-            <p className="mt-1 text-sm text-textSecondary">
-              One customer order can contain independently fulfilled shop orders.
-            </p>
-            <div className="mt-5 space-y-3">
-              {shopOrders.map((shopOrder) => (
-                <div
-                  key={shopOrder.id}
-                  className="flex flex-col gap-3 rounded-xl border border-lightBorder p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-semibold">{shopOrder.shop}</p>
-                    <p className="mt-1 text-xs text-textMuted">
-                      {shopOrder.id} · {shopOrder.items} item(s)
-                    </p>
-                  </div>
-                  <StatusBadge value={shopOrder.status} />
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-5 sm:p-6">
-            <h2 className="text-lg font-semibold">Order timeline</h2>
-            <div className="mt-5 space-y-4">
-              {statusSequence.map((label, index) => {
-                const complete = currentIndex >= index || order.status === "Delivered";
-
-                return (
-                  <div key={label} className="flex items-center gap-3">
-                    {complete ? (
-                      <CheckCircle2 size={19} className="text-emerald-600" />
-                    ) : (
-                      <Clock3 size={19} className="text-textMuted" />
-                    )}
-                    <span className={complete ? "font-semibold" : "text-textMuted"}>
-                      {label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
+            <StatusBadge value={order.status} />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Summary label="Payment" value={order.payment} />
+            <Summary label="Amount" value={order.amount} />
+            <Summary label="Shop orders" value={shopOrders.length} />
+            <Summary label="Delivery" value={shipment?.status ?? "Not assigned"} />
+          </div>
         </div>
 
-        <Card className="h-fit p-5 sm:p-6">
-          <h2 className="text-lg font-semibold">Order control</h2>
-          <div className="mt-5 space-y-3">
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Marketplace fulfillment</h3>
+            <p className="mt-1 text-[11px] text-slate-500 font-normal">
+              One customer order can contain independently fulfilled shop orders.
+            </p>
+          </div>
+          <div className="space-y-3">
+            {shopOrders.map((shopOrder) => (
+              <div
+                key={shopOrder.id}
+                className="flex flex-col gap-3 rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="text-xs font-medium text-slate-900">{shopOrder.shop}</p>
+                  <p className="mt-1 text-[11px] text-slate-500 font-normal">
+                    {shopOrder.id} · {shopOrder.items} item(s)
+                  </p>
+                </div>
+                <StatusBadge value={shopOrder.status} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Order timeline</h3>
+          </div>
+          <div className="space-y-4">
+            {statusSequence.map((label, index) => {
+              const complete = currentIndex >= index || order.status === "Delivered";
+
+              return (
+                <div key={label} className="flex items-center gap-3">
+                  {complete ? (
+                    <CheckCircle2 size={18} className="text-brandRed" />
+                  ) : (
+                    <Clock3 size={18} className="text-slate-400" />
+                  )}
+                  <span className={`text-xs ${complete ? "font-medium text-slate-900" : "text-slate-500 font-normal"}`}>
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <h3 className="text-base font-normal text-slate-800 border-b border-slate-100 pb-3">Order control</h3>
+          <div className="space-y-3">
             <button
               type="button"
               onClick={() => setItemsOpen(true)}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-lightBorder text-sm font-semibold"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
             >
-              <PackageCheck size={16} /> Review Items
+              <PackageCheck size={15} /> Review Items
             </button>
             <button
               type="button"
               disabled={!shipment}
               onClick={() => shipment && navigate(`/admin/delivery/${shipment.id}`)}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-lightBorder text-sm font-semibold disabled:opacity-50"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer disabled:opacity-50"
             >
-              <Truck size={16} /> Open Shipment
+              <Truck size={15} /> Open Shipment
             </button>
             <button
               type="button"
               onClick={() => navigate(`/admin/finance/refunds?order=${encodeURIComponent(order.id)}`)}
-              className="min-h-11 w-full rounded-lg border border-brandRed text-sm font-semibold text-brandRed"
+              className="flex h-10 w-full items-center justify-center gap-2 rounded-[30px] border border-brandRed bg-white px-4 text-xs font-semibold text-brandRed hover:bg-rose-50 transition cursor-pointer"
             >
               Manage Refund
             </button>
@@ -152,13 +160,13 @@ export default function OrderDetailsPage() {
               <button
                 type="button"
                 onClick={() => setPendingStatus(nextStatus)}
-                className="min-h-11 w-full rounded-lg bg-brandRed text-sm font-semibold text-white"
+                className="flex h-10 w-full items-center justify-center gap-2 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
               >
                 Mark {nextStatus}
               </button>
             )}
           </div>
-        </Card>
+        </div>
       </div>
 
       <Drawer open={itemsOpen} onClose={() => setItemsOpen(false)} title="Order items">
@@ -196,9 +204,9 @@ export default function OrderDetailsPage() {
 
 function Summary({ label, value }) {
   return (
-    <div className="rounded-xl bg-lightBackground p-4">
-      <p className="text-xs text-textMuted">{label}</p>
-      <p className="mt-1 font-semibold">{value}</p>
+    <div className="rounded-[24px] bg-[#FAF8F5] p-4 border border-[#F3E5E5]">
+      <p className="text-[11px] text-slate-500 font-normal">{label}</p>
+      <p className="mt-1 text-xs font-medium text-slate-900">{value}</p>
     </div>
   );
 }

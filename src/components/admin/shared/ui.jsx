@@ -50,7 +50,7 @@ const kpiTones = {
 export function Card({ children, className = "" }) {
   return (
     <div
-      className={`rounded-2xl border border-lightBorder bg-lightSurface shadow-bento ${className}`}
+      className={`rounded-[28px] border border-[#F3E5E5] bg-white shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] ${className}`}
     >
       {children}
     </div>
@@ -69,14 +69,13 @@ export function Header({
   const actionText = action ?? actionLabel;
 
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[.14em] text-brandRed">
-          SEROFAST ADMIN
-        </p>
-        <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{title}</h1>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          {title}
+        </h1>
         {supportingText && (
-          <p className="mt-1 max-w-3xl text-sm text-textSecondary">
+          <p className="text-xs text-slate-500 font-normal mt-0.5">
             {supportingText}
           </p>
         )}
@@ -86,9 +85,9 @@ export function Header({
         <button
           type="button"
           onClick={onAction}
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
         >
-          <Icon name="plus" size={16} />
+          <Icon name="plus" size={15} />
           {actionText}
         </button>
       )}
@@ -103,7 +102,7 @@ export function Badge({ value }) {
 
   return (
     <span
-      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}
+      className={`inline-flex rounded-full px-3 py-1 text-[11px] font-normal ${className}`}
     >
       {value ?? "Unknown"}
     </span>
@@ -116,19 +115,19 @@ export function Kpi({ label, value, change, tone = "red" }) {
   const toneClassName = kpiTones[tone] ?? kpiTones.red;
 
   return (
-    <Card className="flex h-full min-h-[164px] flex-col p-5">
+    <Card className="flex h-full min-h-[130px] flex-col p-5">
       <div className="flex flex-1 justify-between gap-3">
         <div className="min-w-0">
-          <p className="min-h-10 text-sm leading-5 text-textSecondary">{label}</p>
-          <p className="mt-2 text-2xl font-bold">{value}</p>
+          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+          <p className="mt-2 text-2xl font-normal text-slate-900">{value}</p>
+          {change && (
+            <span className="mt-0.5 text-[11px] text-brandRed font-normal block">{change}</span>
+          )}
         </div>
-        <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${toneClassName}`}>
-          <Icon name="activity" />
+        <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-2xl ${toneClassName}`}>
+          <Icon name="activity" size={16} />
         </div>
       </div>
-      {change && (
-        <p className="mt-auto pt-3 text-xs font-semibold text-emerald-600">{change}</p>
-      )}
     </Card>
   );
 }
@@ -139,13 +138,13 @@ export function SearchBar({
   placeholder = "Search...",
 }) {
   return (
-    <div className="flex h-11 flex-1 items-center gap-2 rounded-lg border border-lightBorder bg-white px-3 focus-within:border-brandRed focus-within:ring-2 focus-within:ring-brandRed/10">
-      <Icon name="search" size={16} className="text-textMuted" />
+    <div className="flex h-11 flex-1 items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.1)] focus-within:border-brandRed focus-within:shadow-[-4px_5px_10px_rgba(211,47,47,0.2)] transition-all">
+      <Icon name="search" size={16} className="text-slate-400" />
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent text-sm outline-none placeholder:text-textMuted"
+        className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
       />
     </div>
   );
@@ -158,37 +157,37 @@ export function Table({
   actions,
 }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden rounded-[35px] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
       <div className="overflow-x-auto">
-        <table className="min-w-full text-left">
-          <thead className="bg-[#FAF8F5]">
+        <table className="min-w-full text-left text-xs">
+          <thead className="bg-[#FAF8F5] border-b border-slate-100">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className="whitespace-nowrap px-5 py-3 text-xs font-semibold uppercase tracking-wide text-textMuted"
+                  className="whitespace-nowrap px-5 py-3.5 font-normal text-slate-600"
                 >
                   {column.label}
                 </th>
               ))}
               {actions && (
-                <th className="px-5 py-3 text-xs font-semibold uppercase tracking-wide text-textMuted">
+                <th className="px-5 py-3.5 font-normal text-slate-600 text-right">
                   Actions
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-lightBorder">
+          <tbody className="divide-y divide-slate-100 font-normal">
             {rows.map((row, rowIndex) => (
               <tr
                 key={row.id ?? rowIndex}
                 onClick={() => onSelect?.(row)}
-                className={onSelect ? "cursor-pointer hover:bg-[#FFF1F2]/40" : ""}
+                className={`transition ${onSelect ? "cursor-pointer hover:bg-slate-50/50" : ""}`}
               >
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className="max-w-xs px-5 py-4 text-sm text-textSecondary"
+                    className="max-w-xs px-5 py-4 text-sm text-slate-600"
                   >
                     <div className="truncate">
                       {column.render ? column.render(row) : row[column.key] ?? "—"}
@@ -200,7 +199,7 @@ export function Table({
                     className="px-5 py-4"
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <div className="flex gap-1.5">{actions(row)}</div>
+                    <div className="flex gap-1.5 justify-end">{actions(row)}</div>
                   </td>
                 )}
               </tr>
@@ -208,7 +207,7 @@ export function Table({
           </tbody>
         </table>
       </div>
-      <div className="border-t border-lightBorder px-5 py-3 text-xs text-textMuted">
+      <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
         {rows.length} records
       </div>
     </Card>
@@ -228,16 +227,16 @@ export function Drawer({ open, onClose, title, children }) {
         className="absolute inset-0 bg-black/25"
         onClick={onClose}
       />
-      <aside className="absolute inset-x-0 bottom-0 max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border-t border-lightBorder bg-white p-5 shadow-float sm:p-6 md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:max-w-xl md:rounded-none md:border-l md:border-t-0 md:p-8">
+      <aside className="absolute inset-x-0 bottom-0 max-h-[92vh] w-full overflow-y-auto rounded-t-[35px] border-t border-[#F3E5E5] bg-white p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] sm:p-6 md:inset-y-0 md:left-auto md:right-0 md:h-full md:max-h-none md:max-w-xl md:rounded-[35px] md:border-l md:border-t-0 md:p-8">
         <div className="mb-6 flex justify-between">
-          <h2 className="text-xl font-bold">{title}</h2>
+          <h2 className="text-lg font-normal text-brandRed tracking-tight">{title}</h2>
           <button
             type="button"
             aria-label="Close drawer"
             onClick={onClose}
-            className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder"
+            className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
           >
-            <Icon name="x" />
+            <Icon name="x" size={16} />
           </button>
         </div>
         {children}
@@ -254,9 +253,9 @@ export function Actions({ onView, onApprove, onReject }) {
           type="button"
           aria-label="View"
           onClick={onView}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder hover:border-brandRed"
+          className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
         >
-          <Icon name="eye" size={15} />
+          <Icon name="eye" size={14} />
         </button>
       )}
       {onApprove && (
@@ -264,9 +263,9 @@ export function Actions({ onView, onApprove, onReject }) {
           type="button"
           aria-label="Approve"
           onClick={onApprove}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder text-emerald-600 hover:bg-emerald-50"
+          className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] text-emerald-600 hover:bg-emerald-50 transition cursor-pointer"
         >
-          <Icon name="check" size={15} />
+          <Icon name="check" size={14} />
         </button>
       )}
       {onReject && (
@@ -274,9 +273,9 @@ export function Actions({ onView, onApprove, onReject }) {
           type="button"
           aria-label="Reject"
           onClick={onReject}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder text-rose-600 hover:bg-rose-50"
+          className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] text-rose-600 hover:bg-rose-50 transition cursor-pointer"
         >
-          <Icon name="ban" size={15} />
+          <Icon name="ban" size={14} />
         </button>
       )}
     </>
@@ -299,7 +298,7 @@ export function FilterBar({
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value)}
-          className="h-11 min-w-0 flex-1 rounded-lg border border-lightBorder bg-white px-3 text-sm"
+          className="h-11 min-w-0 flex-1 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-brandRed"
         >
           <option value="">All statuses</option>
           {options.map((option) => (
@@ -312,7 +311,7 @@ export function FilterBar({
           type="button"
           aria-label="Clear filters"
           onClick={onClear}
-          className="grid h-11 w-11 place-items-center rounded-lg border border-lightBorder"
+          className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
         >
           <Icon name="refresh" size={16} />
         </button>
@@ -324,7 +323,7 @@ export function FilterBar({
 export function StatGrid({ children, className = "" }) {
   return (
     <div
-      className={`grid grid-cols-2 items-stretch gap-3 xl:grid-cols-3 2xl:grid-cols-6 ${className}`}
+      className={`grid grid-cols-2 items-stretch gap-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 ${className}`}
     >
       {children}
     </div>
@@ -345,23 +344,21 @@ export function StatusCard({
     <Component
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`flex h-full min-h-[126px] w-full flex-col rounded-2xl border border-lightBorder bg-lightSurface p-4 text-left shadow-bento transition ${
+      className={`flex h-full min-h-[130px] w-full flex-col rounded-[28px] border border-[#F3E5E5] bg-white p-5 text-left shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] transition ${
         onClick
-          ? "cursor-pointer hover:-translate-y-0.5 hover:border-brandRed/40 hover:shadow-float focus:outline-none focus:ring-2 focus:ring-brandRed/20"
+          ? "cursor-pointer hover:border-brandRed/40 hover:shadow-[-4px_5px_10px_rgba(211,47,47,0.24)] focus:outline-none focus:ring-2 focus:ring-brandRed/20"
           : ""
       }`}
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="min-h-10 text-sm font-semibold leading-5 text-textSecondary">
-          {label}
-        </p>
-        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${toneClassName}`}>
+        <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">{label}</span>
+        <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-2xl ${toneClassName}`}>
           <Icon name="activity" size={16} />
-        </span>
+        </div>
       </div>
-      <p className="mt-2 text-2xl font-bold text-textPrimary">{value}</p>
+      <p className="mt-2 text-2xl font-normal text-slate-900">{value}</p>
       {description && (
-        <p className="mt-auto pt-2 text-xs leading-5 text-textMuted">{description}</p>
+        <p className="mt-auto pt-1 text-[11px] leading-5 text-slate-500 font-normal">{description}</p>
       )}
     </Component>
   );
@@ -379,19 +376,19 @@ export function Pagination({
   const end = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex min-w-0 flex-col gap-3 border-t border-lightBorder px-4 py-3 text-sm lg:flex-row lg:items-center lg:justify-between">
-      <p className="text-textMuted">
+    <div className="flex min-w-0 flex-col gap-3 border-t border-slate-100 px-4 py-3 text-sm lg:flex-row lg:items-center lg:justify-between">
+      <p className="text-slate-500 text-xs">
         Showing {start}–{end} of {totalCount}
       </p>
 
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-start">
-        <label className="flex items-center gap-2 text-textSecondary">
-          <span className="sr-only sm:not-sr-only">Rows</span>
+        <label className="flex items-center gap-2 text-slate-600">
+          <span className="sr-only sm:not-sr-only text-xs">Rows</span>
           <select
             aria-label="Rows per page"
             value={pageSize}
             onChange={(event) => onPageSizeChange(event.target.value)}
-            className="h-10 rounded-lg border border-lightBorder bg-white px-2 outline-none focus:border-brandRed"
+            className="h-9 rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-xs outline-none focus:border-brandRed"
           >
             {[5, 10, 20].map((size) => (
               <option key={size} value={size}>
@@ -405,7 +402,7 @@ export function Pagination({
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(1)}
-          className="hidden h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center"
+          className="hidden h-9 rounded-[30px] border border-[#E5E7EB] px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center transition cursor-pointer"
         >
           First
         </button>
@@ -413,18 +410,18 @@ export function Pagination({
           type="button"
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
-          className="h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-9 rounded-[30px] border border-[#E5E7EB] px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 transition cursor-pointer"
         >
           Previous
         </button>
-        <span className="min-w-16 text-center text-textSecondary">
+        <span className="min-w-16 text-center text-slate-600 text-xs">
           {page} / {pageCount}
         </span>
         <button
           type="button"
           disabled={page >= pageCount}
           onClick={() => onPageChange(page + 1)}
-          className="h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+          className="h-9 rounded-[30px] border border-[#E5E7EB] px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 transition cursor-pointer"
         >
           Next
         </button>
@@ -432,7 +429,7 @@ export function Pagination({
           type="button"
           disabled={page >= pageCount}
           onClick={() => onPageChange(pageCount)}
-          className="hidden h-10 rounded-lg border border-lightBorder px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center"
+          className="hidden h-9 rounded-[30px] border border-[#E5E7EB] px-3 text-xs font-medium disabled:cursor-not-allowed disabled:opacity-40 lg:inline-flex lg:items-center transition cursor-pointer"
         >
           Last
         </button>
@@ -448,19 +445,19 @@ export function EmptyState({
   onAction,
 }) {
   return (
-    <div className="px-6 py-14 text-center">
-      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-promoHighlight text-brandRed">
+    <div className="w-full rounded-[35px] bg-white border border-[#F3E5E5] p-8 text-center shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-rose-50 text-brandRed">
         <Icon name="search" size={20} />
       </div>
-      <h3 className="mt-4 font-semibold text-textPrimary">{title}</h3>
-      <p className="mx-auto mt-1 max-w-md text-sm text-textSecondary">
+      <h3 className="mt-4 font-semibold text-slate-700 text-sm">{title}</h3>
+      <p className="mx-auto mt-1 max-w-md text-xs text-slate-400 font-normal">
         {description}
       </p>
       {action && (
         <button
           type="button"
           onClick={onAction}
-          className="mt-4 min-h-10 rounded-lg border border-brandRed px-4 text-sm font-semibold text-brandRed"
+          className="mt-4 h-10 rounded-[30px] border border-brandRed px-4 text-xs font-semibold text-brandRed cursor-pointer"
         >
           {action}
         </button>
@@ -471,8 +468,8 @@ export function EmptyState({
 
 export function LoadingState({ label = "Loading records…" }) {
   return (
-    <div className="flex min-h-48 items-center justify-center gap-3 p-8 text-sm text-textSecondary">
-      <span className="h-5 w-5 animate-spin rounded-full border-2 border-lightBorder border-t-brandRed" />
+    <div className="flex min-h-48 items-center justify-center gap-3 p-8 text-sm text-slate-500">
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-brandRed" />
       {label}
     </div>
   );
@@ -484,19 +481,19 @@ export function ErrorState({
   onRetry,
 }) {
   return (
-    <div className="px-6 py-14 text-center">
+    <div className="w-full rounded-[35px] bg-white border border-[#F3E5E5] p-8 text-center shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
       <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-rose-50 text-rose-700">
         <Icon name="xcircle" size={20} />
       </div>
-      <h3 className="mt-4 font-semibold text-textPrimary">{title}</h3>
-      <p className="mx-auto mt-1 max-w-md text-sm text-textSecondary">
+      <h3 className="mt-4 font-semibold text-slate-700 text-sm">{title}</h3>
+      <p className="mx-auto mt-1 max-w-md text-xs text-slate-400 font-normal">
         {message}
       </p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="mt-4 min-h-10 rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+          className="mt-4 h-10 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
         >
           Retry
         </button>
@@ -523,27 +520,27 @@ export function Modal({ open, onClose, title, description, children }) {
         onClick={onClose}
         className="absolute inset-0 bg-black/35"
       />
-      <Card className="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto p-5 shadow-float sm:p-6">
+      <div className="relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="admin-modal-title" className="text-xl font-bold">
+            <h2 id="admin-modal-title" className="text-lg font-normal text-brandRed tracking-tight">
               {title}
             </h2>
             {description && (
-              <p className="mt-1 text-sm text-textSecondary">{description}</p>
+              <p className="mt-1 text-xs text-slate-500 font-normal">{description}</p>
             )}
           </div>
           <button
             type="button"
             aria-label="Close dialog"
             onClick={onClose}
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-lightBorder"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
           >
-            <Icon name="x" />
+            <Icon name="x" size={16} />
           </button>
         </div>
         <div className="mt-5">{children}</div>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -560,7 +557,7 @@ export function ConfirmDialog({
 }) {
   const confirmClassName =
     tone === "danger"
-      ? "bg-brandRed text-white hover:bg-brandRedDark"
+      ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark"
       : "bg-emerald-600 text-white hover:bg-emerald-700";
 
   return (
@@ -575,14 +572,14 @@ export function ConfirmDialog({
         <button
           type="button"
           onClick={onClose}
-          className="min-h-11 rounded-lg border border-lightBorder px-4 text-sm font-semibold"
+          className="h-10 rounded-[30px] border border-[#E5E7EB] px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={onConfirm}
-          className={`min-h-11 rounded-lg px-4 text-sm font-semibold ${confirmClassName}`}
+          className={`h-10 rounded-[30px] px-4 text-xs font-semibold transition cursor-pointer ${confirmClassName}`}
         >
           {confirmLabel}
         </button>
@@ -599,12 +596,12 @@ export function Toast({ message, onClose }) {
   return (
     <div
       role="status"
-      className="fixed bottom-5 right-5 z-[100] flex max-w-[calc(100vw-2.5rem)] items-center gap-3 rounded-xl bg-textPrimary px-4 py-3 text-sm font-semibold text-white shadow-float"
+      className="fixed bottom-5 right-5 z-[100] flex max-w-[calc(100vw-2.5rem)] items-center gap-3 rounded-[30px] bg-slate-900 px-4 py-3 text-xs font-medium text-white shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] animate-scale-up"
     >
-      <Icon name="check" size={17} className="text-emerald-400" />
+      <Icon name="check" size={16} className="text-emerald-400" />
       <span>{message}</span>
-      <button type="button" aria-label="Dismiss notification" onClick={onClose}>
-        <Icon name="x" size={16} />
+      <button type="button" aria-label="Dismiss notification" onClick={onClose} className="cursor-pointer">
+        <Icon name="x" size={14} />
       </button>
     </div>
   );
@@ -612,8 +609,8 @@ export function Toast({ message, onClose }) {
 
 export function Tabs({ tabs = [], activeTab, onChange = () => {} }) {
   return (
-    <div className="overflow-x-auto border-b border-lightBorder" role="tablist">
-      <div className="flex min-w-max gap-1">
+    <div className="overflow-x-auto border-b border-slate-100 scrollbar-none" role="tablist">
+      <div className="flex min-w-max gap-2 px-1 py-2">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -621,10 +618,10 @@ export function Tabs({ tabs = [], activeTab, onChange = () => {} }) {
             role="tab"
             aria-selected={activeTab === tab}
             onClick={() => onChange(tab)}
-            className={`min-h-11 border-b-2 px-4 text-sm font-semibold transition ${
+            className={`h-9 rounded-[30px] px-4 text-xs font-medium shrink-0 transition-all cursor-pointer ${
               activeTab === tab
-                ? "border-brandRed text-brandRed"
-                : "border-transparent text-textSecondary hover:text-textPrimary"
+                ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] font-semibold"
+                : "bg-white text-slate-600 hover:bg-slate-50 border border-[#E5E7EB]"
             }`}
           >
             {tab}
