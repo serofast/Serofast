@@ -386,11 +386,8 @@ export default function ShopOwnerInventoryPage() {
 
       {/* Warehouse Product Selector Mobile App Bottom Sheet Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-3 relative">
-            {/* Mobile Bottom Sheet Drag Handle */}
-            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-2xl max-h-[88vh] rounded-[32px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[0_20px_50px_rgba(211,47,47,0.25)] flex flex-col space-y-3 relative animate-scale-up">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-lg font-normal text-brandRed tracking-tight">Select Warehouse Products</h3>
@@ -502,10 +499,8 @@ export default function ShopOwnerInventoryPage() {
 
       {/* View Product Details Modal */}
       {productToView && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-lg rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative">
-            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
+          <div className="w-full max-w-lg max-h-[88vh] rounded-[32px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[0_20px_50px_rgba(211,47,47,0.25)] flex flex-col space-y-4 relative animate-scale-up">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-lg font-normal text-brandRed tracking-tight">Product Details</h3>
@@ -581,13 +576,11 @@ export default function ShopOwnerInventoryPage() {
 
       {/* Edit Product Dialog Modal */}
       {productToEdit && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
           <form
             onSubmit={handleSaveEdit}
-            className="w-full max-w-lg max-h-[90vh] rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-4 relative"
+            className="w-full max-w-lg max-h-[88vh] rounded-[32px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[0_20px_50px_rgba(211,47,47,0.25)] flex flex-col space-y-4 relative animate-scale-up"
           >
-            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
-
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
               <div>
                 <h3 className="text-lg font-normal text-brandRed tracking-tight">Edit Product</h3>
@@ -727,7 +720,7 @@ export default function ShopOwnerInventoryPage() {
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-sm rounded-[30px] bg-white border border-[#F3E5E5] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] text-center space-y-4">
+          <div className="w-full max-w-sm rounded-[30px] bg-white border border-[#F3E5E5] p-5 sm:p-6 shadow-[0_20px_50px_rgba(211,47,47,0.25)] text-center space-y-4 animate-scale-up">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-brandRed flex items-center justify-center mx-auto">
               <Trash2 size={24} />
             </div>
