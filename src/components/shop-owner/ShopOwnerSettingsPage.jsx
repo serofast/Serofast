@@ -49,9 +49,6 @@ export default function ShopOwnerSettingsPage() {
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Store Settings &amp; Profile
         </h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Manage your store details, customer QR code, and account session.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

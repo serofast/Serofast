@@ -126,14 +126,6 @@ export default function ShopOwnerOrdersPage() {
                     >
                       ● {isShipped ? "Shipped" : "Ready to Notify"}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedOrder(order)}
-                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                      title="View Order Details"
-                    >
-                      <Eye size={17} />
-                    </button>
                   </div>
                 </div>
 

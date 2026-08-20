@@ -709,7 +709,7 @@ export default function ShopOwnerInventoryPage() {
               </div>
 
               {/* Price, MRP Price, Stock Qty */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-normal text-slate-700 mb-1">Price (₹)</label>
                   <input

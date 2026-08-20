@@ -47,10 +47,7 @@ export default function ShopOwnerPayoutsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
             Payouts &amp; Settlements
-          </h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">
-            Instant UPI &amp; bank settlements for your campus orders with 0% platform commission.
-          </p>
+          </h1> 
         </div>
 
         <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-[#F3E5E5] px-3.5 py-1.5 text-xs font-normal text-brandRed self-start sm:self-auto">
