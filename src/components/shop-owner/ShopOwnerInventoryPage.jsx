@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, Search, Edit3, CheckCircle2, XCircle, X, Package, Loader2, ShoppingCart } from "lucide-react";
 import { initialSellerProducts } from "../../data/sellerData";
 import { fetchWarehouseProducts } from "../../lib/supabase";
-import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
+import { AppFormField } from "../reusable/form";
 import { AppMetricCard } from "../reusable";
 
 export default function ShopOwnerInventoryPage() {
@@ -15,17 +15,100 @@ export default function ShopOwnerInventoryPage() {
   const [warehouseProducts, setWarehouseProducts] = useState([]);
   const [loadingWarehouse, setLoadingWarehouse] = useState(false);
   const [selectedWarehouseIds, setSelectedWarehouseIds] = useState([]);
+  const [warehouseSearchQuery, setWarehouseSearchQuery] = useState("");
+  const [sheetHeight, setSheetHeight] = useState(120);
+  const [isSheetDragging, setIsSheetDragging] = useState(false);
+  const dragState = useRef(null);
+  const sheetHeightRef = useRef(120);
+  const suppressClickRef = useRef(false);
+
+  // A readable peek with the handle and complete selector header visible.
+  const peekHeight = 120;
+  const getExpandedHeight = () => Math.round(window.innerHeight * 0.92);
+  const updateSheetHeight = (height) => {
+    sheetHeightRef.current = height;
+    setSheetHeight(height);
+  };
+
+  const closeSheet = () => {
+    setIsModalOpen(false);
+    setSelectedWarehouseIds([]);
+  };
 
   useEffect(() => {
     if (isModalOpen) {
+      updateSheetHeight(peekHeight);
+      setWarehouseSearchQuery("");
       (async () => {
         setLoadingWarehouse(true);
-        const data = await fetchWarehouseProducts();
-        setWarehouseProducts(data);
-        setLoadingWarehouse(false);
+        try {
+          const data = await fetchWarehouseProducts();
+          setWarehouseProducts(data);
+        } finally {
+          setLoadingWarehouse(false);
+        }
       })();
     }
   }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isModalOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleResize = () => updateSheetHeight(Math.min(sheetHeightRef.current, getExpandedHeight()));
+    document.body.style.overflow = "hidden";
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [isModalOpen]);
+
+  const handleSheetPointerDown = (event) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    dragState.current = {
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startHeight: sheetHeightRef.current,
+      startTime: performance.now(),
+      hasMoved: false,
+    };
+    setIsSheetDragging(true);
+  };
+
+  const handleSheetPointerMove = (event) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const movedBy = drag.startY - event.clientY;
+    if (Math.abs(movedBy) > 3) drag.hasMoved = true;
+    const nextHeight = Math.max(peekHeight, Math.min(getExpandedHeight(), drag.startHeight + movedBy));
+    updateSheetHeight(nextHeight);
+  };
+
+  const handleSheetPointerEnd = (event) => {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+
+    const elapsed = Math.max(performance.now() - drag.startTime, 1);
+    const velocity = ((event.clientY - drag.startY) / elapsed) * 1000;
+    const expandedHeight = getExpandedHeight();
+    const midpoint = (peekHeight + expandedHeight) / 2;
+    const shouldExpand = velocity < -400 || sheetHeightRef.current >= midpoint;
+
+    dragState.current = null;
+    setIsSheetDragging(false);
+    updateSheetHeight(shouldExpand ? expandedHeight : peekHeight);
+
+    if (drag.hasMoved) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+
+  };
 
   const toggleStockStatus = (id) => {
     setProducts((prev) =>
@@ -47,33 +130,6 @@ export default function ShopOwnerInventoryPage() {
     );
   };
 
-  const handleAddWarehouseProductsToShop = () => {
-    if (selectedWarehouseIds.length === 0) return;
-
-    const selectedItems = warehouseProducts.filter((wp) =>
-      selectedWarehouseIds.includes(wp.id)
-    );
-
-    const newShopProducts = selectedItems.map((item) => ({
-      id: `prod-${item.id || Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      name: item.title || item.name || "Warehouse Product",
-      category: item.category || "Fashion",
-      price: item.price || 799,
-      originalPrice: item.original_price || (item.price ? item.price + 400 : 1199),
-      stock: 10,
-      status: "In Stock",
-      salesCount: 0,
-      image:
-        item.image_urls?.[0] ||
-        item.image ||
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=85",
-    }));
-
-    setProducts((prev) => [...newShopProducts, ...prev]);
-    setIsModalOpen(false);
-    setSelectedWarehouseIds([]);
-  };
-
   // KPI Metrics Calculation
   const inStockCount = products.filter((p) => p.status === "In Stock").length;
   const soldOutCount = products.filter((p) => p.status === "Out of Stock").length;
@@ -85,6 +141,11 @@ export default function ShopOwnerInventoryPage() {
     if (activeFilter === "In Stock") return p.status === "In Stock";
     if (activeFilter === "Sold Out") return p.status === "Out of Stock";
     return true;
+  });
+
+  const filteredWarehouseProducts = warehouseProducts.filter((product) => {
+    const searchableText = `${product.title || product.name || ""} ${product.category || ""}`;
+    return searchableText.toLowerCase().includes(warehouseSearchQuery.toLowerCase());
   });
 
   return (
@@ -304,10 +365,31 @@ export default function ShopOwnerInventoryPage() {
 
       {/* Warehouse Product Selector Mobile App Bottom Sheet Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] rounded-t-[35px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-3 relative">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs animate-fade-in font-sans font-sansation">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Select warehouse products"
+            onPointerDown={handleSheetPointerDown}
+            onPointerMove={handleSheetPointerMove}
+            onPointerUp={handleSheetPointerEnd}
+            onPointerCancel={handleSheetPointerEnd}
+            onClickCapture={(event) => {
+              if (!suppressClickRef.current) return;
+              event.preventDefault();
+              event.stopPropagation();
+            }}
+            style={{
+              height: `${sheetHeight}px`,
+              // Keep touch input with the sheet so every downward drag reaches snap logic.
+              touchAction: "none",
+            }}
+            className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-2xl overflow-hidden rounded-t-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-3 select-none cursor-grab active:cursor-grabbing ${
+              isSheetDragging ? "" : "transition-[height] duration-[220ms] ease-out"
+            }`}
+          >
             {/* Mobile Bottom Sheet Drag Handle */}
-            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0" />
 
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -316,7 +398,7 @@ export default function ShopOwnerInventoryPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsModalOpen(false)}
+                onClick={closeSheet}
                 aria-label="Close"
                 className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
               >
@@ -324,29 +406,42 @@ export default function ShopOwnerInventoryPage() {
               </button>
             </div>
 
-            {/* Selection Status */}
-            <div className="flex items-center justify-between rounded-[20px] bg-[#FAF8F5] px-4 py-2.5 border border-[#F3E5E5] shrink-0">
-              <span className="text-xs font-normal text-slate-700">Selected Products</span>
-              <span className="text-xs font-medium text-brandRed">
-                {selectedWarehouseIds.length} Selected
-              </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <AppFormField
+                icon={Search}
+                value={warehouseSearchQuery}
+                onChange={setWarehouseSearchQuery}
+                placeholder="Search warehouse products..."
+                className="flex-1"
+              />
+              {selectedWarehouseIds.length > 0 && (
+                <span
+                  aria-label={`${selectedWarehouseIds.length} products selected`}
+                  title={`${selectedWarehouseIds.length} products selected`}
+                  className="grid h-8 min-w-8 place-items-center rounded-full bg-brandRed px-2 text-xs font-semibold text-white shadow-[0_3px_8px_rgba(211,47,47,0.28)]"
+                >
+                  {selectedWarehouseIds.length}
+                </span>
+              )}
             </div>
 
             {/* Warehouse Products Grid View */}
-            <div className="flex-1 overflow-y-auto pr-1 py-1">
+            <div data-sheet-scroll className="flex-1 overflow-y-auto pr-1 py-1">
               {loadingWarehouse ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
                   <Loader2 size={32} className="animate-spin text-brandRed" />
                   <span className="text-xs font-normal">Loading warehouse products...</span>
                 </div>
-              ) : warehouseProducts.length === 0 ? (
+              ) : filteredWarehouseProducts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-2 text-slate-400">
                   <Package size={36} />
-                  <span className="text-xs font-normal">No warehouse products found.</span>
+                  <span className="text-xs font-normal">
+                    {warehouseProducts.length === 0 ? "No warehouse products found." : "No products match your search."}
+                  </span>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {warehouseProducts.map((p) => {
+                  {filteredWarehouseProducts.map((p) => {
                     const isChecked = selectedWarehouseIds.includes(p.id);
                     const imgUrl =
                       p.image_urls?.[0] ||
@@ -396,24 +491,6 @@ export default function ShopOwnerInventoryPage() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="pt-3 border-t border-slate-100 flex gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 h-12 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <AppFormButton
-                type="button"
-                onClick={handleAddWarehouseProductsToShop}
-                disabled={selectedWarehouseIds.length === 0}
-                className="flex-1"
-              >
-                Add {selectedWarehouseIds.length} Selected to Shop
-              </AppFormButton>
-            </div>
           </div>
         </div>
       )}
