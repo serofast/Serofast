@@ -111,6 +111,124 @@ export function Badge({ value }) {
 
 export const StatusBadge = Badge;
 
+export function ProgressCircle({
+  percentage = 75,
+  size = 54,
+  strokeWidth = 5,
+  color = "#D32F2F",
+  trackColor = "#F3E5E5",
+  label,
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, percentage)) / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center shrink-0">
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={trackColor}
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          className="transition-all duration-500 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-bold text-slate-800">
+        {label ?? `${Math.round(percentage)}%`}
+      </span>
+    </div>
+  );
+}
+
+export function DonutChart({
+  data = [],
+  size = 130,
+  strokeWidth = 14,
+  centerText,
+  centerSubtext,
+}) {
+  const total = data.reduce((sum, item) => sum + (item.value || 0), 0) || 1;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  let cumulativePercent = 0;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-5">
+      <div className="relative inline-flex items-center justify-center shrink-0">
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="#F3E5E5"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+          />
+          {data.map((item, index) => {
+            const percent = (item.value || 0) / total;
+            const strokeDasharray = `${percent * circumference} ${circumference}`;
+            const strokeDashoffset = -cumulativePercent * circumference;
+            cumulativePercent += percent;
+
+            return (
+              <circle
+                key={item.label || index}
+                cx={size / 2}
+                cy={size / 2}
+                r={radius}
+                stroke={item.color || "#D32F2F"}
+                strokeWidth={strokeWidth}
+                fill="transparent"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-500 ease-out"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute text-center flex flex-col items-center justify-center">
+          <span className="text-base font-bold text-slate-900 leading-none">
+            {centerText ?? total}
+          </span>
+          {centerSubtext && (
+            <span className="text-[9.5px] text-slate-400 font-normal mt-0.5">
+              {centerSubtext}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 flex-1 w-full text-xs">
+        {data.map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <span
+              className="h-2.5 w-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: item.color || "#D32F2F" }}
+            />
+            <span className="text-slate-600 truncate">{item.label}</span>
+            <span className="font-semibold text-slate-900 ml-auto">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Kpi({ label, value, change, tone = "red" }) {
   const toneClassName = kpiTones[tone] ?? kpiTones.red;
 

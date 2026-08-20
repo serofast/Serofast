@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, CheckCircle2, XCircle } from "lucide-react";
 import {
   Card,
   ConfirmDialog,
@@ -102,29 +103,32 @@ export default function WithdrawalsPage() {
                       <StatusBadge value={row.status} />
                     </td>
                     <td className="px-5 py-4">
-                      <div className="flex min-w-max gap-2">
+                      <div className="flex items-center gap-1.5 min-w-max">
                         <button
                           type="button"
                           onClick={() => setSelected(row)}
-                          className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold"
+                          title="Review Request Details"
+                          className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder text-slate-600 hover:border-brandRed hover:text-brandRed transition"
                         >
-                          Review
+                          <Eye size={16} />
                         </button>
                         {row.status === "Pending" && (
                           <>
                             <button
                               type="button"
                               onClick={() => requestAction(row, "Approved")}
-                              className="min-h-10 rounded-lg bg-brandRed px-3 text-xs font-semibold text-white"
+                              title="Approve Withdrawal"
+                              className="flex h-9 items-center justify-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white hover:bg-emerald-700 transition"
                             >
-                              Approve
+                              <CheckCircle2 size={15} /> Approve
                             </button>
                             <button
                               type="button"
                               onClick={() => requestAction(row, "Rejected")}
-                              className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold"
+                              title="Reject Withdrawal"
+                              className="flex h-9 items-center justify-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
                             >
-                              Reject
+                              <XCircle size={15} /> Reject
                             </button>
                           </>
                         )}

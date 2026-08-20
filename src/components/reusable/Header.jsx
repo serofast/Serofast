@@ -127,26 +127,23 @@ export default function Header({ onOpenAppTeaser }) {
           className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] text-[13px] font-semibold text-[#333]"
           aria-label="Section Navigation"
         >
+          <a href="#freebuff" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 bg-brandRed/10 text-brandRed font-bold active:scale-95 flex items-center gap-1">
+            <Sparkles size={13} className="text-amber-500" /> FreeBuff Deals
+          </a>
+          <a href="#buffets" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Campus Buffets
+          </a>
+          <a href="#vouchers" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
+            Student Vouchers
+          </a>
           <a href="#shops" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
             Partner Campus Shops
           </a>
-          <a href="#products" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Campus Products
-          </a>
           <a href="#comparison" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Shop Owner Profit Calculator
-          </a>
-          <a href="#demo" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Platform Demo
+            Profit Calculator
           </a>
           <a href="#about" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
             Ecosystem
-          </a>
-          <a href="#faq" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            FAQ
-          </a>
-          <a href="#enquiry" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Contact Support
           </a>
           <span className="h-4 w-px bg-gray-200" />
           <div className="flex items-center gap-1 overflow-x-auto">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, Pencil, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Card, EmptyState, Pagination, StatusBadge } from "../ui";
 
 const compactKeys = /^(id|status|stock|orders|items|quantity|rating|priority)$/i;
@@ -27,7 +28,7 @@ function rawCellValue(row, column) {
 }
 
 export default function ResourceTable({
-  columns = [], rows = [], onView = () => {}, onToggle = () => {}, sortKey,
+  columns = [], rows = [], onView = () => {}, onToggle = () => {}, onDelete = null, sortKey,
   sortDirection, onSort = () => {}, selectedIds = [], onToggleSelected = () => {},
   onToggleAll = () => {}, page, pageCount, pageSize, totalCount, onPageChange,
   onPageSizeChange, onClearFilters,
@@ -101,17 +102,47 @@ export default function ResourceTable({
                         </div>
                       </td>
                     ))}
-                    <td className="sticky right-0 z-10 bg-white px-4 py-4"
+                    <td className="sticky right-0 z-10 bg-white px-4 py-4 text-right"
                       onClick={(event) => event.stopPropagation()}>
-                      <div className="flex min-w-max gap-2 justify-end">
-                        <button type="button" onClick={() => onView(row)}
-                          className="flex h-9 items-center justify-center rounded-[30px] bg-brandRed px-4 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark transition cursor-pointer">
-                          View
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => onView(row)}
+                          className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onView(row)}
+                          className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                          title="Edit Record"
+                        >
+                          <Pencil size={16} />
                         </button>
                         {row.status && (
-                          <button type="button" onClick={() => onToggle(row)}
-                            className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-[11px] font-medium text-slate-600 hover:border-brandRed hover:text-brandRed transition cursor-pointer">
-                            {row.status === "Active" ? "Suspend" : "Activate"}
+                          <button
+                            type="button"
+                            onClick={() => onToggle(row)}
+                            className={`rounded-full p-2 transition cursor-pointer ${
+                              row.status === "Active"
+                                ? "text-emerald-600 hover:bg-emerald-50"
+                                : "text-amber-600 hover:bg-amber-50"
+                            }`}
+                            title={row.status === "Active" ? "Suspend Record" : "Activate Record"}
+                          >
+                            {row.status === "Active" ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                          </button>
+                        )}
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => onDelete(row)}
+                            className="rounded-full p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                            title="Delete Record"
+                          >
+                            <Trash2 size={16} />
                           </button>
                         )}
                       </div>
@@ -151,23 +182,46 @@ export default function ResourceTable({
                     </div>
                   ))}
                 </dl>
-                <div className="mt-3 flex gap-2">
-                  <button type="button" onClick={() => onView(row)}
-                    className="min-h-9 flex-1 rounded-[30px] bg-brandRed px-3 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)]">View</button>
+                <div className="mt-3 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => onView(row)}
+                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                      title="View Details"
+                    >
+                      <Eye size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onView(row)}
+                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
+                      title="Edit Record"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    {onDelete && (
+                      <button
+                        type="button"
+                        onClick={() => onDelete(row)}
+                        className="p-1.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                        title="Delete Record"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+
                   {row.status && (
-                    <button type="button" aria-expanded={expandedActionsId === row.id}
-                      onClick={() => setExpandedActionsId((current) => current === row.id ? null : row.id)}
-                      className="min-h-9 flex-1 rounded-[30px] border border-[#E5E7EB] px-3 text-[11px] font-medium text-slate-600">More</button>
+                    <button
+                      type="button"
+                      onClick={() => onToggle(row)}
+                      className="rounded-[30px] border border-[#E5E7EB] px-3 py-1 text-[11px] font-medium text-slate-600 hover:border-brandRed hover:text-brandRed transition cursor-pointer"
+                    >
+                      {row.status === "Active" ? "Suspend" : "Activate"}
+                    </button>
                   )}
                 </div>
-                {expandedActionsId === row.id && row.status && (
-                  <div className="mt-2 rounded-[20px] bg-[#FAF8F5] p-3 border border-[#F3E5E5]">
-                    <button type="button" onClick={() => onToggle(row)}
-                      className="min-h-9 w-full rounded-[30px] border border-brandRed bg-white px-3 text-[11px] font-semibold text-brandRed">
-                      {row.status === "Active" ? "Suspend record" : "Activate record"}
-                    </button>
-                  </div>
-                )}
               </article>
             ))}
           </div>

@@ -20,5 +20,10 @@ export { default as Logo } from "./Logo";
 export { default as AppBackButton } from "./AppBackButton";
 export { default as AppMetricCard } from "./AppMetricCard";
 
+// FreeBuff Homepage Components
+export { default as FreeBuffHeroBanner } from "./FreeBuffHeroBanner";
+export { default as FreeBuffDealCard } from "./FreeBuffDealCard";
+export { default as FreeBuffClaimModal } from "./FreeBuffClaimModal";
+
 // Reusable Form System Components
 export * from "./form";

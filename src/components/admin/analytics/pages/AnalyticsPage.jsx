@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Kpi, PageHeader, StatGrid } from "../../shared/ui";
+import { Card, Kpi, StatGrid, DonutChart, ProgressCircle } from "../../shared/ui";
 import { salesSeries, shops } from "../../shared/adminData";
 
 const customerMetrics = [
@@ -20,6 +20,13 @@ const shopMetrics = [
   ["Low Performers", "18"],
 ];
 
+const categoryDonutData = [
+  { label: "Fashion", value: 450, color: "#D32F2F" },
+  { label: "Electronics", value: 320, color: "#0284C7" },
+  { label: "Beauty", value: 210, color: "#059669" },
+  { label: "Home", value: 140, color: "#D97706" },
+];
+
 export default function AnalyticsPage() {
   const [range, setRange] = useState("30 Days");
   const [shop, setShop] = useState("");
@@ -33,7 +40,7 @@ export default function AnalyticsPage() {
           Marketplace Analytics
         </h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Track revenue, orders, customers, shops, products, conversion, and refunds.
+          Track revenue, orders, customer retention, and shop performance.
         </p>
       </div>
 
@@ -61,13 +68,47 @@ export default function AnalyticsPage() {
       </Card>
 
       <StatGrid>
-        <Kpi label="Revenue" value="₹12.48L" change={`For ${range}`} />
-        <Kpi label="Orders" value="428" change="+8.2%" />
-        <Kpi label="Customers" value="18,492" change="+9.8%" />
-        <Kpi label="AOV" value="₹2,916" change="+3.4%" />
-        <Kpi label="Conversion" value="4.82%" change="+0.6%" />
-        <Kpi label="Refund Rate" value="1.46%" change="-0.2%" />
+        <Kpi label="Revenue" value="₹12.48L" change={`For ${range}`} tone="red" />
+        <Kpi label="Orders" value="428" change="+8.2%" tone="green" />
+        <Kpi label="Customers" value="18,492" change="+9.8%" tone="blue" />
+        <Kpi label="AOV" value="₹2,916" change="+3.4%" tone="amber" />
+        <Kpi label="Conversion" value="4.82%" change="+0.6%" tone="green" />
+        <Kpi label="Refund Rate" value="1.46%" change="-0.2%" tone="amber" />
       </StatGrid>
+
+      {/* Category Sales Circular Donut & Target Gauges */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Category Share</h3>
+            <p className="text-[11px] text-slate-400 font-normal">Revenue distribution by category</p>
+          </div>
+          <div className="pt-2">
+            <DonutChart data={categoryDonutData} centerText="1,120" centerSubtext="Sales Count" />
+          </div>
+        </div>
+
+        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-base font-normal text-slate-800">Retention & Growth</h3>
+            <p className="text-[11px] text-slate-400 font-normal">User engagement gauges</p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 pt-2 text-center">
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={84} color="#059669" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">Repeat Orders</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={72} color="#0284C7" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">Shop Growth</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 p-3 rounded-[24px] bg-[#FAF8F5] border border-slate-100">
+              <ProgressCircle percentage={95} color="#D32F2F" size={56} />
+              <span className="text-[11px] font-medium text-slate-700">App Uptime</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] space-y-4">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-3">
@@ -79,7 +120,7 @@ export default function AnalyticsPage() {
           </div>
           <span className="text-xs font-medium text-brandRed">{range}</span>
         </div>
-        <div className="flex h-48 items-end gap-2">
+        <div className="flex h-44 items-end gap-2">
           {salesSeries.map((value, index) => (
             <div key={`${value}-${index}`} className="flex h-full flex-1 items-end">
               <div
