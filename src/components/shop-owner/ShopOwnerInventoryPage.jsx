@@ -42,7 +42,7 @@ export default function ShopOwnerInventoryPage() {
 
   useEffect(() => {
     if (isModalOpen) {
-      updateSheetHeight(peekHeight);
+      updateSheetHeight(getExpandedHeight());
       setWarehouseSearchQuery("");
       (async () => {
         setLoadingWarehouse(true);
@@ -467,7 +467,7 @@ export default function ShopOwnerInventoryPage() {
               touchAction: "none",
             }}
             className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-2xl overflow-hidden rounded-t-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-3 select-none cursor-grab active:cursor-grabbing ${
-              isSheetDragging ? "" : "transition-[height] duration-[220ms] ease-out"
+              isSheetDragging ? "" : "transition-[height] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)]"
             }`}
           >
             {/* Mobile Bottom Sheet Drag Handle */}
@@ -475,7 +475,6 @@ export default function ShopOwnerInventoryPage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="text-lg font-normal text-brandRed tracking-tight">Select Warehouse Products</h3>
-                <p className="text-xs text-slate-500 font-normal mt-0.5">Pick dresses/items from Admin Warehouse to stock in your shop.</p>
               </div>
               <button
                 type="button"
@@ -534,30 +533,30 @@ export default function ShopOwnerInventoryPage() {
                         key={p.id}
                         type="button"
                         onClick={() => toggleWarehouseSelection(p.id)}
-                        className={`relative rounded-[24px] border-2 p-2.5 text-left transition-all active:scale-[0.97] cursor-pointer ${
+                        className={`relative overflow-hidden rounded-[26px] border-2 bg-white text-left shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all active:scale-[0.97] cursor-pointer ${
                           isChecked
-                            ? "border-brandRed bg-rose-50/40 shadow-xs"
-                            : "border-[#E5E7EB] bg-white hover:border-slate-300"
+                            ? "border-brandRed ring-2 ring-rose-100"
+                            : "border-transparent hover:border-slate-200"
                         }`}
                       >
                         {isChecked && (
-                          <div className="absolute top-2 right-2 z-10">
-                            <CheckCircle2 size={20} className="text-brandRed drop-shadow-sm" fill="white" />
+                          <div className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-full bg-white shadow-sm">
+                            <CheckCircle2 size={18} className="text-brandRed" fill="white" />
                           </div>
                         )}
 
                         <img
                           src={imgUrl}
                           alt={p.title || p.name}
-                          className="w-full aspect-square rounded-[18px] object-cover bg-slate-100"
+                          className="w-full aspect-square object-cover bg-slate-100"
                         />
 
-                        <div className="mt-2 space-y-0.5">
-                          <h4 className="text-xs font-normal text-slate-900 leading-tight line-clamp-2">
+                        <div className="space-y-3 p-4">
+                          <h4 className="min-h-10 text-base font-semibold text-slate-900 leading-snug line-clamp-2">
                             {p.title || p.name}
                           </h4>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-sm font-normal text-brandRed">₹{p.price}</span>
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                            <span className="text-2xl font-semibold tracking-tight text-slate-900">₹{p.price}</span>
                             {p.original_price && p.original_price > p.price && (
                               <span className="text-[10px] text-slate-400 line-through font-normal">
                                 ₹{p.original_price}
