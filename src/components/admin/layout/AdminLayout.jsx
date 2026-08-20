@@ -130,8 +130,8 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      <div className="lg:pl-[272px]">
-        <header className="sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-[#E5E7EB] bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
+      <div className="min-w-0 lg:pl-[272px]">
+        <header className="sticky top-0 z-50 flex h-14 w-full items-center justify-between gap-3 border-b border-[#E5E7EB] bg-white/95 px-3 shadow-2xs backdrop-blur-md sm:px-4 lg:px-5 xl:px-6">
           <div className="flex flex-1 items-center gap-3">
             <button
               type="button"
@@ -241,7 +241,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-6 max-w-5xl mx-auto pb-20 md:pb-6 w-full min-w-0">
+        <main className="w-full min-w-0 overflow-x-hidden px-3 py-4 pb-20 sm:px-4 sm:py-5 lg:px-5 xl:px-6 md:pb-6">
           <AdminBreadcrumbs />
           {children}
         </main>

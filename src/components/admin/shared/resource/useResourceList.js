@@ -130,6 +130,21 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
     setSelectedIds([]);
   }
 
+  function reorderRow(id, direction) {
+    setRows((current) => {
+      const index = current.findIndex((row) => row.id === id);
+      const target = index + direction;
+
+      if (index < 0 || target < 0 || target >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
   function toggleSelected(id) {
     setSelectedIds((current) =>
       current.includes(id)
@@ -190,6 +205,7 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
     toggleVisibleRows,
     updateRow,
     updateRows,
+    reorderRow,
     createRow,
     removeRows,
     clearFilters,

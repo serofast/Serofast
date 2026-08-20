@@ -2,6 +2,7 @@ import Icon from "./legacyIcon";
 
 const statusStyles = {
   Active: "bg-emerald-50 text-emerald-700",
+  Enabled: "bg-emerald-50 text-emerald-700",
   Verified: "bg-emerald-50 text-emerald-700",
   Completed: "bg-emerald-50 text-emerald-700",
   Published: "bg-emerald-50 text-emerald-700",
@@ -10,6 +11,7 @@ const statusStyles = {
   Pending: "bg-amber-50 text-amber-700",
   Processing: "bg-blue-50 text-blue-700",
   "In Progress": "bg-blue-50 text-blue-700",
+  Investigating: "bg-blue-50 text-blue-700",
   Shipped: "bg-sky-50 text-sky-700",
   Delivered: "bg-emerald-50 text-emerald-700",
   Returned: "bg-orange-50 text-orange-700",
@@ -29,6 +31,7 @@ const statusStyles = {
   Closed: "bg-slate-100 text-slate-700",
   Hidden: "bg-slate-100 text-slate-700",
   Disabled: "bg-slate-100 text-slate-700",
+  Dismissed: "bg-slate-100 text-slate-700",
   Inactive: "bg-slate-100 text-slate-700",
   Flagged: "bg-rose-50 text-rose-700",
   Critical: "bg-rose-50 text-rose-700",
@@ -268,70 +271,6 @@ export function SearchBar({
   );
 }
 
-export function Table({
-  columns = [],
-  rows = [],
-  onSelect,
-  actions,
-}) {
-  return (
-    <Card className="overflow-hidden rounded-[35px] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
-      <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-xs">
-          <thead className="bg-[#FAF8F5] border-b border-slate-100">
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  className="whitespace-nowrap px-5 py-3.5 font-normal text-slate-600"
-                >
-                  {column.label}
-                </th>
-              ))}
-              {actions && (
-                <th className="px-5 py-3.5 font-normal text-slate-600 text-right">
-                  Actions
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-normal">
-            {rows.map((row, rowIndex) => (
-              <tr
-                key={row.id ?? rowIndex}
-                onClick={() => onSelect?.(row)}
-                className={`transition ${onSelect ? "cursor-pointer hover:bg-slate-50/50" : ""}`}
-              >
-                {columns.map((column) => (
-                  <td
-                    key={column.key}
-                    className="max-w-xs px-5 py-4 text-sm text-slate-600"
-                  >
-                    <div className="truncate">
-                      {column.render ? column.render(row) : row[column.key] ?? "—"}
-                    </div>
-                  </td>
-                ))}
-                {actions && (
-                  <td
-                    className="px-5 py-4"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <div className="flex gap-1.5 justify-end">{actions(row)}</div>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
-        {rows.length} records
-      </div>
-    </Card>
-  );
-}
-
 export function Drawer({ open, onClose, title, children }) {
   if (!open) {
     return null;
@@ -408,23 +347,26 @@ export function FilterBar({
   setStatus = () => {},
   options = [],
   onClear = () => {},
+  showStatus = true,
 }) {
   return (
     <div className="mb-4 flex min-w-0 flex-col gap-3 lg:flex-row">
       <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
       <div className="flex min-w-0 gap-2 sm:min-w-[260px]">
-        <select
-          value={status}
-          onChange={(event) => setStatus(event.target.value)}
-          className="h-11 min-w-0 flex-1 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-brandRed"
-        >
-          <option value="">All statuses</option>
-          {options.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+        {showStatus && (
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            className="h-11 min-w-0 flex-1 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-brandRed"
+          >
+            <option value="">All statuses</option>
+            {options.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        )}
         <button
           type="button"
           aria-label="Clear filters"
@@ -432,6 +374,42 @@ export function FilterBar({
           className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
         >
           <Icon name="refresh" size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function BulkActionBar({ count = 0, actions = [], onClear = () => {} }) {
+  if (count === 0) return null;
+
+  const toneClasses = {
+    default: "border border-[#E5E7EB] bg-white text-slate-600 hover:border-brandRed hover:text-brandRed",
+    success: "border border-[#E5E7EB] bg-white text-slate-600 hover:border-emerald-500 hover:text-emerald-700",
+    danger: "bg-brandRed text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark",
+  };
+
+  return (
+    <div className="mb-4 flex flex-col gap-3 rounded-[28px] border border-[#F3E5E5] bg-white p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs font-medium text-slate-700">{count} selected</p>
+      <div className="flex flex-wrap gap-2">
+        {actions.map((action) => (
+          <button
+            key={action.label}
+            type="button"
+            disabled={action.disabled}
+            onClick={action.onClick}
+            className={`flex h-9 items-center justify-center rounded-[30px] px-3 text-[11px] font-medium transition disabled:cursor-not-allowed disabled:opacity-40 ${toneClasses[action.tone ?? "default"]}`}
+          >
+            {action.label}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={onClear}
+          className="flex h-9 items-center justify-center px-3 text-[11px] font-medium text-slate-500"
+        >
+          Clear selection
         </button>
       </div>
     </div>

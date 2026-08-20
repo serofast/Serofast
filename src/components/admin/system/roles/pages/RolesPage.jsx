@@ -46,7 +46,7 @@ export default function RolesPage() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="min-w-0 space-y-6 pb-6 font-sans font-sansation animate-fade-in">
       <div>
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Roles & Permissions

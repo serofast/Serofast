@@ -1,31 +1,57 @@
 import { useState } from "react";
-import { Eye, CheckCircle2, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
-  Card,
+  Building2,
+  CheckCircle2,
+  Eye,
+  History,
+  Landmark,
+  XCircle,
+} from "lucide-react";
+import {
+  BulkActionBar,
   ConfirmDialog,
   Drawer,
-  EmptyState,
+  FilterBar,
   PageHeader,
   StatGrid,
-  StatusBadge,
   StatusCard,
   Toast,
 } from "../../shared/ui";
-import { withdrawals } from "../../shared/adminData";
+import ResourceTable from "../../shared/resource/ResourceTable";
+import { useResourceList } from "../../shared/resource/useResourceList";
+import { shops, withdrawals } from "../../shared/adminData";
 
 const statuses = ["Pending", "Approved", "Processing", "Completed", "Rejected"];
+const seed = withdrawals.map((row, index) => ({
+  ...row,
+  requested: row.requested ?? `${16 - index} Aug 2026`,
+}));
+
+const columns = [
+  { key: "id", label: "Request", minWidth: 135 },
+  { key: "shop", label: "Shop", minWidth: 190 },
+  { key: "owner", label: "Owner", minWidth: 180 },
+  { key: "amount", label: "Amount" },
+  { key: "method", label: "Method" },
+  { key: "status", label: "Status" },
+  { key: "requested", label: "Requested" },
+];
 
 export default function WithdrawalsPage() {
-  const [rows, setRows] = useState(withdrawals);
+  const navigate = useNavigate();
+  const resource = useResourceList(seed);
   const [selected, setSelected] = useState(null);
+  const [drawerSection, setDrawerSection] = useState("review");
   const [pendingAction, setPendingAction] = useState(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
-  const [activeStatus, setActiveStatus] = useState("");
-  const displayedRows = activeStatus
-    ? rows.filter((row) => row.status === activeStatus)
-    : rows;
+
+  function openDrawer(row, section = "review") {
+    setSelected(resource.rows.find((item) => item.id === row.id) ?? row);
+    setDrawerSection(section);
+  }
 
   function requestAction(row, status) {
     setReason("");
@@ -34,146 +60,160 @@ export default function WithdrawalsPage() {
   }
 
   function confirmAction() {
+    if (!pendingAction) return;
     if (pendingAction.status === "Rejected" && !reason.trim()) {
       setReasonError("A rejection reason is required.");
       return;
     }
 
-    setRows((current) =>
-      current.map((row) =>
-        row.id === pendingAction.row.id
-          ? { ...row, status: pendingAction.status, reason: reason.trim() }
-          : row,
-      ),
+    const patch = {
+      status: pendingAction.status,
+      reason: reason.trim(),
+    };
+    resource.updateRow(pendingAction.row.id, patch);
+    if (selected?.id === pendingAction.row.id) {
+      setSelected((current) => ({ ...current, ...patch }));
+    }
+    setToast(
+      `Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()}.`,
     );
-    setToast(`Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()}.`);
     setPendingAction(null);
   }
 
+  function viewShop(row) {
+    const shop = shops.find((item) => item.shop === row.shop);
+    if (shop) {
+      navigate(`/admin/shops/${shop.id}`);
+    } else {
+      setToast("The linked shop record is not available in this frontend dataset.");
+    }
+  }
+
+  function withdrawalActions(row) {
+    return [
+      {
+        label: "Review Withdrawal",
+        shortLabel: "Review",
+        icon: Eye,
+        tone: "primary",
+        onClick: () => openDrawer(row),
+      },
+      {
+        label: "Approve Withdrawal",
+        shortLabel: "Approve",
+        icon: CheckCircle2,
+        tone: "success",
+        hidden: row.status !== "Pending",
+        onClick: () => requestAction(row, "Approved"),
+      },
+      {
+        label: "Reject Withdrawal",
+        shortLabel: "Reject",
+        icon: XCircle,
+        tone: "danger",
+        hidden: row.status !== "Pending",
+        onClick: () => requestAction(row, "Rejected"),
+      },
+      {
+        label: "View Shop",
+        icon: Building2,
+        onClick: () => viewShop(row),
+      },
+      {
+        label: "View Bank Details",
+        icon: Landmark,
+        onClick: () => openDrawer(row, "bank"),
+      },
+      {
+        label: "View History",
+        icon: History,
+        onClick: () => openDrawer(row, "history"),
+      },
+    ];
+  }
+
   return (
-    <div>
+    <div className="min-w-0">
       <PageHeader
         title="Withdrawals"
         description="Review, approve, reject, and monitor seller payout requests."
       />
 
-      <StatGrid>
+      <StatGrid className="mb-5">
         {statuses.map((status) => (
           <StatusCard
             key={status}
             label={status}
-            value={rows.filter((row) => row.status === status).length}
+            value={resource.rows.filter((row) => row.status === status).length}
             description={status === "Pending" ? "Needs review" : "Current requests"}
-            tone={status === "Pending" ? "amber" : status === "Rejected" ? "rose" : "green"}
-            onClick={() => setActiveStatus((current) => current === status ? "" : status)}
+            tone={
+              status === "Pending"
+                ? "amber"
+                : status === "Rejected"
+                  ? "rose"
+                  : "green"
+            }
+            onClick={() =>
+              resource.setStatus(resource.status === status ? "" : status)
+            }
           />
         ))}
       </StatGrid>
 
-      <Card className="mt-6 overflow-hidden">
-        {displayedRows.length === 0 ? (
-          <EmptyState title="No withdrawal requests" />
-        ) : (
-          <>
-          <div className="hidden overflow-x-auto md:block">
-            <table className="min-w-[860px] text-left">
-              <thead className="bg-lightBackground">
-                <tr>
-                  {["Request", "Shop", "Owner", "Amount", "Method", "Status", "Actions"].map(
-                    (heading) => (
-                      <th
-                        key={heading}
-                        className="px-5 py-3.5 text-xs font-semibold uppercase tracking-wide text-textMuted"
-                      >
-                        {heading}
-                      </th>
-                    ),
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-lightBorder">
-                {displayedRows.map((row) => (
-                  <tr key={row.id}>
-                    <td className="px-5 py-4 text-sm font-semibold">{row.id}</td>
-                    <td className="px-5 py-4 text-sm">{row.shop}</td>
-                    <td className="px-5 py-4 text-sm text-textSecondary">{row.owner}</td>
-                    <td className="px-5 py-4 text-sm font-semibold">{row.amount}</td>
-                    <td className="px-5 py-4 text-sm text-textSecondary">{row.method}</td>
-                    <td className="px-5 py-4">
-                      <StatusBadge value={row.status} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-1.5 min-w-max">
-                        <button
-                          type="button"
-                          onClick={() => setSelected(row)}
-                          title="Review Request Details"
-                          className="grid h-9 w-9 place-items-center rounded-lg border border-lightBorder text-slate-600 hover:border-brandRed hover:text-brandRed transition"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        {row.status === "Pending" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => requestAction(row, "Approved")}
-                              title="Approve Withdrawal"
-                              className="flex h-9 items-center justify-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white hover:bg-emerald-700 transition"
-                            >
-                              <CheckCircle2 size={15} /> Approve
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => requestAction(row, "Rejected")}
-                              title="Reject Withdrawal"
-                              className="flex h-9 items-center justify-center gap-1 rounded-lg border border-rose-200 bg-rose-50 px-3 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
-                            >
-                              <XCircle size={15} /> Reject
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="divide-y divide-lightBorder md:hidden">
-            {displayedRows.map((row) => (
-              <article key={row.id} className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-semibold">{row.shop}</p>
-                    <p className="mt-1 truncate text-xs text-textMuted">{row.id} · {row.owner}</p>
-                  </div>
-                  <StatusBadge value={row.status} />
-                </div>
-                <div className="mt-4 flex items-end justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-textMuted">Amount</p>
-                    <p className="font-bold">{row.amount}</p>
-                  </div>
-                  <button type="button" onClick={() => setSelected(row)}
-                    className="min-h-10 rounded-lg bg-brandRed px-4 text-xs font-semibold text-white">
-                    Review
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-          </>
-        )}
-      </Card>
+      <FilterBar
+        value={resource.search}
+        setValue={resource.setSearch}
+        placeholder="Search withdrawal requests..."
+        status={resource.status}
+        setStatus={resource.setStatus}
+        options={resource.statuses}
+        onClear={resource.clearFilters}
+      />
+
+      <BulkActionBar
+        count={resource.selectedIds.length}
+        actions={[]}
+        onClear={() => resource.setSelectedIds([])}
+      />
+
+      <ResourceTable
+        columns={columns}
+        rows={resource.visibleRows}
+        rowActions={withdrawalActions}
+        onView={(row) => openDrawer(row)}
+        sortKey={resource.sortKey}
+        sortDirection={resource.sortDirection}
+        onSort={resource.changeSort}
+        selectedIds={resource.selectedIds}
+        onToggleSelected={resource.toggleSelected}
+        onToggleAll={resource.toggleVisibleRows}
+        page={resource.page}
+        pageCount={resource.pageCount}
+        pageSize={resource.pageSize}
+        totalCount={resource.totalCount}
+        onPageChange={resource.setPage}
+        onPageSizeChange={resource.changePageSize}
+        onClearFilters={resource.clearFilters}
+        loading={resource.loading}
+        error={resource.error}
+        onRetry={resource.retry}
+        emptyTitle="No withdrawal requests match your filters"
+      />
 
       <Drawer
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        title="Withdrawal review"
+        title={
+          drawerSection === "bank"
+            ? "Bank details"
+            : drawerSection === "history"
+              ? "Withdrawal history"
+              : "Withdrawal review"
+        }
       >
-        <div className="space-y-4">
-          {selected &&
-            Object.entries(selected).map(([key, value]) => (
+        {selected && drawerSection === "review" && (
+          <div className="space-y-4">
+            {Object.entries(selected).map(([key, value]) => (
               <div
                 key={key}
                 className="flex items-start justify-between gap-5 border-b border-lightBorder pb-3 text-sm"
@@ -182,25 +222,96 @@ export default function WithdrawalsPage() {
                 <span className="text-right font-semibold">{String(value)}</span>
               </div>
             ))}
-          <div className="rounded-xl bg-promoHighlight p-4 text-sm text-textSecondary">
-            Bank details are intentionally masked in Phase 4. Production access must
-            be permission-controlled and audited by the backend.
+            <div className="grid gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => viewShop(selected)}
+                className="h-10 rounded-[30px] border border-lightBorder px-4 text-xs font-medium"
+              >
+                View Shop
+              </button>
+              <button
+                type="button"
+                onClick={() => setDrawerSection("bank")}
+                className="h-10 rounded-[30px] border border-lightBorder px-4 text-xs font-medium"
+              >
+                View Bank Details
+              </button>
+            </div>
+            {selected.status === "Pending" && (
+              <div className="grid gap-2 border-t border-lightBorder pt-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => requestAction(selected, "Approved")}
+                  className="h-10 rounded-[30px] bg-emerald-600 px-4 text-xs font-semibold text-white"
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  onClick={() => requestAction(selected, "Rejected")}
+                  className="h-10 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white"
+                >
+                  Reject
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {selected && drawerSection === "bank" && (
+          <div className="space-y-4 text-sm">
+            <p className="rounded-[20px] bg-promoHighlight p-4 text-textSecondary">
+              Bank details are masked in Phase 4. Production access must be
+              permission-controlled and audited by the backend.
+            </p>
+            {[
+              ["Account holder", selected.owner],
+              ["Bank", "SeroFast verified bank"],
+              ["Account", "•••• •••• 4821"],
+              ["IFSC", "SERO•••142"],
+            ].map(([label, value]) => (
+              <div key={label} className="flex justify-between gap-4 border-b border-lightBorder pb-3">
+                <span className="text-textMuted">{label}</span>
+                <span className="font-semibold">{value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {selected && drawerSection === "history" && (
+          <div className="space-y-3 text-sm">
+            {[
+              [selected.requested, "Withdrawal request submitted"],
+              ["Current", `Status: ${selected.status}`],
+            ].map(([time, event]) => (
+              <div key={`${time}-${event}`} className="rounded-[20px] border border-lightBorder p-4">
+                <p className="font-semibold">{event}</p>
+                <p className="mt-1 text-xs text-textMuted">{time}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </Drawer>
 
       <ConfirmDialog
         open={Boolean(pendingAction)}
-        title={`${pendingAction?.status} withdrawal`}
+        title={`${pendingAction?.status ?? "Update"} withdrawal`}
         description={`${pendingAction?.row?.id ?? "This request"} for ${pendingAction?.row?.amount ?? ""} will be marked ${pendingAction?.status?.toLowerCase() ?? ""}.`}
-        confirmLabel={pendingAction?.status === "Approved" ? "Approve withdrawal" : "Reject withdrawal"}
+        confirmLabel={
+          pendingAction?.status === "Approved"
+            ? "Approve withdrawal"
+            : "Reject withdrawal"
+        }
         tone={pendingAction?.status === "Approved" ? "success" : "danger"}
         onConfirm={confirmAction}
         onClose={() => setPendingAction(null)}
       >
         {pendingAction?.status === "Rejected" && (
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold">Rejection reason</span>
+            <span className="mb-1.5 block text-sm font-semibold">
+              Rejection reason
+            </span>
             <textarea
               value={reason}
               onChange={(event) => {
@@ -209,7 +320,7 @@ export default function WithdrawalsPage() {
               }}
               rows={3}
               aria-invalid={Boolean(reasonError)}
-              className="w-full rounded-lg border border-lightBorder p-3 text-sm outline-none focus:border-brandRed"
+              className="w-full rounded-[20px] border border-lightBorder p-3 text-sm outline-none focus:border-brandRed"
             />
             {reasonError && (
               <span className="mt-1 block text-xs font-semibold text-brandRed">

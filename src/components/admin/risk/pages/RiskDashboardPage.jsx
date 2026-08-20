@@ -1,128 +1,206 @@
 import { useState } from "react";
+import { Eye, SearchCheck, ShieldBan, ShieldX } from "lucide-react";
 import {
-  Card,
+  BulkActionBar,
   ConfirmDialog,
+  Drawer,
+  FilterBar,
   Kpi,
+  PageHeader,
+  ProgressCircle,
   StatusBadge,
   Toast,
-  ProgressCircle,
 } from "../../shared/ui";
+import ResourceTable from "../../shared/resource/ResourceTable";
+import { useResourceList } from "../../shared/resource/useResourceList";
 import { riskAlerts as seed } from "../../shared/adminData";
 
+const columns = [
+  { key: "id", label: "Alert ID" },
+  { key: "type", label: "Risk Type", minWidth: 190 },
+  { key: "entity", label: "Entity", minWidth: 210 },
+  {
+    key: "score",
+    label: "Risk Level",
+    render: (row) => <StatusBadge value={row.score} />,
+  },
+  { key: "status", label: "Status" },
+  { key: "time", label: "Detected" },
+];
+
 export default function RiskDashboardPage() {
-  const [rows, setRows] = useState(seed);
+  const resource = useResourceList(seed);
+  const [selected, setSelected] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
 
-  function updateAlert(id, status) {
-    setRows((current) =>
-      current.map((row) => (row.id === id ? { ...row, status } : row)),
-    );
+  function updateAlert(row, status) {
+    resource.updateRow(row.id, { status });
+    if (selected?.id === row.id) {
+      setSelected((current) => ({ ...current, status }));
+    }
     setToast(`Risk alert marked ${status.toLowerCase()}.`);
   }
 
   function confirmAction() {
-    updateAlert(pendingAction.row.id, pendingAction.status);
+    if (!pendingAction) return;
+    updateAlert(pendingAction.row, pendingAction.status);
     setPendingAction(null);
   }
 
-  const openCount = rows.filter((r) => r.status === "Open").length;
+  function alertActions(row) {
+    return [
+      {
+        label: "View Alert",
+        shortLabel: "View",
+        icon: Eye,
+        tone: "primary",
+        onClick: () => setSelected(row),
+      },
+      {
+        label: "Investigate Alert",
+        shortLabel: "Investigate",
+        icon: SearchCheck,
+        tone: "warning",
+        onClick: () => updateAlert(row, "Investigating"),
+      },
+      {
+        label: "Dismiss Alert",
+        shortLabel: "Dismiss",
+        icon: ShieldX,
+        onClick: () => setPendingAction({ row, status: "Dismissed" }),
+      },
+      {
+        label: "Block Entity",
+        shortLabel: "Block",
+        icon: ShieldBan,
+        tone: "danger",
+        onClick: () => setPendingAction({ row, status: "Blocked" }),
+      },
+    ];
+  }
+
+  const openCount = resource.rows.filter((row) => row.status === "Open").length;
   const safetyScore = Math.max(10, 100 - openCount * 18);
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">Risk & Safety</h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">
-            Marketplace risk signals & threat mitigation center.
+    <div className="min-w-0 space-y-6 pb-6 font-sans font-sansation animate-fade-in">
+      <PageHeader
+        title="Risk & Safety"
+        description="Marketplace risk signals and threat mitigation center."
+      />
+
+      <div className="flex flex-col items-center justify-between gap-6 rounded-[35px] border border-[#F3E5E5] bg-white p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] sm:flex-row">
+        <div className="space-y-1 text-center sm:text-left">
+          <span className="block text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            Marketplace Safety Health
+          </span>
+          <h3 className="text-2xl font-normal text-slate-900">
+            {safetyScore >= 80 ? "Low Risk Status" : "Attention Required"}
+          </h3>
+          <p className="text-xs font-normal text-slate-500">
+            {openCount} active alerts pending operational resolution.
           </p>
         </div>
-      </div>
-
-      {/* Safety Score Gauge Diagram Card */}
-      <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="space-y-1 text-center sm:text-left">
-          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider block">Marketplace Safety Health</span>
-          <h3 className="text-2xl font-normal text-slate-900">{safetyScore >= 80 ? "Low Risk Status" : "Attention Required"}</h3>
-          <p className="text-xs text-slate-500 font-normal">{openCount} active alerts pending operational resolution.</p>
-        </div>
-
-        <div className="flex items-center gap-6 bg-[#FAF8F5] p-4 rounded-[24px] border border-slate-100">
+        <div className="flex items-center gap-6 rounded-[24px] border border-slate-100 bg-[#FAF8F5] p-4">
           <div className="text-center">
-            <ProgressCircle percentage={safetyScore} size={64} color={safetyScore >= 80 ? "#059669" : "#D32F2F"} />
-            <span className="text-[10px] text-slate-400 font-medium block mt-1">Safety Gauge</span>
+            <ProgressCircle
+              percentage={safetyScore}
+              size={64}
+              color={safetyScore >= 80 ? "#059669" : "#D32F2F"}
+            />
+            <span className="mt-1 block text-[10px] font-medium text-slate-400">
+              Safety Gauge
+            </span>
           </div>
-          <div className="space-y-1 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-slate-600">Shield Protection: Active</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-rose-500" />
-              <span className="text-slate-600">Threat Alerts: {openCount}</span>
-            </div>
+          <div className="space-y-1 text-xs text-slate-600">
+            <p>Shield Protection: Active</p>
+            <p>Threat Alerts: {openCount}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
-          ["Open Alerts", rows.filter((row) => row.status === "Open").length],
-          ["High Risk", rows.filter((row) => row.score === "High").length],
-          ["Critical", rows.filter((row) => row.score === "Critical").length],
-          ["Investigating", rows.filter((row) => row.status === "Investigating").length],
-          ["Blocked", rows.filter((row) => row.status === "Blocked").length],
+          ["Open Alerts", resource.rows.filter((row) => row.status === "Open").length],
+          ["High Risk", resource.rows.filter((row) => row.score === "High").length],
+          ["Critical", resource.rows.filter((row) => row.score === "Critical").length],
+          ["Investigating", resource.rows.filter((row) => row.status === "Investigating").length],
+          ["Blocked", resource.rows.filter((row) => row.status === "Blocked").length],
         ].map(([label, value]) => (
           <Kpi key={label} label={label} value={value} change="Alerts" />
         ))}
       </div>
 
-      <div className="rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] overflow-hidden">
-        <div className="divide-y divide-slate-100">
-          {rows.map((row) => (
-            <article
-              key={row.id}
-              className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between"
-            >
-              <div>
-                <p className="text-xs font-medium text-slate-900">{row.type}</p>
-                <p className="mt-1 text-[11px] text-slate-600 font-normal">{row.entity}</p>
-                <p className="mt-1 text-[11px] text-slate-500 font-normal">{row.time}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge value={row.score} />
-                <StatusBadge value={row.status} />
-                <button
-                  type="button"
-                  onClick={() => updateAlert(row.id, "Investigating")}
-                  className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-[11px] font-medium text-slate-600 hover:border-brandRed transition cursor-pointer"
-                >
-                  Investigate
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingAction({ row, status: "Dismissed" })}
-                  className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-[11px] font-medium text-slate-600 hover:border-brandRed transition cursor-pointer"
-                >
-                  Dismiss
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPendingAction({ row, status: "Blocked" })}
-                  className="flex h-9 items-center justify-center rounded-[30px] bg-brandRed px-4 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark transition cursor-pointer"
-                >
-                  Block
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div>
+        <FilterBar
+          value={resource.search}
+          setValue={resource.setSearch}
+          placeholder="Search risk alerts..."
+          status={resource.status}
+          setStatus={resource.setStatus}
+          options={resource.statuses}
+          onClear={resource.clearFilters}
+        />
+        <BulkActionBar
+          count={resource.selectedIds.length}
+          actions={[]}
+          onClear={() => resource.setSelectedIds([])}
+        />
+        <ResourceTable
+          columns={columns}
+          rows={resource.visibleRows}
+          rowActions={alertActions}
+          onView={setSelected}
+          sortKey={resource.sortKey}
+          sortDirection={resource.sortDirection}
+          onSort={resource.changeSort}
+          selectedIds={resource.selectedIds}
+          onToggleSelected={resource.toggleSelected}
+          onToggleAll={resource.toggleVisibleRows}
+          page={resource.page}
+          pageCount={resource.pageCount}
+          pageSize={resource.pageSize}
+          totalCount={resource.totalCount}
+          onPageChange={resource.setPage}
+          onPageSizeChange={resource.changePageSize}
+          onClearFilters={resource.clearFilters}
+          loading={resource.loading}
+          error={resource.error}
+          onRetry={resource.retry}
+          emptyTitle="No risk alerts match your filters"
+        />
       </div>
+
+      <Drawer
+        open={Boolean(selected)}
+        onClose={() => setSelected(null)}
+        title="Risk alert details"
+      >
+        {selected && (
+          <div className="space-y-4">
+            {columns.map((column) => (
+              <div
+                key={column.key}
+                className="flex items-start justify-between gap-4 border-b border-lightBorder pb-3 text-sm"
+              >
+                <span className="text-textMuted">{column.label}</span>
+                <span className="text-right font-semibold">
+                  {column.key === "score" || column.key === "status" ? (
+                    <StatusBadge value={selected[column.key]} />
+                  ) : (
+                    selected[column.key]
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Drawer>
 
       <ConfirmDialog
         open={Boolean(pendingAction)}
-        title={`${pendingAction?.status} risk entity`}
+        title={`${pendingAction?.status ?? "Update"} risk entity`}
         description={`${pendingAction?.row?.entity ?? "This entity"} will be marked ${pendingAction?.status?.toLowerCase() ?? ""} in local Admin state.`}
         confirmLabel={`Confirm ${pendingAction?.status ?? "action"}`}
         tone="danger"

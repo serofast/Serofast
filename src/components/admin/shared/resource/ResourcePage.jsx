@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Card,
+  BulkActionBar,
   ConfirmDialog,
   Drawer,
   ErrorState,
@@ -273,43 +274,15 @@ export default function ResourcePage({
         placeholder={searchPlaceholder}
       />
 
-      {resource.selectedIds.length > 0 && (
-        <div className="mb-4 flex flex-col gap-3 p-4 rounded-[28px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs font-medium text-slate-700">
-            {resource.selectedIds.length} selected
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => requestBulkStatus("Active")}
-              className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-[11px] font-medium text-slate-600 hover:border-emerald-500 hover:text-emerald-700 transition cursor-pointer"
-            >
-              Activate
-            </button>
-            <button
-              type="button"
-              onClick={() => requestBulkStatus("Suspended")}
-              className="flex h-9 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-[11px] font-medium text-slate-600 hover:border-brandRed hover:text-brandRed transition cursor-pointer"
-            >
-              Suspend
-            </button>
-            <button
-              type="button"
-              onClick={requestBulkDelete}
-              className="flex h-9 items-center justify-center rounded-[30px] bg-brandRed px-3 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark transition cursor-pointer"
-            >
-              Remove
-            </button>
-            <button
-              type="button"
-              onClick={() => resource.setSelectedIds([])}
-              className="flex h-9 items-center justify-center px-3 text-[11px] font-medium text-slate-500 cursor-pointer"
-            >
-              Clear selection
-            </button>
-          </div>
-        </div>
-      )}
+      <BulkActionBar
+        count={resource.selectedIds.length}
+        actions={[
+          { label: "Activate", tone: "success", onClick: () => requestBulkStatus("Active") },
+          { label: "Suspend", onClick: () => requestBulkStatus("Suspended") },
+          { label: "Remove", tone: "danger", onClick: requestBulkDelete },
+        ]}
+        onClear={() => resource.setSelectedIds([])}
+      />
 
       {resource.loading ? (
         <Card>

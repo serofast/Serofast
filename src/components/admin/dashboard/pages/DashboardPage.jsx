@@ -96,7 +96,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="min-w-0 space-y-6 pb-6 font-sans font-sansation animate-fade-in">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
