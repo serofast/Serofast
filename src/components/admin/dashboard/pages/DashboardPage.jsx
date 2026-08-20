@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { CalendarDays, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -14,8 +14,6 @@ import {
 import {
   auditLogs,
   dashboardStats,
-  inventory,
-  orders,
   refunds,
   returns,
   riskAlerts,
@@ -23,6 +21,8 @@ import {
   supportTickets,
   withdrawals,
 } from "../../shared/adminData";
+import { getAdminState, subscribeAdminState } from "../../shared/localAdminRepository";
+import { stockStatus } from "../../inventory/services/inventoryService";
 
 const ranges = ["Today", "7 Days", "30 Days", "3 Months", "1 Year"];
 
@@ -37,6 +37,17 @@ const statRoutes = {
 
 export default function DashboardPage() {
   const [range, setRange] = useState("30 Days");
+  const localState = useSyncExternalStore(subscribeAdminState, getAdminState, getAdminState);
+  const orders = localState.orders;
+  const inventory = useMemo(
+    () => localState.inventory.map((record) => ({ ...record, status: stockStatus(record) })),
+    [localState.inventory],
+  );
+  const liveDashboardStats = dashboardStats.map((item) => {
+    if (item.label === "Today's Orders") return { ...item, value: orders.length };
+    if (item.label === "Pending Orders") return { ...item, value: orders.filter((order) => order.status === "Pending").length };
+    return item;
+  });
   const maximumSale = Math.max(...salesSeries, 1);
 
   const attentionStats = useMemo(
@@ -61,7 +72,7 @@ export default function DashboardPage() {
       },
       {
         label: "Low stock",
-        value: inventory.filter((item) => item.status !== "Active").length,
+        value: inventory.filter((item) => item.status === "Low Stock" || item.status === "Out of Stock").length,
         href: "/admin/inventory?status=Low%20Stock",
         description: "Stock alert",
       },
@@ -78,7 +89,7 @@ export default function DashboardPage() {
         description: "Safety review",
       },
     ],
-    [],
+    [inventory],
   );
 
   const orderStatusDonutData = useMemo(() => {
@@ -89,12 +100,12 @@ export default function DashboardPage() {
       Pending: orders.filter((o) => o.status === "Pending" || o.status === "New").length,
     };
     return [
-      { label: "Delivered", value: counts.Delivered || 12, color: "#059669" },
-      { label: "Shipped", value: counts.Shipped || 8, color: "#0284C7" },
-      { label: "Processing", value: counts.Processing || 5, color: "#D97706" },
-      { label: "Pending", value: counts.Pending || 3, color: "#D32F2F" },
+      { label: "Delivered", value: counts.Delivered, color: "#059669" },
+      { label: "Shipped", value: counts.Shipped, color: "#0284C7" },
+      { label: "Processing", value: counts.Processing, color: "#D97706" },
+      { label: "Pending", value: counts.Pending, color: "#D32F2F" },
     ];
-  }, []);
+  }, [orders]);
 
   return (
     <div className="min-w-0 space-y-6 pb-6 font-sans font-sansation animate-fade-in">
@@ -116,7 +127,7 @@ export default function DashboardPage() {
 
       {/* Primary KPI Metrics Cards */}
       <StatGrid>
-        {dashboardStats.map((item) => (
+        {liveDashboardStats.map((item) => (
           <Link
             key={item.label}
             to={statRoutes[item.label] ?? "/admin/analytics"}
@@ -134,7 +145,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-base font-normal text-slate-800">Order Breakdown</h3>
-              <p className="text-[11px] text-slate-400 font-normal">Live status distribution</p>
+              <p className="text-[11px] text-slate-400 font-normal">Local status distribution</p>
             </div>
             <Link to="/admin/orders" className="text-xs font-normal text-brandRed hover:underline flex items-center gap-1">
               <span>Orders</span>
@@ -177,7 +188,7 @@ export default function DashboardPage() {
           <h2 id="attention-heading" className="text-base font-normal text-slate-800">
             Action items
           </h2>
-          <span className="text-xs text-slate-400 font-normal">Live queue</span>
+          <span className="text-xs text-slate-400 font-normal">Local queue</span>
         </div>
         <StatGrid>
           {attentionStats.map((item) => (

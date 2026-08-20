@@ -1,15 +1,117 @@
-import ResourcePage from '../../shared/resource/ResourcePage';
-import { products as seed } from '../../shared/adminData';
+import { useMemo, useState } from "react";
+import { Archive, CheckCircle2, Eye, Pencil, Send, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  AdminSelect,
+  BulkActionBar,
+  ConfirmDialog,
+  FilterBar,
+  PageHeader,
+  StatGrid,
+  StatusBadge,
+  StatusCard,
+  Toast,
+} from "../../shared/ui";
+import ResourceTable from "../../shared/resource/ResourceTable";
+import { useResourceList } from "../../shared/resource/useResourceList";
+import { useProducts } from "../hooks/useProducts";
+import { productService } from "../services/productService";
+import { discountPercentage } from "../validation/productValidation";
 
-const columns = [{ key: 'product', label: 'Product' }, { key: 'shop', label: 'Shop' }, { key: 'category', label: 'Category' }, { key: 'price', label: 'Price' }, { key: 'stock', label: 'Stock' }, { key: 'status', label: 'Status' }, { key: 'rating', label: 'Rating' }, { key: 'created', label: 'Created' }];
+const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
+  const { products, categories } = useProducts();
+  const [categoryId, setCategoryId] = useState("");
+  const [pendingArchive, setPendingArchive] = useState([]);
+  const [toast, setToast] = useState("");
+  const rows = useMemo(
+    () => products
+      .filter((product) => !categoryId || product.categoryId === categoryId)
+      .map((product) => ({
+        ...product,
+        product: product.name,
+        shop: product.shopName,
+        category: product.categoryName,
+        priceDisplay: product.discountPrice ? `${currency.format(product.discountPrice)} sale` : currency.format(product.price),
+        approval: product.approvalStatus,
+        inventoryStatus: product.stock === 0 ? "Out of Stock" : product.stock <= product.lowStockThreshold ? "Low Stock" : "In Stock",
+        created: new Date(product.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+        searchText: [product.name, product.sku, product.shopName, product.categoryName, ...product.tags, ...product.variants.map((variant) => variant.sku)].join(" "),
+      })),
+    [categoryId, products],
+  );
+  const resource = useResourceList(rows);
+
+  const columns = [
+    { key: "product", label: "Product", minWidth: 230, render: (row) => <div className="flex items-center gap-3"><img src={row.images[0]?.url} alt="" className="h-10 w-10 rounded-xl object-cover" /><div className="min-w-0"><p className="truncate font-medium text-slate-900">{row.name}</p><p className="text-[10px] text-slate-400">{row.sku}</p></div></div> },
+    { key: "shop", label: "Shop" },
+    { key: "category", label: "Category" },
+    { key: "priceDisplay", label: "Price", render: (row) => <div><span className="font-medium text-slate-800">{row.discountPrice ? currency.format(row.discountPrice) : currency.format(row.price)}</span>{row.discountPrice && <><span className="ml-1 text-[10px] text-slate-400 line-through">{currency.format(row.price)}</span><span className="block text-[10px] text-brandRed">{discountPercentage(row.price, row.discountPrice)}% off</span></>}</div> },
+    { key: "stock", label: "Stock" },
+    { key: "inventoryStatus", label: "Inventory", render: (row) => <StatusBadge value={row.inventoryStatus} /> },
+    { key: "status", label: "Status" },
+    { key: "approval", label: "Approval", render: (row) => <StatusBadge value={row.approvalStatus} /> },
+    { key: "featured", label: "Featured", render: (row) => row.featured ? <span className="inline-flex items-center gap-1 text-brandRed"><Star size={13} fill="currentColor" /> Featured</span> : "No" },
+    { key: "createdAt", label: "Created", render: (row) => row.created },
+  ];
+
+  function rowActions(row) {
+    return [
+      { label: "View Product", shortLabel: "View", icon: Eye, tone: "primary", onClick: () => navigate(`/admin/products/${row.id}`) },
+      { label: "Edit Product", shortLabel: "Edit", icon: Pencil, onClick: () => navigate(`/admin/products/${row.id}/edit`) },
+      { label: row.featured ? "Remove Featured" : "Mark Featured", shortLabel: row.featured ? "Unfeature" : "Feature", icon: Star, onClick: () => { productService.updateMany([row.id], { featured: !row.featured }); setToast(row.featured ? "Product removed from featured." : "Product marked featured."); } },
+      { label: "Submit for Approval", shortLabel: "Submit", icon: Send, hidden: !["Draft", "Rejected"].includes(row.approvalStatus), onClick: () => { productService.submitForApproval([row.id]); setToast("Product submitted for local approval review."); } },
+      { label: "Archive Product", shortLabel: "Archive", icon: Archive, tone: "danger", hidden: row.status === "Archived", onClick: () => setPendingArchive([row.id]) },
+    ];
+  }
+
+  function bulkPatch(patch, message) {
+    productService.updateMany(resource.selectedIds, patch);
+    resource.setSelectedIds([]);
+    setToast(message);
+  }
+
+  function confirmArchive() {
+    productService.updateMany(pendingArchive, { status: "Archived", archivedAt: new Date().toISOString() });
+    resource.setSelectedIds([]);
+    setToast(`${pendingArchive.length} product${pendingArchive.length === 1 ? "" : "s"} archived.`);
+    setPendingArchive([]);
+  }
+
   return (
-    <ResourcePage
-      title="Products"
-      description="Manage the global marketplace catalog and moderation queue."
-      seed={seed}
-      columns={columns}
-    />
+    <div className="min-w-0">
+      <PageHeader title="Products" description="Manage catalog identity, pricing, variants, inventory, media, and approval lifecycle." action="Create Product" onAction={() => navigate("/admin/products/new")} />
+
+      <div className="mb-4 flex justify-end">
+        <button type="button" onClick={() => navigate("/admin/products/approvals")} className="inline-flex h-10 items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700"><CheckCircle2 size={15} /> Approval Queue</button>
+      </div>
+
+      <StatGrid className="mb-5">
+        <StatusCard label="Total Products" value={products.length} tone="blue" description="All local catalog records" />
+        <StatusCard label="Active" value={products.filter((product) => product.status === "Active").length} tone="green" />
+        <StatusCard label="Low Stock" value={products.filter((product) => product.stock > 0 && product.stock <= product.lowStockThreshold).length} tone="amber" />
+        <StatusCard label="Out of Stock" value={products.filter((product) => product.stock === 0).length} tone="rose" />
+        <StatusCard label="Pending Approval" value={products.filter((product) => product.approvalStatus === "Pending Approval").length} tone="amber" />
+      </StatGrid>
+
+      <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <FilterBar value={resource.search} setValue={resource.setSearch} placeholder="Search products, SKU, tags, variants, shops..." status={resource.status} setStatus={resource.setStatus} options={resource.statuses} onClear={() => { resource.clearFilters(); setCategoryId(""); }} />
+        <AdminSelect value={categoryId} onChange={setCategoryId} options={[{ value: "", label: "All categories" }, ...categories.map((category) => ({ value: category.id, label: category.name }))]} ariaLabel="Filter by category" buttonClassName="h-[54px]" />
+      </div>
+
+      <BulkActionBar count={resource.selectedIds.length} actions={[
+        { label: "Feature", tone: "success", onClick: () => bulkPatch({ featured: true }, "Selected products marked featured.") },
+        { label: "Unfeature", onClick: () => bulkPatch({ featured: false }, "Selected products removed from featured.") },
+        { label: "Submit", onClick: () => { productService.submitForApproval(resource.selectedIds); resource.setSelectedIds([]); setToast("Eligible products submitted for approval."); } },
+        { label: "Archive", tone: "danger", onClick: () => setPendingArchive(resource.selectedIds) },
+      ]} onClear={() => resource.setSelectedIds([])} />
+
+      <ResourceTable columns={columns} rows={resource.visibleRows} rowActions={rowActions} onView={(row) => navigate(`/admin/products/${row.id}`)} sortKey={resource.sortKey} sortDirection={resource.sortDirection} onSort={resource.changeSort} selectedIds={resource.selectedIds} onToggleSelected={resource.toggleSelected} onToggleAll={resource.toggleVisibleRows} page={resource.page} pageCount={resource.pageCount} pageSize={resource.pageSize} totalCount={resource.totalCount} onPageChange={resource.setPage} onPageSizeChange={resource.changePageSize} onClearFilters={() => { resource.clearFilters(); setCategoryId(""); }} loading={resource.loading} error={resource.error} onRetry={resource.retry} emptyTitle={resource.search ? "No products match your search" : "No products found"} />
+
+      <ConfirmDialog open={pendingArchive.length > 0} title="Archive Product?" description="Selected products will no longer appear as active products. Their inventory, variants, reviews, and order references will be preserved." confirmLabel="Archive Product" tone="danger" onConfirm={confirmArchive} onClose={() => setPendingArchive([])} />
+      <Toast message={toast} onClose={() => setToast("")} />
+    </div>
   );
 }

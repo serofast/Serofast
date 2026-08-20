@@ -21,7 +21,8 @@ import {
 } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
-import { categories as seed } from "../../shared/adminData";
+import { useCategories } from "../hooks/useCategories";
+import { categoryService } from "../services/categoryService";
 
 const columns = [
   { key: "name", label: "Category", minWidth: 190 },
@@ -33,7 +34,8 @@ const columns = [
 ];
 
 export default function CategoriesPage() {
-  const resource = useResourceList(seed);
+  const { categories } = useCategories();
+  const resource = useResourceList(categories);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [editing, setEditing] = useState(null);
@@ -59,50 +61,56 @@ export default function CategoriesPage() {
       return;
     }
 
-    resource.createRow({
-      id: `CAT-${String(resource.rows.length + 1).padStart(2, "0")}`,
-      name: trimmedName,
-      parent: "—",
-      children: 0,
-      shops: 0,
-      products: 0,
-      status: "Draft",
-    });
-    setName("");
-    setToast("Category created as Draft.");
+    try {
+      categoryService.create(trimmedName);
+      setName("");
+      setToast("Category created as Draft.");
+    } catch (error) {
+      setNameError(error.message);
+    }
   }
 
   function saveCategory(event) {
     event.preventDefault();
     if (!editing?.name.trim()) return;
 
-    resource.updateRow(editing.id, editing);
-    setEditing(null);
-    setToast("Category updated.");
+    try {
+      categoryService.update(editing.id, editing);
+      setEditing(null);
+      setToast("Category updated and product references synchronized.");
+    } catch (error) {
+      setNameError(error.message);
+    }
   }
 
   function move(row, direction) {
-    resource.reorderRow(row.id, direction);
+    categoryService.reorder(row.id, direction);
     setToast("Category order updated.");
   }
 
   function confirmToggle() {
     if (!pendingToggle) return;
     const nextStatus = pendingToggle.status === "Active" ? "Inactive" : "Active";
-    resource.updateRow(pendingToggle.id, { status: nextStatus });
+    categoryService.update(pendingToggle.id, { status: nextStatus });
     setToast(`${pendingToggle.name} marked ${nextStatus.toLowerCase()}.`);
     setPendingToggle(null);
   }
 
   function confirmDelete() {
     if (!pendingDelete) return;
-    resource.removeRows([pendingDelete.id]);
-    setToast(`${pendingDelete.name} category deleted.`);
-    setPendingDelete(null);
+    try {
+      categoryService.remove(pendingDelete.id);
+      setToast(`${pendingDelete.name} category deleted.`);
+      setPendingDelete(null);
+    } catch (error) {
+      setToast(error.message);
+      setPendingDelete(null);
+    }
   }
 
   function updateSelected(status) {
-    resource.updateRows(resource.selectedIds, { status });
+    resource.selectedIds.forEach((id) => categoryService.update(id, { status }));
+    resource.setSelectedIds([]);
     setToast(`Selected categories marked ${status.toLowerCase()}.`);
   }
 
@@ -179,8 +187,12 @@ export default function CategoriesPage() {
                 label: "Delete",
                 tone: "danger",
                 onClick: () => {
-                  resource.removeRows(resource.selectedIds);
-                  setToast("Selected categories deleted.");
+                  let removed = 0;
+                  resource.selectedIds.forEach((id) => {
+                    try { categoryService.remove(id); removed += 1; } catch { /* protected category */ }
+                  });
+                  resource.setSelectedIds([]);
+                  setToast(`${removed} unused categor${removed === 1 ? "y" : "ies"} deleted. Categories used by active products were preserved.`);
                 },
               },
             ]}

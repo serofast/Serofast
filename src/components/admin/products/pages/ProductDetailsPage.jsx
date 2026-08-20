@@ -1,246 +1,83 @@
 import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import {
-  AdminSelect,
-  Card,
-  ConfirmDialog,
-  PageHeader,
-  StatusBadge,
-  Tabs,
-  Toast,
-} from "../../shared/ui";
-import { products } from "../../shared/adminData";
+import { Archive, Copy, Edit3, Send } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Card, ConfirmDialog, PageHeader, StatusBadge, Tabs, Toast } from "../../shared/ui";
+import { useProducts } from "../hooks/useProducts";
+import { productService } from "../services/productService";
+import { discountPercentage } from "../validation/productValidation";
 
-const tabs = [
-  "Overview",
-  "Images",
-  "Pricing",
-  "Inventory",
-  "Attributes",
-  "Shop",
-  "Reviews",
-  "Sales",
-  "Moderation",
-];
+const tabs = ["Overview", "Images", "Variants", "Inventory", "Approval History"];
+const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
 export default function ProductDetailsPage() {
   const { productId } = useParams();
-  const location = useLocation();
   const navigate = useNavigate();
-  const source = products.find((item) => item.id === productId) ?? products[0];
-  const [product, setProduct] = useState(source);
-  const [draft, setDraft] = useState(source);
+  const { product, approvalHistory } = useProducts(productId);
   const [activeTab, setActiveTab] = useState("Overview");
-  const [pendingStatus, setPendingStatus] = useState(null);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const editing = location.pathname.endsWith("/edit");
 
-  function saveProduct(event) {
-    event.preventDefault();
+  if (!product) return <div className="rounded-[35px] border border-[#F3E5E5] bg-white p-8 text-center text-sm text-slate-500">Product not found.</div>;
+  const history = approvalHistory.filter((item) => item.productId === product.id).sort((a, b) => b.reviewedAt.localeCompare(a.reviewedAt));
 
-    if (!draft.product.trim() || Number(draft.stock) < 0) {
-      setToast("Enter a product name and a stock value of zero or greater.");
-      return;
-    }
-
-    setProduct({ ...draft, stock: Number(draft.stock) });
-    setToast("Product updated in local Admin state.");
-    navigate(`/admin/products/${product.id}`);
-  }
-
-  function confirmStatus() {
-    setProduct((current) => ({ ...current, status: pendingStatus }));
-    setDraft((current) => ({ ...current, status: pendingStatus }));
-    setToast(`Product marked ${pendingStatus.toLowerCase()}.`);
-    setPendingStatus(null);
+  function archiveProduct() {
+    productService.archive(product.id);
+    setArchiveOpen(false);
+    setToast("Product archived. Related inventory and history were preserved.");
   }
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
-          {editing ? `Edit ${product.product}` : product.product}
-        </h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Product profile, inventory, seller information, and moderation state.
-        </p>
+    <div className="mx-auto max-w-6xl space-y-5 pb-8">
+      <PageHeader title={product.name} description="Catalog, media, variant, inventory, and local moderation record." />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => navigate(`/admin/products/${product.id}/edit`)} className="inline-flex h-10 items-center gap-2 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white"><Edit3 size={14} /> Edit Product</button>
+        {["Draft", "Rejected"].includes(product.approvalStatus) && <button type="button" onClick={() => { productService.submitForApproval([product.id]); setToast("Product submitted for local approval review."); }} className="inline-flex h-10 items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium"><Send size={14} /> Submit for Approval</button>}
+        {product.status !== "Archived" && <button type="button" onClick={() => setArchiveOpen(true)} className="inline-flex h-10 items-center gap-2 rounded-[30px] border border-brandRed bg-white px-4 text-xs font-medium text-brandRed"><Archive size={14} /> Archive</button>}
       </div>
 
-      {editing ? (
-        <ProductEditor
-          draft={draft}
-          setDraft={setDraft}
-          onSubmit={saveProduct}
-          onCancel={() => navigate(`/admin/products/${product.id}`)}
-        />
-      ) : (
-        <>
-          <div className="flex flex-wrap gap-2">
-            {product.status !== "Active" && (
-              <button
-                type="button"
-                onClick={() => setPendingStatus("Active")}
-                className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
-              >
-                Approve
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setPendingStatus(product.status === "Hidden" ? "Active" : "Hidden")}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:border-slate-300 transition cursor-pointer"
-            >
-              {product.status === "Hidden" ? "Publish" : "Hide"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setPendingStatus("Flagged")}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] border border-brandRed bg-white px-4 text-xs font-semibold text-brandRed hover:bg-rose-50 transition cursor-pointer"
-            >
-              Flag Product
-            </button>
+      <Card className="overflow-hidden">
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+          <img src={product.images.find((image) => image.isPrimary)?.url ?? product.images[0]?.url} alt={product.name} className="h-28 w-28 rounded-[24px] object-cover" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2"><StatusBadge value={product.status} /><StatusBadge value={product.approvalStatus} />{product.featured && <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] text-brandRed">Featured</span>}</div>
+            <p className="mt-3 text-sm text-slate-600">{product.shortDescription || product.description}</p>
+            <button type="button" onClick={() => { navigator.clipboard?.writeText(product.sku); setToast("SKU copied."); }} className="mt-2 inline-flex items-center gap-1 text-[11px] text-slate-500"><Copy size={12} /> {product.sku}</button>
           </div>
+        </div>
+        <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+        <div className="p-5 sm:p-6">
+          {activeTab === "Overview" && <Overview product={product} />}
+          {activeTab === "Images" && <Images product={product} />}
+          {activeTab === "Variants" && <Variants product={product} />}
+          {activeTab === "Inventory" && <div className="grid gap-3 sm:grid-cols-3"><Summary label="Total Stock" value={product.stock} /><Summary label="Low-stock Threshold" value={product.lowStockThreshold} /><Summary label="Inventory Level" value={product.stock === 0 ? "Out of Stock" : product.stock <= product.lowStockThreshold ? "Low Stock" : "In Stock"} /></div>}
+          {activeTab === "Approval History" && <History entries={history} />}
+        </div>
+      </Card>
 
-          <Card className="min-w-0 overflow-hidden">
-            <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-            <div className="p-5 sm:p-6">
-              {activeTab === "Overview" ? (
-                <ProductOverview product={product} />
-              ) : activeTab === "Moderation" ? (
-                <ModerationChecklist />
-              ) : (
-                <div className="rounded-[24px] bg-[#FAF8F5] p-5 border border-[#F3E5E5]">
-                  <h3 className="text-xs font-medium text-slate-800">{activeTab}</h3>
-                  <p className="mt-2 text-[11px] text-slate-500 font-normal">
-                    This Phase 4 panel is ready for {activeTab.toLowerCase()} data
-                    from the product service in the backend phase.
-                  </p>
-                </div>
-              )}
-            </div>
-          </Card>
-        </>
-      )}
-
-      <ConfirmDialog
-        open={Boolean(pendingStatus)}
-        title={`${pendingStatus} product`}
-        description={`${product.product} will be marked ${pendingStatus?.toLowerCase() ?? ""}.`}
-        confirmLabel="Confirm moderation change"
-        tone={pendingStatus === "Active" ? "success" : "danger"}
-        onConfirm={confirmStatus}
-        onClose={() => setPendingStatus(null)}
-      />
+      <ConfirmDialog open={archiveOpen} title="Archive Product?" description="This product will no longer appear as active. Its variants, inventory, reviews, and order references remain available." confirmLabel="Archive Product" tone="danger" onConfirm={archiveProduct} onClose={() => setArchiveOpen(false)} />
       <Toast message={toast} onClose={() => setToast("")} />
     </div>
   );
 }
 
-function ProductOverview({ product }) {
-  return (
-    <div className="grid gap-x-8 gap-y-4 md:grid-cols-2">
-      {[
-        ["Shop", product.shop],
-        ["Category", product.category],
-        ["Price", product.price],
-        ["Stock", product.stock],
-        ["Rating", `★ ${product.rating}`],
-        ["Created", product.created],
-      ].map(([label, value]) => (
-        <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3 text-xs">
-          <span className="text-slate-500 font-normal">{label}</span>
-          <span className="text-right font-medium text-slate-900">{value}</span>
-        </div>
-      ))}
-      <div className="flex justify-between gap-4 border-b border-slate-100 pb-3 text-xs">
-        <span className="text-slate-500 font-normal">Status</span>
-        <StatusBadge value={product.status} />
-      </div>
-    </div>
-  );
+function Overview({ product }) {
+  return <div className="grid gap-3 sm:grid-cols-2">{[["Category", product.categoryName], ["Shop", product.shopName], ["Regular Price", currency.format(product.price)], ["Discount Price", product.discountPrice ? `${currency.format(product.discountPrice)} (${discountPercentage(product.price, product.discountPrice)}% off)` : "—"], ["Stock", product.stock], ["SKU", product.sku], ["Tags", product.tags.join(", ") || "—"], ["Updated", new Date(product.updatedAt).toLocaleString("en-IN")]].map(([label, value]) => <Summary key={label} label={label} value={value} />)}</div>;
 }
 
-function ProductEditor({ draft, setDraft, onSubmit, onCancel }) {
-  const shopOptions = [...new Set(products.map((product) => product.shop))];
-  const categoryOptions = [...new Set(products.map((product) => product.category))];
-
-  return (
-    <Card className="max-w-3xl p-5 sm:p-6">
-      <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
-        {[
-          { key: "product", label: "Product Name", type: "text" },
-          { key: "shop", label: "Shop", options: shopOptions },
-          { key: "category", label: "Category", options: categoryOptions },
-          { key: "price", label: "Price", type: "text" },
-          { key: "stock", label: "Stock", type: "number" },
-        ].map(({ key, label, type, options }) => (
-          <label key={key} className="block">
-            <span className="mb-1.5 block text-xs font-medium text-slate-700">{label}</span>
-            {options ? (
-              <AdminSelect
-                value={draft[key]}
-                onChange={(value) =>
-                  setDraft((current) => ({ ...current, [key]: value }))
-                }
-                options={options}
-                ariaLabel={label}
-                buttonClassName="h-10"
-              />
-            ) : (
-              <input
-                type={type}
-                min={type === "number" ? "0" : undefined}
-                value={draft[key]}
-                onChange={(event) =>
-                  setDraft((current) => ({ ...current, [key]: event.target.value }))
-                }
-                className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-              />
-            )}
-          </label>
-        ))}
-        <div className="flex flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="flex h-10 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="flex h-10 items-center justify-center rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
-          >
-            Save Product
-          </button>
-        </div>
-      </form>
-    </Card>
-  );
+function Images({ product }) {
+  if (!product.images.length) return <Empty text="No product images added." />;
+  return <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{product.images.map((image) => <figure key={image.id} className="overflow-hidden rounded-[24px] border border-[#F3E5E5]"><img src={image.url} alt={image.alt} className="h-48 w-full object-cover" /><figcaption className="p-3 text-[11px] text-slate-500">{image.isPrimary ? "Primary image" : `Position ${image.position + 1}`} · {image.alt}</figcaption></figure>)}</div>;
 }
 
-function ModerationChecklist() {
-  const [checks, setChecks] = useState(() =>
-    Object.fromEntries(
-      ["Product information", "Images", "Category", "Price", "Prohibited content"].map(
-        (item) => [item, true],
-      ),
-    ),
-  );
-
-  return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {Object.entries(checks).map(([item, checked]) => (
-        <label key={item} className="flex min-h-12 items-center gap-3 rounded-[20px] border border-[#F3E5E5] bg-[#FAF8F5] p-3 text-xs">
-          <input
-            type="checkbox"
-            checked={checked}
-            onChange={() => setChecks((current) => ({ ...current, [item]: !checked }))}
-            className="h-4 w-4 accent-brandRed"
-          />
-          {item} reviewed
-        </label>
-      ))}
-    </div>
-  );
+function Variants({ product }) {
+  if (!product.variants.length) return <Empty text="This product has no variants. Product-level SKU and stock are used." />;
+  return <div className="overflow-x-auto"><table className="w-full min-w-[720px] text-left text-xs"><thead className="border-b border-slate-100 bg-[#FAF8F5]"><tr>{["Attributes", "SKU", "Price", "Discount", "Stock", "Threshold", "Status"].map((label) => <th key={label} className="px-4 py-3 font-medium text-slate-600">{label}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{product.variants.map((variant) => <tr key={variant.id}><td className="px-4 py-3">{Object.entries(variant.attributes).map(([key, value]) => `${key}: ${value}`).join(" · ")}</td><td className="px-4 py-3">{variant.sku}</td><td className="px-4 py-3">{currency.format(variant.price)}</td><td className="px-4 py-3">{variant.discountPrice ? currency.format(variant.discountPrice) : "—"}</td><td className="px-4 py-3">{variant.stock}</td><td className="px-4 py-3">{variant.lowStockThreshold}</td><td className="px-4 py-3"><StatusBadge value={variant.status} /></td></tr>)}</tbody></table></div>;
 }
+
+function History({ entries }) {
+  if (!entries.length) return <Empty text="No approval history has been recorded." />;
+  return <div className="space-y-3">{entries.map((entry) => <div key={entry.id} className="rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4 text-xs"><div className="flex flex-wrap items-center justify-between gap-2"><span className="font-medium text-slate-900">{entry.action}</span><time className="text-[11px] text-slate-400">{new Date(entry.reviewedAt).toLocaleString("en-IN")}</time></div><p className="mt-1 text-slate-500">{entry.previousStatus} → {entry.newStatus} · {entry.reviewedBy}</p>{entry.reason && <p className="mt-2 text-brandRed">Reason: {entry.reason}</p>}</div>)}</div>;
+}
+
+function Summary({ label, value }) { return <div className="rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4"><p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p><p className="mt-1 text-xs font-medium text-slate-900">{value}</p></div>; }
+function Empty({ text }) { return <div className="rounded-[24px] border border-dashed border-[#E5E7EB] p-8 text-center text-xs text-slate-500">{text}</div>; }
