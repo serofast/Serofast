@@ -17,7 +17,7 @@ export default function ShopOwnerBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 rounded-t-[20px] border-t border-[#E5E7EB] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.04)] font-sans font-sansation pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[51] rounded-t-[20px] border-t border-[#E5E7EB] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.04)] font-sans font-sansation pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex h-[60px] items-center justify-around px-3 max-w-md">
         {navItems.map((item) => {
           const Icon = item.icon;

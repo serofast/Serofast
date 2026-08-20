@@ -472,7 +472,7 @@ export default function ShopOwnerInventoryPage() {
           >
             {/* Mobile Bottom Sheet Drag Handle */}
             <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0" />
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
               <div>
                 <h3 className="text-lg font-normal text-brandRed tracking-tight">Select Warehouse Products</h3>
               </div>
@@ -506,7 +506,7 @@ export default function ShopOwnerInventoryPage() {
             </div>
 
             {/* Warehouse Products Grid View */}
-            <div data-sheet-scroll className="flex-1 overflow-y-auto pr-1 py-1">
+            <div data-sheet-scroll className="flex-1 overflow-y-auto pr-1 pt-1 pb-24 scrollbar-none">
               {loadingWarehouse ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
                   <Loader2 size={32} className="animate-spin text-brandRed" />
