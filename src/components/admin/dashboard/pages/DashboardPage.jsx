@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { CalendarDays, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
+  AdminSelect,
   Card,
   Kpi,
   StatGrid,
@@ -203,16 +204,14 @@ export default function DashboardPage() {
             <h3 className="text-base font-normal text-slate-800">Gross revenue</h3>
             <p className="text-xs text-slate-400 font-normal">Sales trend chart</p>
           </div>
-          <select
-            aria-label="Sales date range"
+          <AdminSelect
             value={range}
-            onChange={(event) => setRange(event.target.value)}
-            className="h-9 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed cursor-pointer"
-          >
-            {ranges.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
+            onChange={setRange}
+            options={ranges}
+            ariaLabel="Sales date range"
+            className="w-36"
+            buttonClassName="h-9"
+          />
         </div>
 
         <div className="flex h-44 items-end gap-2" aria-label={`Sales chart for ${range}`}>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+  AdminSelect,
   Card,
   ConfirmDialog,
   PageHeader,
@@ -139,18 +140,16 @@ export default function TicketDetailsPage() {
         <h3 className="text-base font-normal text-slate-800 border-b border-slate-100 pb-3">Ticket control</h3>
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-slate-700">Assigned Admin</span>
-          <select
+          <AdminSelect
             value={assignedTo}
-            onChange={(event) => {
-              setAssignedTo(event.target.value);
-              setToast(`Ticket assigned to ${event.target.value}.`);
+            onChange={(value) => {
+              setAssignedTo(value);
+              setToast(`Ticket assigned to ${value}.`);
             }}
-            className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed cursor-pointer"
-          >
-            {["Unassigned", "Rohan Support", "Operations Admin", "Finance Admin"].map(
-              (admin) => <option key={admin}>{admin}</option>,
-            )}
-          </select>
+            options={["Unassigned", "Rohan Support", "Operations Admin", "Finance Admin"]}
+            ariaLabel="Assigned Admin"
+            buttonClassName="h-10"
+          />
         </label>
         <div className="space-y-2">
           {[

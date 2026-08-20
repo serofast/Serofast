@@ -1,3 +1,4 @@
+import { useEffect, useId, useRef, useState } from "react";
 import Icon from "./legacyIcon";
 
 const statusStyles = {
@@ -113,6 +114,119 @@ export function Badge({ value }) {
 }
 
 export const StatusBadge = Badge;
+
+function normalizeSelectOption(option) {
+  if (typeof option === "object" && option !== null) {
+    return {
+      value: option.value,
+      label: option.label ?? String(option.value),
+    };
+  }
+
+  return { value: option, label: String(option) };
+}
+
+export function AdminSelect({
+  value = "",
+  onChange = () => {},
+  options = [],
+  placeholder = "Select an option",
+  ariaLabel,
+  className = "",
+  buttonClassName = "h-11",
+  menuPlacement = "bottom",
+  disabled = false,
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
+  const listboxId = useId();
+  const normalizedOptions = options.map(normalizeSelectOption);
+  const selectedOption = normalizedOptions.find(
+    (option) => String(option.value) === String(value),
+  );
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    function handlePointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        className={`flex w-full items-center justify-between gap-3 rounded-[30px] border bg-white px-4 text-left text-xs outline-none transition-all disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
+          open
+            ? "border-brandRed shadow-[-3px_4px_10px_rgba(211,47,47,0.16)]"
+            : "border-[#E5E7EB] hover:border-red-200"
+        } ${buttonClassName}`}
+        role="combobox"
+        aria-label={ariaLabel}
+        aria-controls={listboxId}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className={`truncate ${selectedOption ? "text-slate-700" : "text-[#8FA0B8]"}`}>
+          {selectedOption?.label ?? placeholder}
+        </span>
+        <Icon
+          name="chevron"
+          size={16}
+          className={`shrink-0 text-slate-500 transition-transform duration-200 ${open ? "rotate-180 text-brandRed" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          id={listboxId}
+          role="listbox"
+          className={`absolute left-0 right-0 z-[100] max-h-60 overflow-y-auto rounded-[22px] border border-[#F3E5E5] bg-white p-2 shadow-[-4px_8px_20px_rgba(31,41,55,0.12),-5px_9px_18px_rgba(211,47,47,0.10)] ${
+            menuPlacement === "top" ? "bottom-[calc(100%+8px)]" : "top-[calc(100%+8px)]"
+          }`}
+        >
+          {normalizedOptions.map((option) => {
+            const selected = String(option.value) === String(value);
+            return (
+              <button
+                key={String(option.value)}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className={`flex min-h-10 w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-xs transition ${
+                  selected
+                    ? "bg-rose-50 font-semibold text-brandRed"
+                    : "text-slate-600 hover:bg-[#FAF8F5] hover:text-slate-900"
+                }`}
+              >
+                <span className="truncate">{option.label}</span>
+                {selected && <Icon name="check" size={15} className="shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ProgressCircle({
   percentage = 75,
@@ -259,13 +373,13 @@ export function SearchBar({
   placeholder = "Search...",
 }) {
   return (
-    <div className="flex h-11 flex-1 items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.1)] focus-within:border-brandRed focus-within:shadow-[-4px_5px_10px_rgba(211,47,47,0.2)] transition-all">
-      <Icon name="search" size={16} className="text-slate-400" />
+    <div className="flex h-12 w-full min-w-0 shrink-0 items-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 shadow-[-4px_5px_8px_rgba(211,47,47,0.15),-7px_8px_15px_rgba(211,47,47,0.07)] transition-all duration-200 hover:border-slate-300 focus-within:border-[1.5px] focus-within:border-brandRed focus-within:shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] lg:flex-1">
+      <Icon name="search" size={20} className="mr-2.5 shrink-0 text-[#8FA0B8]" />
       <input
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+        className="min-w-0 w-full border-0 bg-transparent text-[14px] text-slate-700 outline-none placeholder:text-[13px] placeholder:font-medium placeholder:text-[#8FA0B8]"
       />
     </div>
   );
@@ -350,28 +464,29 @@ export function FilterBar({
   showStatus = true,
 }) {
   return (
-    <div className="mb-4 flex min-w-0 flex-col gap-3 lg:flex-row">
+    <div className="mb-4 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
       <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
-      <div className="flex min-w-0 gap-2 sm:min-w-[260px]">
+      <div
+        className={`grid min-w-0 gap-2 ${
+          showStatus
+            ? "grid-cols-[minmax(0,1fr)_48px] sm:min-w-[260px]"
+            : "grid-cols-[48px] justify-end"
+        }`}
+      >
         {showStatus && (
-          <select
+          <AdminSelect
             value={status}
-            onChange={(event) => setStatus(event.target.value)}
-            className="h-11 min-w-0 flex-1 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-sm outline-none focus:border-brandRed"
-          >
-            <option value="">All statuses</option>
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            onChange={setStatus}
+            options={[{ value: "", label: "All statuses" }, ...options]}
+            ariaLabel="Filter by status"
+            buttonClassName="h-12 text-sm"
+          />
         )}
         <button
           type="button"
           aria-label="Clear filters"
           onClick={onClear}
-          className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
+          className="grid h-12 w-12 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
         >
           <Icon name="refresh" size={16} />
         </button>
@@ -478,21 +593,18 @@ export function Pagination({
       </p>
 
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-start">
-        <label className="flex items-center gap-2 text-slate-600">
+        <div className="flex items-center gap-2 text-slate-600">
           <span className="sr-only sm:not-sr-only text-xs">Rows</span>
-          <select
-            aria-label="Rows per page"
+          <AdminSelect
             value={pageSize}
-            onChange={(event) => onPageSizeChange(event.target.value)}
-            className="h-9 rounded-[30px] border border-[#E5E7EB] bg-white px-3 text-xs outline-none focus:border-brandRed"
-          >
-            {[5, 10, 20].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </label>
+            onChange={onPageSizeChange}
+            options={[5, 10, 20]}
+            ariaLabel="Rows per page"
+            className="w-20"
+            buttonClassName="h-9"
+            menuPlacement="top"
+          />
+        </div>
 
         <button
           type="button"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, PageHeader, Toast } from "../../../shared/ui";
+import { AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 
 const initialForm = {
   title: "",
@@ -117,15 +117,12 @@ export default function BannerFormPage() {
             />
             <label className="block">
               <span className="mb-1.5 block text-xs font-semibold text-slate-700">Placement</span>
-              <select
+              <AdminSelect
                 value={form.placement}
-                onChange={(event) => updateField("placement", event.target.value)}
-                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-              >
-                {["Hero", "Promotion", "Category", "Homepage"].map((placement) => (
-                  <option key={placement}>{placement}</option>
-                ))}
-              </select>
+                onChange={(value) => updateField("placement", value)}
+                options={["Hero", "Promotion", "Category", "Homepage"]}
+                ariaLabel="Placement"
+              />
             </label>
             <InputField
               label="Priority"
@@ -195,15 +192,12 @@ export default function BannerFormPage() {
 
           <label className="block max-w-xs">
             <span className="mb-1.5 block text-xs font-semibold text-slate-700">Status</span>
-            <select
+            <AdminSelect
               value={form.status}
-              onChange={(event) => updateField("status", event.target.value)}
-              className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-            >
-              {["Draft", "Scheduled", "Active", "Disabled"].map((status) => (
-                <option key={status}>{status}</option>
-              ))}
-            </select>
+              onChange={(value) => updateField("status", value)}
+              options={["Draft", "Scheduled", "Active", "Disabled"]}
+              ariaLabel="Status"
+            />
           </label>
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

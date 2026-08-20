@@ -9,6 +9,7 @@ import {
   Trash2,
 } from "lucide-react";
 import {
+  AdminSelect,
   BulkActionBar,
   Card,
   ConfirmDialog,
@@ -271,23 +272,23 @@ export default function CategoriesPage() {
               <span className="mb-1.5 block text-xs font-semibold text-slate-700">
                 Parent category
               </span>
-              <select
+              <AdminSelect
                 value={editing.parent}
-                onChange={(event) =>
+                onChange={(parent) =>
                   setEditing((current) => ({
                     ...current,
-                    parent: event.target.value,
+                    parent,
                   }))
                 }
-                className="h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-              >
-                <option>—</option>
-                {resource.rows
+                options={[
+                  "—",
+                  ...resource.rows
                   .filter((row) => row.id !== editing.id)
-                  .map((row) => (
-                    <option key={row.id}>{row.name}</option>
-                  ))}
-              </select>
+                  .map((row) => row.name),
+                ]}
+                ariaLabel="Parent category"
+                placeholder="Select parent category"
+              />
             </label>
             <div className="flex justify-end gap-2 pt-2">
               <button

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
+  AdminSelect,
   Card,
   BulkActionBar,
   ConfirmDialog,
@@ -30,6 +31,112 @@ function createStableId(title) {
 }
 
 const moneyValue = (value) => Number(String(value ?? "").replace(/[^0-9.]/g, "")) || 0;
+
+const controlledFields = {
+  Shops: {
+    category: ["Fashion", "Electronics", "Beauty", "Home"],
+    status: ["Active", "Pending", "Suspended"],
+  },
+  Customers: {
+    status: ["Active", "Blocked", "Suspended"],
+  },
+  Products: {
+    shop: [],
+    category: ["Fashion", "Electronics", "Beauty", "Home"],
+    status: ["Active", "Suspended", "Low Stock", "Out of Stock"],
+  },
+  Orders: {
+    customer: [],
+    shop: [],
+    payment: ["Paid", "Pending", "Failed", "Refunded"],
+    status: ["Processing", "Shipped", "Delivered", "Returned", "Cancelled"],
+  },
+  Inventory: {
+    product: [],
+    shop: [],
+    velocity: ["Fast", "Medium", "Slow"],
+    status: ["In Stock", "Low Stock", "Out of Stock"],
+  },
+  Returns: {
+    order: [],
+    customer: [],
+    shop: [],
+    product: [],
+    status: ["Requested", "Approved", "Rejected", "Completed"],
+  },
+  Reviews: {
+    rating: ["1", "2", "3", "4", "5"],
+    customer: [],
+    product: [],
+    shop: [],
+    status: ["Published", "Reported", "Hidden"],
+  },
+  Delivery: {
+    order: [],
+    shop: [],
+    customer: [],
+    courier: ["SeroFast Express", "Delhivery", "Blue Dart", "India Post"],
+    status: ["Processing", "Shipped", "Delivered", "Delayed", "Returned"],
+  },
+  Transactions: {
+    type: ["Order Payment", "Withdrawal", "Refund", "Commission"],
+    order: [],
+    user: [],
+    status: ["Completed", "Pending", "Failed"],
+  },
+  Refunds: {
+    order: [],
+    customer: [],
+    shop: [],
+    status: ["Pending", "Processed", "Rejected"],
+  },
+  Support: {
+    requester: [],
+    type: ["Customer", "Seller", "Internal"],
+    priority: ["Low", "Medium", "High", "Critical"],
+    status: ["Open", "In Progress", "Escalated", "Resolved", "Closed"],
+  },
+  "Admin Users": {
+    role: ["Super Admin", "Operations Admin", "Finance Admin", "Support Admin", "Marketing Admin", "Catalog Admin"],
+    status: ["Active", "Inactive", "Suspended"],
+  },
+  Coupons: {
+    type: ["Fixed", "Percent"],
+    status: ["Draft", "Active", "Inactive", "Expired"],
+  },
+  Campaigns: {
+    audience: ["All Customers", "New Customers", "Returning Customers", "Students", "Sellers"],
+    status: ["Draft", "Scheduled", "Running", "Paused", "Completed"],
+  },
+  Banners: {
+    placement: ["Hero", "Promotion", "Category", "Checkout"],
+    status: ["Draft", "Scheduled", "Active", "Disabled"],
+  },
+  "Audit Logs": {
+    module: ["Dashboard", "Shops", "Products", "Orders", "Finance", "Marketing", "System"],
+  },
+};
+
+const numericFields = new Set([
+  "products",
+  "orders",
+  "returns",
+  "items",
+  "stock",
+  "threshold",
+  "priority",
+]);
+
+function optionsForField(title, column, rows) {
+  const configuredOptions = controlledFields[title]?.[column.key];
+  if (!configuredOptions) return null;
+
+  const existingOptions = rows
+    .map((row) => row[column.key])
+    .filter((value) => value !== undefined && value !== null && String(value).trim());
+
+  return [...new Set([...configuredOptions, ...existingOptions])];
+}
 
 const defaultSummaryCards = {
   Shops: [
@@ -320,7 +427,9 @@ export default function ResourcePage({
         title={drawerState?.mode === "create" ? `Create ${entityName}` : `Manage ${entityName}`}
       >
       <ResourceForm
+        title={title}
         columns={columns}
+        rows={resource.rows}
         record={selectedRecord}
         mode={drawerState?.mode}
         onCancel={() => setDrawerState(null)}
@@ -343,7 +452,7 @@ export default function ResourcePage({
   );
 }
 
-function ResourceForm({ columns, record, mode, onCancel, onSave }) {
+function ResourceForm({ title, columns, rows, record, mode, onCancel, onSave }) {
   const editableColumns = columns.filter(
     (column) => !["id", "created", "joined", "updated", "date"].includes(column.key),
   );
@@ -359,7 +468,7 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
     event.preventDefault();
     const nextErrors = {};
 
-    editableColumns.slice(0, 6).forEach((column) => {
+    editableColumns.forEach((column) => {
       if (!String(values[column.key] ?? "").trim()) {
         nextErrors[column.key] = `${column.label} is required.`;
       }
@@ -389,27 +498,60 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
-      {editableColumns.slice(0, 6).map((column) => (
+      {editableColumns.map((column) => {
+        const selectOptions = optionsForField(title, column, rows);
+        const isLongText = /(description|reason|review|address|subject)/i.test(column.key);
+        const isNumeric = numericFields.has(column.key) || typeof record?.[column.key] === "number";
+
+        return (
         <label
           key={column.key}
-          className={`block ${/(description|reason|review|address|subject)/i.test(column.key) ? "sm:col-span-2" : ""}`}
+          className={`block ${isLongText ? "sm:col-span-2" : ""}`}
         >
           <span className="mb-1.5 block text-xs font-medium text-slate-700">
             {column.label}
           </span>
-          <input
-            value={values[column.key] ?? ""}
-            onChange={(event) => {
+          {selectOptions ? (
+            <AdminSelect
+              value={values[column.key] ?? ""}
+              onChange={(nextValue) => {
               setValues((current) => ({
                 ...current,
-                [column.key]: event.target.value,
+                  [column.key]: nextValue,
               }));
               setErrors((current) => ({ ...current, [column.key]: "" }));
-            }}
-            aria-invalid={Boolean(errors[column.key])}
-            aria-describedby={`${column.key}-error`}
-            className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-          />
+              }}
+              options={selectOptions}
+              placeholder={`Select ${column.label.toLowerCase()}`}
+              ariaLabel={column.label}
+              buttonClassName={`h-10 ${errors[column.key] ? "border-brandRed" : ""}`}
+            />
+          ) : isLongText ? (
+            <textarea
+              value={values[column.key] ?? ""}
+              onChange={(event) => {
+                setValues((current) => ({ ...current, [column.key]: event.target.value }));
+                setErrors((current) => ({ ...current, [column.key]: "" }));
+              }}
+              rows={4}
+              aria-invalid={Boolean(errors[column.key])}
+              aria-describedby={`${column.key}-error`}
+              className="w-full rounded-[20px] border border-[#E5E7EB] bg-white p-3 text-xs outline-none focus:border-brandRed"
+            />
+          ) : (
+            <input
+              type={isNumeric ? "number" : "text"}
+              min={isNumeric ? "0" : undefined}
+              value={values[column.key] ?? ""}
+              onChange={(event) => {
+                setValues((current) => ({ ...current, [column.key]: event.target.value }));
+                setErrors((current) => ({ ...current, [column.key]: "" }));
+              }}
+              aria-invalid={Boolean(errors[column.key])}
+              aria-describedby={`${column.key}-error`}
+              className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
+            />
+          )}
           {errors[column.key] && (
             <span
               id={`${column.key}-error`}
@@ -419,7 +561,8 @@ function ResourceForm({ columns, record, mode, onCancel, onSave }) {
             </span>
           )}
         </label>
-      ))}
+        );
+      })}
       </div>
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">

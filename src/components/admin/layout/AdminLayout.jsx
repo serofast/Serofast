@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, Search, Bell, LogOut, X, ChevronDown } from "lucide-react";
+import { Menu, Search, Bell, LogOut, X } from "lucide-react";
 import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
 import { Logo } from "../../reusable";
 import AdminBreadcrumbs from "./AdminBreadcrumbs";
-import AdminBottomNav from "./AdminBottomNav";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -34,8 +33,6 @@ function SidebarItem({ item, close }) {
 
 export default function AdminLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const navigate = useNavigate();
   const close = () => setMobileOpen(false);
@@ -165,89 +162,37 @@ export default function AdminLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Notification Link */}
-            <div className="relative">
+            <div>
               <button
                 type="button"
-                onClick={() => setNotificationsOpen((current) => !current)}
+                onClick={() => navigate("/admin/notifications")}
                 className="relative grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] text-slate-600 hover:bg-slate-50 transition active:scale-95"
                 aria-label="Notifications"
-                aria-expanded={notificationsOpen}
               >
                 <Bell size={18} className="text-slate-700" />
                 <span className="absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white">
                   2
                 </span>
               </button>
-              {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-[24px] border border-[#E5E7EB] bg-white p-2 shadow-xl z-50 text-xs animate-scale-up">
-                  <div className="px-3 py-2 border-b border-slate-100">
-                    <p className="font-semibold text-slate-900">Admin notifications</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNotificationsOpen(false);
-                      navigate("/admin/notifications");
-                    }}
-                    className="mt-1 w-full rounded-xl bg-[#FAF8F5] p-3 text-left text-xs text-slate-600 hover:bg-slate-50 transition"
-                  >
-                    3 operational templates need review
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Profile Icon Dropdown Trigger */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setProfileOpen((current) => !current)}
-                aria-expanded={profileOpen}
-                className="grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] bg-white hover:border-brandRed transition cursor-pointer active:scale-95 shadow-2xs"
-              >
-                <div className="grid h-8 w-8 place-items-center rounded-full bg-rose-50 text-[11px] font-semibold text-brandRed">
-                  A
-                </div>
-              </button>
-              {profileOpen && (
-                <div className="absolute right-0 mt-2 w-56 rounded-[24px] border border-[#E5E7EB] bg-white p-2 shadow-xl z-50 text-xs animate-scale-up space-y-1">
-                  <div className="px-3 py-2 border-b border-slate-100">
-                    <span className="font-semibold text-slate-900 block truncate">Admin</span>
-                    <span className="text-[10px] text-slate-500 font-normal block truncate">Super Admin</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      navigate("/admin/settings");
-                    }}
-                    className="flex items-center gap-2 rounded-xl px-3 py-2 text-slate-700 hover:bg-slate-50 transition font-normal w-full text-left"
-                  >
-                    Settings
-                  </button>
-                  <div className="border-t border-slate-100 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => navigate("/")}
-                      className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-brandRed font-medium hover:bg-rose-50 transition cursor-pointer"
-                    >
-                      <LogOut size={14} /> Exit Admin
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div
+              className="grid h-10 w-10 place-items-center rounded-full border border-[#E5E7EB] bg-white shadow-2xs"
+              aria-label="Admin profile"
+              role="img"
+            >
+              <div className="grid h-8 w-8 place-items-center rounded-full bg-rose-50 text-[11px] font-semibold text-brandRed">
+                A
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="w-full min-w-0 overflow-x-hidden px-3 py-4 pb-20 sm:px-4 sm:py-5 lg:px-5 xl:px-6 md:pb-6">
+        <main className="w-full min-w-0 overflow-x-hidden px-3 py-4 pb-6 sm:px-4 sm:py-5 lg:px-5 xl:px-6">
           <AdminBreadcrumbs />
           {children}
         </main>
       </div>
-
-      <AdminBottomNav />
     </div>
   );
 }

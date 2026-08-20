@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
-import { Card, FilterBar, PageHeader, Toast } from "../../shared/ui";
+import { AdminSelect, Card, FilterBar, PageHeader, Toast } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { reports } from "../../shared/adminData";
@@ -141,17 +141,13 @@ function Select({ label, value, onChange, options, emptyLabel }) {
       <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-slate-500">
         {label}
       </span>
-      <select
+      <AdminSelect
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full cursor-pointer rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-      >
-        {options.map((option) => (
-          <option key={option || "all"} value={option}>
-            {option || emptyLabel}
-          </option>
-        ))}
-      </select>
+        onChange={onChange}
+        options={options.map((option) => ({ value: option, label: option || emptyLabel }))}
+        ariaLabel={label}
+        buttonClassName="h-10"
+      />
     </label>
   );
 }

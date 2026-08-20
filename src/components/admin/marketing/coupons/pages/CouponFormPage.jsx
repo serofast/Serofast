@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, PageHeader, Toast } from "../../../shared/ui";
+import { AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 import { coupons } from "../../../shared/adminData";
 
 const initialForm = {
@@ -229,15 +229,13 @@ function SelectField({ label, value, options, onChange }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm font-semibold">{label}</span>
-      <select
+      <AdminSelect
         value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm outline-none focus:border-brandRed"
-      >
-        {options.map((option) => (
-          <option key={option}>{option}</option>
-        ))}
-      </select>
+        onChange={onChange}
+        options={options}
+        ariaLabel={label}
+        buttonClassName="h-11 text-sm"
+      />
     </label>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, PageHeader, Toast } from "../../../shared/ui";
+import { AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 
 const initialForm = {
   name: "",
@@ -68,15 +68,13 @@ export default function CampaignFormPage() {
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-semibold">Audience</span>
-            <select
+            <AdminSelect
               value={form.audience}
-              onChange={(event) => updateField("audience", event.target.value)}
-              className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm outline-none focus:border-brandRed"
-            >
-              {["All Customers", "Students", "New Customers", "High Value Customers"].map(
-                (audience) => <option key={audience}>{audience}</option>,
-              )}
-            </select>
+              onChange={(value) => updateField("audience", value)}
+              options={["All Customers", "Students", "New Customers", "High Value Customers"]}
+              ariaLabel="Audience"
+              buttonClassName="h-11 text-sm"
+            />
           </label>
 
           <ValidatedInput
@@ -108,15 +106,13 @@ export default function CampaignFormPage() {
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-semibold">Status</span>
-            <select
+            <AdminSelect
               value={form.status}
-              onChange={(event) => updateField("status", event.target.value)}
-              className="h-11 w-full rounded-lg border border-lightBorder bg-white px-3 text-sm"
-            >
-              {["Draft", "Scheduled", "Running", "Paused"].map((status) => (
-                <option key={status}>{status}</option>
-              ))}
-            </select>
+              onChange={(value) => updateField("status", value)}
+              options={["Draft", "Scheduled", "Running", "Paused"]}
+              ariaLabel="Status"
+              buttonClassName="h-11 text-sm"
+            />
           </label>
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">

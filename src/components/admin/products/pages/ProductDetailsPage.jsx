@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
+  AdminSelect,
   Card,
   ConfirmDialog,
   PageHeader,
@@ -160,27 +161,42 @@ function ProductOverview({ product }) {
 }
 
 function ProductEditor({ draft, setDraft, onSubmit, onCancel }) {
+  const shopOptions = [...new Set(products.map((product) => product.shop))];
+  const categoryOptions = [...new Set(products.map((product) => product.category))];
+
   return (
     <Card className="max-w-3xl p-5 sm:p-6">
       <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
         {[
-          ["product", "Product Name", "text"],
-          ["shop", "Shop", "text"],
-          ["category", "Category", "text"],
-          ["price", "Price", "text"],
-          ["stock", "Stock", "number"],
-        ].map(([key, label, type]) => (
+          { key: "product", label: "Product Name", type: "text" },
+          { key: "shop", label: "Shop", options: shopOptions },
+          { key: "category", label: "Category", options: categoryOptions },
+          { key: "price", label: "Price", type: "text" },
+          { key: "stock", label: "Stock", type: "number" },
+        ].map(({ key, label, type, options }) => (
           <label key={key} className="block">
             <span className="mb-1.5 block text-xs font-medium text-slate-700">{label}</span>
-            <input
-              type={type}
-              min={type === "number" ? "0" : undefined}
-              value={draft[key]}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, [key]: event.target.value }))
-              }
-              className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
-            />
+            {options ? (
+              <AdminSelect
+                value={draft[key]}
+                onChange={(value) =>
+                  setDraft((current) => ({ ...current, [key]: value }))
+                }
+                options={options}
+                ariaLabel={label}
+                buttonClassName="h-10"
+              />
+            ) : (
+              <input
+                type={type}
+                min={type === "number" ? "0" : undefined}
+                value={draft[key]}
+                onChange={(event) =>
+                  setDraft((current) => ({ ...current, [key]: event.target.value }))
+                }
+                className="h-10 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed"
+              />
+            )}
           </label>
         ))}
         <div className="flex flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
