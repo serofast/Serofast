@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
+import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 
 const initialForm = {
   title: "",
@@ -151,6 +151,7 @@ export default function BannerFormPage() {
               label="Start Date"
               type="date"
               value={form.start}
+              max={form.end || undefined}
               error={errors.start}
               onChange={(value) => updateField("start", value)}
             />
@@ -158,6 +159,7 @@ export default function BannerFormPage() {
               label="End Date"
               type="date"
               value={form.end}
+              min={form.start || undefined}
               error={errors.end}
               onChange={(value) => updateField("end", value)}
             />
@@ -229,14 +231,11 @@ function InputField({ label, error, onChange, type = "text", ...props }) {
   return (
     <label htmlFor={id} className="block">
       <span className="mb-1.5 block text-xs font-semibold text-slate-700">{label}</span>
-      <input
-        id={id}
-        type={type}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={Boolean(error)}
-        className="h-11 w-full rounded-[30px] border border-[#E5E7EB] px-4 text-xs outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
-        {...props}
-      />
+      {type === "date" ? (
+        <AdminDatePicker value={props.value} onChange={onChange} min={props.min} max={props.max} ariaLabel={label} placeholder={`Select ${label.toLowerCase()}`} />
+      ) : (
+        <input id={id} type={type} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} className="h-11 w-full rounded-[30px] border border-[#E5E7EB] px-4 text-xs outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10" {...props} />
+      )}
       {error && (
         <span className="mt-1 block text-xs font-semibold text-brandRed">
           {error}

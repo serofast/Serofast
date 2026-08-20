@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, History, SlidersHorizontal } from "lucide-react";
-import { AdminSelect, BulkActionBar, Card, ConfirmDialog, FilterBar, Modal, PageHeader, StatGrid, StatusBadge, StatusCard, Tabs, Toast } from "../../shared/ui";
+import { AdminDatePicker, AdminSelect, BulkActionBar, Card, ConfirmDialog, FilterBar, Modal, PageHeader, StatGrid, StatusBadge, StatusCard, Tabs, Toast } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { useInventory } from "../hooks/useInventory";
@@ -67,11 +67,11 @@ export default function InventoryPage() {
       <PageHeader title="Inventory" description="Operate per-shop product and variant stock with a complete local movement audit trail." />
       <div className="mb-4 rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4 text-[11px] text-slate-500">Stock operations are persisted in the Phase 1 local repository. No warehouse or Supabase inventory is changed.</div>
       <StatGrid className="mb-5">
-        <StatusCard label="Tracked Records" value={inventory.length} tone="blue" description="Shop/product/variant records" />
-        <StatusCard label="In Stock" value={inventory.filter((record) => record.status === "In Stock").length} tone="green" />
-        <StatusCard label="Low Stock" value={inventory.filter((record) => record.status === "Low Stock").length} tone="amber" />
-        <StatusCard label="Out of Stock" value={inventory.filter((record) => record.status === "Out of Stock").length} tone="rose" />
-        <StatusCard label="Movements" value={movements.length} tone="blue" description="Local audit entries" />
+        <StatusCard label="Tracked Records" value={inventory.length} tone="blue" description="Shop/product/variant records" onClick={() => { setActiveTab("Inventory"); resource.clearFilters(); setShop(""); }} />
+        <StatusCard label="In Stock" value={inventory.filter((record) => record.status === "In Stock").length} tone="green" onClick={() => { setActiveTab("Inventory"); resource.setStatus("In Stock"); }} />
+        <StatusCard label="Low Stock" value={inventory.filter((record) => record.status === "Low Stock").length} tone="amber" onClick={() => { setActiveTab("Inventory"); resource.setStatus("Low Stock"); }} />
+        <StatusCard label="Out of Stock" value={inventory.filter((record) => record.status === "Out of Stock").length} tone="rose" onClick={() => { setActiveTab("Inventory"); resource.setStatus("Out of Stock"); }} />
+        <StatusCard label="Movements" value={movements.length} tone="blue" description="Local audit entries" onClick={() => { setActiveTab("Movement History"); historyResource.clearFilters(); }} />
       </StatGrid>
 
       <Card className="mb-5 overflow-hidden"><Tabs tabs={["Inventory", "Movement History"]} activeTab={activeTab} onChange={setActiveTab} /></Card>
@@ -90,8 +90,8 @@ export default function InventoryPage() {
           <div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <AdminSelect value={historyShop} onChange={setHistoryShop} options={[{ value: "", label: "All shops" }, ...shops]} ariaLabel="Movement shop" buttonClassName="h-11" />
             <AdminSelect value={historyProduct} onChange={setHistoryProduct} options={[{ value: "", label: "All products" }, ...[...new Map(inventory.map((record) => [record.productId, { value: record.productId, label: record.productName }])).values()]]} ariaLabel="Movement product" buttonClassName="h-11" />
-            <input type="date" value={historyFrom} onChange={(event) => setHistoryFrom(event.target.value)} aria-label="Movement history from date" className={fieldClass} />
-            <input type="date" value={historyTo} onChange={(event) => setHistoryTo(event.target.value)} aria-label="Movement history to date" className={fieldClass} />
+            <AdminDatePicker value={historyFrom} onChange={setHistoryFrom} max={historyTo || undefined} placeholder="From date" ariaLabel="Movement history from date" />
+            <AdminDatePicker value={historyTo} onChange={setHistoryTo} min={historyFrom || undefined} placeholder="To date" ariaLabel="Movement history to date" />
           </div>
           <ResourceTable columns={movementColumns} rows={historyResource.visibleRows} selectable={false} rowActions={() => []} sortKey={historyResource.sortKey} sortDirection={historyResource.sortDirection} onSort={historyResource.changeSort} page={historyResource.page} pageCount={historyResource.pageCount} pageSize={historyResource.pageSize} totalCount={historyResource.totalCount} onPageChange={historyResource.setPage} onPageSizeChange={historyResource.changePageSize} onClearFilters={historyResource.clearFilters} emptyTitle="No stock movements recorded" emptyDescription="Stock-in, stock-out, adjustment, sale, return, damage, and other operations will appear here." />
         </>

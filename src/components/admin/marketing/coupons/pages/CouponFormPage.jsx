@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
+import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 import { coupons } from "../../../shared/adminData";
 
 const initialForm = {
@@ -160,6 +160,7 @@ export default function CouponFormPage() {
               label="Start Date"
               type="date"
               value={form.start}
+              max={form.end || undefined}
               error={errors.start}
               onChange={(value) => updateField("start", value)}
             />
@@ -167,6 +168,7 @@ export default function CouponFormPage() {
               label="End Date"
               type="date"
               value={form.end}
+              min={form.start || undefined}
               error={errors.end}
               onChange={(value) => updateField("end", value)}
             />
@@ -207,15 +209,11 @@ function Field({ label, error, onChange, type = "text", ...inputProps }) {
   return (
     <label htmlFor={id} className="block">
       <span className="mb-1.5 block text-sm font-semibold">{label}</span>
-      <input
-        id={id}
-        type={type}
-        onChange={(event) => onChange(event.target.value)}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10"
-        {...inputProps}
-      />
+      {type === "date" ? (
+        <AdminDatePicker value={inputProps.value} onChange={onChange} min={inputProps.min} max={inputProps.max} ariaLabel={label} placeholder={`Select ${label.toLowerCase()}`} buttonClassName="h-11 text-sm" />
+      ) : (
+        <input id={id} type={type} onChange={(event) => onChange(event.target.value)} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined} className="h-11 w-full rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed focus:ring-2 focus:ring-brandRed/10" {...inputProps} />
+      )}
       {error && (
         <span id={`${id}-error`} className="mt-1 block text-xs font-semibold text-brandRed">
           {error}

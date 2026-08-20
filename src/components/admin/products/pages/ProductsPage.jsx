@@ -89,11 +89,11 @@ export default function ProductsPage() {
       </div>
 
       <StatGrid className="mb-5">
-        <StatusCard label="Total Products" value={products.length} tone="blue" description="All local catalog records" />
-        <StatusCard label="Active" value={products.filter((product) => product.status === "Active").length} tone="green" />
-        <StatusCard label="Low Stock" value={products.filter((product) => product.stock > 0 && product.stock <= product.lowStockThreshold).length} tone="amber" />
-        <StatusCard label="Out of Stock" value={products.filter((product) => product.stock === 0).length} tone="rose" />
-        <StatusCard label="Pending Approval" value={products.filter((product) => product.approvalStatus === "Pending Approval").length} tone="amber" />
+        <StatusCard label="Total Products" value={products.length} tone="blue" description="All local catalog records" onClick={() => { resource.clearFilters(); setCategoryId(""); }} />
+        <StatusCard label="Active" value={products.filter((product) => product.status === "Active").length} tone="green" onClick={() => resource.setStatus("Active")} />
+        <StatusCard label="Low Stock" value={products.filter((product) => product.stock > 0 && product.stock <= product.lowStockThreshold).length} tone="amber" onClick={() => resource.setQuickFilter((product) => product.stock > 0 && product.stock <= product.lowStockThreshold)} />
+        <StatusCard label="Out of Stock" value={products.filter((product) => product.stock === 0).length} tone="rose" onClick={() => resource.setQuickFilter((product) => product.stock === 0)} />
+        <StatusCard label="Pending Approval" value={products.filter((product) => product.approvalStatus === "Pending Approval").length} tone="amber" onClick={() => resource.setQuickFilter((product) => product.approvalStatus === "Pending Approval")} />
       </StatGrid>
 
       <div className="mb-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]">

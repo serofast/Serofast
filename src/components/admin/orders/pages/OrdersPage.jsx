@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Download, Eye, PackageCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AdminSelect, BulkActionBar, ConfirmDialog, FilterBar, PageHeader, StatGrid, StatusBadge, StatusCard, Toast } from "../../shared/ui";
+import { AdminDatePicker, AdminSelect, BulkActionBar, ConfirmDialog, FilterBar, PageHeader, StatGrid, StatusBadge, StatusCard, Toast } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { useOrders } from "../hooks/useOrders";
@@ -65,11 +65,11 @@ export default function OrdersPage() {
       <PageHeader title="Orders" description="Operate the local order lifecycle with explicit transitions, confirmations, and status history." />
       <div className="mb-4 rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-4 text-[11px] text-slate-500">Order and refund states recorded here are local workflow simulations. They do not process fulfillment or return money through a payment provider.</div>
       <StatGrid className="mb-5">
-        <StatusCard label="All Orders" value={orders.length} tone="blue" />
-        <StatusCard label="Pending" value={orders.filter((order) => order.status === "Pending").length} tone="amber" />
-        <StatusCard label="In Fulfillment" value={orders.filter((order) => ["Confirmed", "Processing", "Packed", "Shipped", "Out for Delivery"].includes(order.status)).length} tone="blue" />
-        <StatusCard label="Delivered" value={orders.filter((order) => order.status === "Delivered").length} tone="green" />
-        <StatusCard label="Payment Failed" value={orders.filter((order) => order.status === "Payment Failed" || order.paymentStatus === "Failed").length} tone="rose" />
+        <StatusCard label="All Orders" value={orders.length} tone="blue" onClick={clearAll} />
+        <StatusCard label="Pending" value={orders.filter((order) => order.status === "Pending").length} tone="amber" onClick={() => resource.setStatus("Pending")} />
+        <StatusCard label="In Fulfillment" value={orders.filter((order) => ["Confirmed", "Processing", "Packed", "Shipped", "Out for Delivery"].includes(order.status)).length} tone="blue" onClick={() => resource.setQuickFilter((order) => ["Confirmed", "Processing", "Packed", "Shipped", "Out for Delivery"].includes(order.status))} />
+        <StatusCard label="Delivered" value={orders.filter((order) => order.status === "Delivered").length} tone="green" onClick={() => resource.setStatus("Delivered")} />
+        <StatusCard label="Payment Failed" value={orders.filter((order) => order.status === "Payment Failed" || order.paymentStatus === "Failed").length} tone="rose" onClick={() => resource.setQuickFilter((order) => order.status === "Payment Failed" || order.paymentStatus === "Failed")} />
       </StatGrid>
 
       <FilterBar value={resource.search} setValue={resource.setSearch} placeholder="Search order ID, customer, email, SKU, product..." status={resource.status} setStatus={resource.setStatus} options={ORDER_STATUSES} onClear={clearAll} />
@@ -78,8 +78,8 @@ export default function OrdersPage() {
         <AdminSelect value={shop} onChange={setShop} options={[{ value: "", label: "All shops" }, ...shops]} ariaLabel="Shop" buttonClassName="h-11" />
         <input type="number" min="0" value={minAmount} onChange={(event) => setMinAmount(event.target.value)} placeholder="Minimum amount" aria-label="Minimum amount" className={inputClass} />
         <input type="number" min="0" value={maxAmount} onChange={(event) => setMaxAmount(event.target.value)} placeholder="Maximum amount" aria-label="Maximum amount" className={inputClass} />
-        <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} aria-label="Orders from date" className={inputClass} />
-        <input type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} aria-label="Orders to date" className={inputClass} />
+        <AdminDatePicker value={dateFrom} onChange={setDateFrom} max={dateTo || undefined} placeholder="From date" ariaLabel="Orders from date" />
+        <AdminDatePicker value={dateTo} onChange={setDateTo} min={dateFrom || undefined} placeholder="To date" ariaLabel="Orders to date" />
       </div>
 
       <BulkActionBar count={resource.selectedIds.length} actions={[{ label: "Mark Confirmed", tone: "success", onClick: () => setPendingBulk("Confirmed") }, { label: "Mark Processing", onClick: () => setPendingBulk("Processing") }, { label: "Export", onClick: exportSelected }]} onClear={() => resource.setSelectedIds([])} />

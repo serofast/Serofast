@@ -153,10 +153,6 @@ export default function ResourceTable({
     selectionWidth +
     renderableColumns.reduce((total, column) => total + column.width, 0) +
     200;
-  const allVisibleSelected =
-    selectable &&
-    rows.length > 0 &&
-    rows.every((row) => selectedIds.includes(row.id));
   const getActions = (row) =>
     (rowActions
       ? rowActions(row)
@@ -186,15 +182,10 @@ export default function ResourceTable({
               <thead className="border-b border-slate-100 bg-[#FAF8F5]">
                 <tr>
                   {selectable && (
-                    <th className="sticky left-0 top-0 z-20 w-14 bg-[#FAF8F5] px-4 py-3.5">
-                      <input
-                        type="checkbox"
-                        aria-label="Select all visible rows"
-                        checked={allVisibleSelected}
-                        onChange={onToggleAll}
-                        className="h-4 w-4 accent-brandRed"
-                      />
-                    </th>
+                    <th
+                      aria-label="Row selection"
+                      className="sticky left-0 top-0 z-20 w-14 bg-[#FAF8F5] px-4 py-3.5"
+                    />
                   )}
                   {renderableColumns.map((column) => (
                     <th

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import Icon from "./legacyIcon";
 
 const statusStyles = {
@@ -222,6 +223,177 @@ export function AdminSelect({
               </button>
             );
           })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const padDatePart = (value) => String(value).padStart(2, "0");
+
+function parseDateValue(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? "")) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(year, month - 1, day);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toDateValue(date) {
+  return `${date.getFullYear()}-${padDatePart(date.getMonth() + 1)}-${padDatePart(date.getDate())}`;
+}
+
+function dateLabel(value, placeholder) {
+  const date = parseDateValue(value);
+  if (!date) return placeholder;
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+export function AdminDatePicker({
+  value = "",
+  onChange = () => {},
+  placeholder = "Select date",
+  ariaLabel = "Select date",
+  min,
+  max,
+  disabled = false,
+  className = "",
+  buttonClassName = "h-11",
+}) {
+  const selectedDate = parseDateValue(value);
+  const [open, setOpen] = useState(false);
+  const [visibleMonth, setVisibleMonth] = useState(
+    () => selectedDate ?? new Date(),
+  );
+  const rootRef = useRef(null);
+  const dialogId = useId();
+
+  useEffect(() => {
+    if (!open) return undefined;
+    setVisibleMonth(selectedDate ?? new Date());
+
+    function handlePointerDown(event) {
+      if (!rootRef.current?.contains(event.target)) setOpen(false);
+    }
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, value]);
+
+  const year = visibleMonth.getFullYear();
+  const month = visibleMonth.getMonth();
+  const firstGridDate = new Date(year, month, 1 - new Date(year, month, 1).getDay());
+  const days = Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(firstGridDate);
+    date.setDate(firstGridDate.getDate() + index);
+    return date;
+  });
+  const todayValue = toDateValue(new Date());
+
+  function isDisabled(date) {
+    const dateValue = toDateValue(date);
+    return (min && dateValue < min) || (max && dateValue > max);
+  }
+
+  function chooseDate(date) {
+    if (isDisabled(date)) return;
+    onChange(toDateValue(date));
+    setOpen(false);
+  }
+
+  function moveMonth(offset) {
+    setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1));
+  }
+
+  return (
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((current) => !current)}
+        aria-label={ariaLabel}
+        aria-expanded={open}
+        aria-controls={dialogId}
+        className={`flex w-full items-center justify-between gap-3 rounded-[30px] border bg-white px-4 text-left text-xs outline-none transition-all disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
+          open
+            ? "border-brandRed shadow-[-3px_4px_10px_rgba(211,47,47,0.16)]"
+            : "border-[#E5E7EB] hover:border-red-200"
+        } ${buttonClassName}`}
+      >
+        <span className={value ? "truncate text-slate-700" : "truncate text-[#8FA0B8]"}>
+          {dateLabel(value, placeholder)}
+        </span>
+        <CalendarDays size={16} className={`shrink-0 ${open ? "text-brandRed" : "text-slate-500"}`} />
+      </button>
+
+      {open && (
+        <div
+          id={dialogId}
+          role="dialog"
+          aria-label={ariaLabel}
+          className="absolute right-0 top-[calc(100%+8px)] z-[120] w-[min(276px,calc(100vw-32px))] rounded-[24px] border border-[#F3E5E5] bg-white p-3 shadow-[-5px_10px_24px_rgba(31,41,55,0.14),-6px_12px_22px_rgba(211,47,47,0.14)]"
+        >
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <p className="text-xs font-semibold text-slate-800">
+              {new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(visibleMonth)}
+            </p>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => moveMonth(-1)} aria-label="Previous month" className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] text-slate-500 transition hover:border-brandRed/30 hover:bg-rose-50 hover:text-brandRed"><ChevronLeft size={14} /></button>
+              <button type="button" onClick={() => moveMonth(1)} aria-label="Next month" className="grid h-8 w-8 place-items-center rounded-full border border-[#E5E7EB] text-slate-500 transition hover:border-brandRed/30 hover:bg-rose-50 hover:text-brandRed"><ChevronRight size={14} /></button>
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-7 text-center" role="row">
+            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+              <span key={day} className="py-0.5 text-[9px] font-semibold uppercase text-slate-400">{day}</span>
+            ))}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-0.5" role="grid">
+            {days.map((date) => {
+              const dayValue = toDateValue(date);
+              const selected = dayValue === value;
+              const today = dayValue === todayValue;
+              const outsideMonth = date.getMonth() !== month;
+              const unavailable = isDisabled(date);
+              return (
+                <button
+                  key={dayValue}
+                  type="button"
+                  role="gridcell"
+                  disabled={unavailable}
+                  aria-label={new Intl.DateTimeFormat("en-IN", { dateStyle: "full" }).format(date)}
+                  aria-selected={selected}
+                  onClick={() => chooseDate(date)}
+                  className={`grid aspect-square place-items-center rounded-full text-[11px] transition disabled:cursor-not-allowed disabled:opacity-25 ${
+                    selected
+                      ? "bg-brandRed font-semibold text-white shadow-[0_4px_10px_rgba(211,47,47,0.30)]"
+                      : today
+                        ? "border border-brandRed bg-rose-50 font-semibold text-brandRed"
+                        : outsideMonth
+                          ? "text-slate-300 hover:bg-rose-50 hover:text-brandRed"
+                          : "text-slate-700 hover:bg-rose-50 hover:text-brandRed"
+                  }`}
+                >
+                  {date.getDate()}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
+            <button type="button" onClick={() => { onChange(""); setOpen(false); }} className="h-8 rounded-[30px] px-3 text-[10px] font-medium text-slate-500 hover:bg-slate-50">Clear</button>
+            <button type="button" disabled={isDisabled(new Date())} onClick={() => chooseDate(new Date())} className="h-8 rounded-[30px] bg-rose-50 px-3 text-[10px] font-semibold text-brandRed transition hover:bg-rose-100 disabled:opacity-40">Today</button>
+          </div>
         </div>
       )}
     </div>

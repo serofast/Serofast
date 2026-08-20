@@ -4,7 +4,6 @@ import { Menu, Search, Bell, LogOut, X } from "lucide-react";
 import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
 import { Logo } from "../../reusable";
-import AdminBreadcrumbs from "./AdminBreadcrumbs";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -189,7 +188,6 @@ export default function AdminLayout({ children }) {
         </header>
 
         <main className="w-full min-w-0 overflow-x-hidden px-3 py-4 pb-6 sm:px-4 sm:py-5 lg:px-5 xl:px-6">
-          <AdminBreadcrumbs />
           {children}
         </main>
       </div>
