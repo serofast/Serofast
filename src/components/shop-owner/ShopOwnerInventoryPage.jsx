@@ -190,24 +190,11 @@ export default function ShopOwnerInventoryPage() {
   return (
     <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
       {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
-            Products &amp; Inventory
-          </h1>
-          <p className="text-xs text-slate-500 font-normal mt-0.5">
-            Manage your store catalog, pricing &amp; stock status from SeroFast Warehouse.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="flex h-12 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer w-full sm:w-auto"
-        >
-          <Plus size={16} />
-          <span>Add Product from Warehouse</span>
-        </button>
+      <div>
+        <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
+          Products &amp; Inventory
+        </h1>
+       
       </div>
 
       {/* Quick Status KPI Summary Bar using Reusable AppMetricCard */}
@@ -246,6 +233,16 @@ export default function ShopOwnerInventoryPage() {
           icon={ShoppingCart}
         />
       </div>
+
+      {/* Add Product Button */}
+      <button
+        type="button"
+        onClick={() => setIsModalOpen(true)}
+        className="flex h-11 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer w-full"
+      >
+        <Plus size={16} />
+        <span>Add Product from Warehouse</span>
+      </button>
 
       {/* Quick Filter Pill Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none border-b border-slate-100">
@@ -788,7 +785,7 @@ export default function ShopOwnerInventoryPage() {
                 type="submit"
                 className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
               >
-                Save Changes
+                Save
               </button>
             </div>
           </form>

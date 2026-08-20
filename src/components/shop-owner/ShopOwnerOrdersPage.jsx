@@ -28,7 +28,7 @@ export default function ShopOwnerOrdersPage() {
   });
 
   const tabs = [
-    { label: "All Orders", value: "All" },
+    { label: "All", value: "All" },
     { label: `Needs Shipping (${needsNotificationCount})`, value: "Needs Shipping" },
     { label: `Shipped (${shippedCount})`, value: "Shipped" },
   ];
@@ -40,9 +40,6 @@ export default function ShopOwnerOrdersPage() {
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Shipping &amp; Order Status
         </h1>
-        <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Review shipped products and notify SeroFast when new orders are ready for shipping.
-        </p>
       </div>
 
       {/* KPI Overview Cards */}
@@ -50,9 +47,9 @@ export default function ShopOwnerOrdersPage() {
         {/* Shipped Count */}
         <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Shipped Orders</span>
-            <div className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">{shippedCount} Shipped</div>
-            <p className="text-[11px] text-slate-400 font-normal mt-0.5">Dispatched to customers via SeroFast</p>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Shipped Orders</span>
+            <div className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{shippedCount} Shipped</div>
+            <p className="text-[10px] text-slate-400 font-normal mt-0.5">Dispatched to customers via SeroFast</p>
           </div>
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-rose-50 text-brandRed shrink-0">
             <Truck size={24} />
@@ -62,11 +59,11 @@ export default function ShopOwnerOrdersPage() {
         {/* Needs Notification */}
         <div className="rounded-[28px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Awaiting Shipping Notification</span>
-            <div className="text-2xl sm:text-3xl font-bold text-brandRed mt-1">
+            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Awaiting Shipping Notification</span>
+            <div className="text-xl sm:text-2xl font-bold text-brandRed mt-1">
               {needsNotificationCount} Orders
             </div>
-            <p className="text-[11px] text-brandRed font-medium mt-0.5">
+            <p className="text-[10px] text-brandRed font-medium mt-0.5">
               {needsNotificationCount > 0 ? "Action required: Notify for shipping" : "All orders notified!"}
             </p>
           </div>
@@ -83,7 +80,7 @@ export default function ShopOwnerOrdersPage() {
             key={tab.value}
             type="button"
             onClick={() => setActiveTab(tab.value)}
-            className={`h-10 rounded-[30px] px-5 text-xs font-medium shrink-0 transition-all duration-200 cursor-pointer ${
+            className={`h-10 rounded-[30px] px-3.5 sm:px-5 text-[11px] sm:text-xs font-medium shrink-0 transition-all duration-200 cursor-pointer ${
               activeTab === tab.value
                 ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] font-semibold"
                 : "bg-white text-slate-600 hover:bg-slate-50 border border-[#E5E7EB]"
@@ -179,21 +176,22 @@ export default function ShopOwnerOrdersPage() {
                     onClick={() => setSelectedOrder(order)}
                     className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brandRed transition font-medium"
                   >
-                    <Eye size={14} /> View Full Invoice &amp; Details
+                    <Eye size={14} /> View
                   </button>
 
                   {!isShipped ? (
-                    <AppFormButton
+                    <button
                       type="button"
-                      icon={Send}
                       onClick={() => notifyShipping(order.id)}
-                      className="px-6"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brandRed px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-brandRedDark transition cursor-pointer active:scale-95"
                     >
-                      Notify SeroFast for Shipping
-                    </AppFormButton>
+                      <Send size={13} />
+                      <span className="hidden sm:inline">Notify Shipping</span>
+                      <span className="sm:hidden">Notify</span>
+                    </button>
                   ) : (
-                    <span className="text-xs font-semibold text-brandRed flex items-center gap-1.5">
-                      <CheckCircle2 size={16} /> Notified for Shipping (Dispatched)
+                    <span className="text-[11px] sm:text-xs font-semibold text-brandRed flex items-center gap-1.5">
+                      <CheckCircle2 size={14} className="shrink-0" /> <span className="hidden sm:inline">Notified for Shipping (Dispatched)</span><span className="sm:hidden">Notified</span>
                     </span>
                   )}
                 </div>
