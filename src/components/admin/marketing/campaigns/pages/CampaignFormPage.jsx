@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
+import { campaigns } from "../../../shared/adminData";
 
 const initialForm = {
   name: "",
@@ -11,12 +12,31 @@ const initialForm = {
   status: "Scheduled",
 };
 
+function toInputDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+}
+
 export default function CampaignFormPage() {
   const navigate = useNavigate();
   const { campaignId } = useParams();
+  const existingCampaign = campaigns.find((campaign) => campaign.id === campaignId);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    if (!existingCampaign) return;
+    setForm((current) => ({
+      ...current,
+      name: existingCampaign.name,
+      audience: existingCampaign.audience,
+      budget: String(existingCampaign.budget).replace(/[^0-9.]/g, ""),
+      start: toInputDate(existingCampaign.starts),
+      end: toInputDate(existingCampaign.ends),
+      status: existingCampaign.status,
+    }));
+  }, [existingCampaign]);
 
   function updateField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));

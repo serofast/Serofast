@@ -10,6 +10,7 @@ export default function CustomersPage() {
       description="View customers, order history, account status and customer value."
       seed={seed}
       columns={columns}
+      viewPath={(row) => `/admin/customers/${encodeURIComponent(row.id)}`}
     />
   );
 }

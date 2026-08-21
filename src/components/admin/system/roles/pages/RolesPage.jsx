@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, PageHeader, Toast } from "../../../shared/ui";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Toast } from "../../../shared/ui";
 import { roles } from "../../../shared/adminData";
 
 const permissionGroups = {
@@ -23,6 +23,7 @@ function normalizePermissions(role) {
 
 export default function RolesPage() {
   const { roleId } = useParams();
+  const navigate = useNavigate();
   const initialRole = roles.find((role) => role.id === roleId) ?? roles[0];
   const [selectedId, setSelectedId] = useState(initialRole.id);
   const [rolePermissions, setRolePermissions] = useState(() =>
@@ -33,6 +34,11 @@ export default function RolesPage() {
     () => roles.find((role) => role.id === selectedId) ?? roles[0],
     [selectedId],
   );
+
+  useEffect(() => {
+    const routedRole = roles.find((role) => role.id === roleId);
+    if (routedRole) setSelectedId(routedRole.id);
+  }, [roleId]);
 
   function togglePermission(permission) {
     setRolePermissions((current) => {
@@ -63,7 +69,7 @@ export default function RolesPage() {
               <button
                 key={role.id}
                 type="button"
-                onClick={() => setSelectedId(role.id)}
+                onClick={() => navigate(`/admin/roles/${encodeURIComponent(role.id)}`)}
                 className={`min-w-max rounded-[30px] px-4 py-2.5 text-left text-xs font-medium lg:w-full transition-all cursor-pointer ${
                   selectedId === role.id
                     ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)]"

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Eye, Pencil } from "lucide-react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
   AdminSelect,
   Card,
@@ -220,6 +221,12 @@ export default function ResourcePage({
   seed = [],
   columns = [],
   createLabel,
+  createPath,
+  viewPath,
+  editPath,
+  headerActions = [],
+  routeParam,
+  basePath,
   searchPlaceholder,
   summaryCards = [],
 }) {
@@ -227,6 +234,8 @@ export default function ResourcePage({
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
   const resource = useResourceList(seed);
+  const navigate = useNavigate();
+  const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const entityName = singularize(title);
   const operationalCards = summaryCards.length > 0
@@ -235,12 +244,23 @@ export default function ResourcePage({
 
   useEffect(() => {
     const requestedStatus = searchParams.get("status") ?? "";
+    const requestedSearch = searchParams.get("search") ?? "";
     if (requestedStatus !== resource.status) {
       resource.setStatus(requestedStatus);
+    }
+    if (requestedSearch !== resource.search) {
+      resource.setSearch(requestedSearch);
     }
     // Apply direct dashboard links when the URL changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  useEffect(() => {
+    const requestedId = routeParam ? params[routeParam] : null;
+    if (requestedId && resource.rows.some((row) => String(row.id) === requestedId)) {
+      setDrawerState({ mode: "edit", id: requestedId });
+    }
+  }, [params, resource.rows, routeParam]);
 
   useEffect(() => {
     if (!toast) {
@@ -319,24 +339,83 @@ export default function ResourcePage({
       setToast(`${entityName} updated.`);
     }
 
+    closeDrawer();
+  }
+
+  function resolvePath(path, row) {
+    return typeof path === "function" ? path(row) : path;
+  }
+
+  function openView(row) {
+    if (viewPath) {
+      navigate(resolvePath(viewPath, row));
+      return;
+    }
+    setDrawerState({ mode: "edit", id: row.id });
+  }
+
+  function openEdit(row) {
+    if (editPath) {
+      navigate(resolvePath(editPath, row));
+      return;
+    }
+    setDrawerState({ mode: "edit", id: row.id });
+  }
+
+  function closeDrawer() {
     setDrawerState(null);
+    if (routeParam && params[routeParam] && basePath) {
+      navigate(basePath, { replace: true });
+    }
+  }
+
+  function rowActions(row) {
+    return [
+      {
+        label: "View Details",
+        shortLabel: "View",
+        icon: Eye,
+        tone: "primary",
+        onClick: () => openView(row),
+      },
+      {
+        label: "Edit Record",
+        shortLabel: "Edit",
+        icon: Pencil,
+        onClick: () => openEdit(row),
+      },
+      {
+        label: row.status === "Active" ? "Suspend Record" : "Activate Record",
+        shortLabel: row.status === "Active" ? "Suspend" : "Activate",
+        hidden: !row.status,
+        tone: row.status === "Active" ? "success" : "warning",
+        onClick: () => requestStatusToggle(row),
+      },
+    ];
   }
 
   function selectSummary(card) {
     if (card.status) {
       resource.setStatus(card.status);
-      setSearchParams({ status: card.status }, { replace: true });
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("status", card.status);
+      setSearchParams(nextParams, { replace: true });
       return;
     }
     if (card.predicate) {
       resource.setQuickFilter(card.predicate);
-      setSearchParams({}, { replace: true });
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("status");
+      setSearchParams(nextParams, { replace: true });
     }
   }
 
   function changeStatus(value) {
     resource.setStatus(value);
-    setSearchParams(value ? { status: value } : {}, { replace: true });
+    const nextParams = new URLSearchParams(searchParams);
+    if (value) nextParams.set("status", value);
+    else nextParams.delete("status");
+    setSearchParams(nextParams, { replace: true });
   }
 
   function summaryValue(card) {
@@ -353,8 +432,27 @@ export default function ResourcePage({
         title={title}
         description={description}
         action={createLabel}
-        onAction={() => setDrawerState({ mode: "create" })}
+        onAction={() =>
+          createPath
+            ? navigate(resolvePath(createPath))
+            : setDrawerState({ mode: "create" })
+        }
       />
+
+      {headerActions.length > 0 && (
+        <nav aria-label={`${title} related pages`} className="mb-5 flex flex-wrap justify-end gap-2">
+          {headerActions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              onClick={() => action.onClick ? action.onClick() : navigate(action.path)}
+              className="flex h-10 items-center justify-center rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 transition hover:border-brandRed hover:text-brandRed"
+            >
+              {action.label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       {operationalCards.length > 0 && (
         <StatGrid className="mb-5">
@@ -403,7 +501,8 @@ export default function ResourcePage({
         <ResourceTable
           columns={columns}
           rows={resource.visibleRows}
-          onView={(row) => setDrawerState({ mode: "edit", id: row.id })}
+          onView={openView}
+          rowActions={rowActions}
           onToggle={requestStatusToggle}
           sortKey={resource.sortKey}
           sortDirection={resource.sortDirection}
@@ -423,7 +522,7 @@ export default function ResourcePage({
 
       <Drawer
         open={Boolean(drawerState)}
-        onClose={() => setDrawerState(null)}
+        onClose={closeDrawer}
         title={drawerState?.mode === "create" ? `Create ${entityName}` : `Manage ${entityName}`}
       >
       <ResourceForm
@@ -432,7 +531,7 @@ export default function ResourcePage({
         rows={resource.rows}
         record={selectedRecord}
         mode={drawerState?.mode}
-        onCancel={() => setDrawerState(null)}
+        onCancel={closeDrawer}
         onSave={saveRecord}
       />
     </Drawer>

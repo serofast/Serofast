@@ -10,6 +10,9 @@ export default function RefundsPage() {
       description="Review customer refund requests and resolution status."
       seed={seed}
       columns={columns}
+      viewPath={(row) => `/admin/finance/refunds/${encodeURIComponent(row.id)}`}
+      routeParam="refundId"
+      basePath="/admin/finance/refunds"
     />
   );
 }

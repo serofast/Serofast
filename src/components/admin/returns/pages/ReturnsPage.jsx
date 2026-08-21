@@ -10,6 +10,7 @@ export default function ReturnsPage() {
       description="Review return requests, reasons, evidence and refund amounts."
       seed={seed}
       columns={columns}
+      viewPath={(row) => `/admin/returns/${encodeURIComponent(row.id)}`}
     />
   );
 }

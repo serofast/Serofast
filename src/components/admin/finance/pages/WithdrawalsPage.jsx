@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Building2,
   CheckCircle2,
@@ -40,6 +40,7 @@ const columns = [
 
 export default function WithdrawalsPage() {
   const navigate = useNavigate();
+  const { withdrawalId } = useParams();
   const resource = useResourceList(seed);
   const [selected, setSelected] = useState(null);
   const [drawerSection, setDrawerSection] = useState("review");
@@ -48,9 +49,28 @@ export default function WithdrawalsPage() {
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
 
+  useEffect(() => {
+    if (!withdrawalId) return;
+    const routedWithdrawal = resource.rows.find(
+      (item) => String(item.id) === withdrawalId,
+    );
+    if (routedWithdrawal) {
+      setSelected(routedWithdrawal);
+      setDrawerSection("review");
+    }
+  }, [resource.rows, withdrawalId]);
+
   function openDrawer(row, section = "review") {
     setSelected(resource.rows.find((item) => item.id === row.id) ?? row);
     setDrawerSection(section);
+    if (section === "review") {
+      navigate(`/admin/finance/withdrawals/${encodeURIComponent(row.id)}`);
+    }
+  }
+
+  function closeDrawer() {
+    setSelected(null);
+    if (withdrawalId) navigate("/admin/finance/withdrawals", { replace: true });
   }
 
   function requestAction(row, status) {
@@ -202,7 +222,7 @@ export default function WithdrawalsPage() {
 
       <Drawer
         open={Boolean(selected)}
-        onClose={() => setSelected(null)}
+        onClose={closeDrawer}
         title={
           drawerSection === "bank"
             ? "Bank details"

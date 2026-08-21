@@ -13,7 +13,7 @@ export default function AdminBottomNav() {
     { label: "Shops", path: "/admin/shops", icon: Store },
     { label: "Products", path: "/admin/products", icon: Package },
     { label: "Orders", path: "/admin/orders", icon: ShoppingBag },
-    { label: "Settings", path: "/admin/system/settings", icon: Settings },
+    { label: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
   return (

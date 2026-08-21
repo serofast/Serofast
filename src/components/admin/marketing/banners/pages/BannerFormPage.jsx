@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
+import { banners } from "../../../shared/adminData";
 
 const initialForm = {
   title: "",
@@ -12,6 +13,11 @@ const initialForm = {
   end: "2026-08-31",
   status: "Scheduled",
 };
+
+function toInputDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+}
 
 function isValidTarget(value) {
   if (value.startsWith("/")) {
@@ -29,10 +35,24 @@ function isValidTarget(value) {
 export default function BannerFormPage() {
   const navigate = useNavigate();
   const { bannerId } = useParams();
+  const existingBanner = banners.find((banner) => banner.id === bannerId);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [previewUrl, setPreviewUrl] = useState("");
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    if (!existingBanner) return;
+    setForm((current) => ({
+      ...current,
+      title: existingBanner.title,
+      placement: existingBanner.placement,
+      priority: String(existingBanner.priority),
+      start: toInputDate(existingBanner.start),
+      end: toInputDate(existingBanner.end),
+      status: existingBanner.status,
+    }));
+  }, [existingBanner]);
 
   useEffect(
     () => () => {

@@ -10,6 +10,7 @@ export default function ShipmentsPage() {
       description="Track marketplace shipments and courier progress."
       seed={seed}
       columns={columns}
+      viewPath={(row) => `/admin/delivery/${encodeURIComponent(row.id)}`}
     />
   );
 }

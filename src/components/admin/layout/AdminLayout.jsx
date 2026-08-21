@@ -152,12 +152,6 @@ export default function AdminLayout({ children }) {
               />
             </form>
 
-            <div className="hidden lg:block">
-              <p className="text-sm font-semibold">SeroFast Admin</p>
-              <p className="text-xs text-slate-400">
-                Marketplace control center
-              </p>
-            </div>
           </div>
 
           <div className="flex items-center gap-2">

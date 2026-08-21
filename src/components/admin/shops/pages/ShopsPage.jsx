@@ -10,6 +10,8 @@ export default function ShopsPage() {
       description="Manage marketplace sellers, verification, status and performance."
       seed={seed}
       columns={columns}
+      viewPath={(row) => `/admin/shops/${encodeURIComponent(row.id)}`}
+      headerActions={[{ label: 'Open Approval Queue', path: '/admin/shops/approvals' }]}
     />
   );
 }

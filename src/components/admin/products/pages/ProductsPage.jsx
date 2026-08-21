@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Archive, CheckCircle2, Eye, Pencil, Send, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   AdminSelect,
   BulkActionBar,
@@ -22,6 +22,7 @@ const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "
 
 export default function ProductsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { products, categories } = useProducts();
   const [categoryId, setCategoryId] = useState("");
   const [pendingArchive, setPendingArchive] = useState([]);
@@ -43,6 +44,13 @@ export default function ProductsPage() {
     [categoryId, products],
   );
   const resource = useResourceList(rows);
+
+  useEffect(() => {
+    resource.setSearch(searchParams.get("search") ?? "");
+    resource.setStatus(searchParams.get("status") ?? "");
+    // Keep links from dashboard and search analytics in sync with this table.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const columns = [
     { key: "product", label: "Product", minWidth: 230, render: (row) => <div className="flex items-center gap-3"><img src={row.images[0]?.url} alt="" className="h-10 w-10 rounded-xl object-cover" /><div className="min-w-0"><p className="truncate font-medium text-slate-900">{row.name}</p><p className="text-[10px] text-slate-400">{row.sku}</p></div></div> },
