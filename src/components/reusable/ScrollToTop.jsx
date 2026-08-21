@@ -6,20 +6,24 @@ export default function ScrollToTop() {
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const totalHeight =
-        document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const currentScroll = window.scrollY;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalHeight =
+            document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const currentScroll = window.scrollY;
 
-      if (totalHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (currentScroll / totalHeight) * 100));
-        setScrollProgress(progress);
-      }
+          if (totalHeight > 0) {
+            const progress = Math.min(100, Math.max(0, (currentScroll / totalHeight) * 100));
+            setScrollProgress(progress);
+          }
 
-      if (currentScroll > 320) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
+          setIsVisible(currentScroll > 320);
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

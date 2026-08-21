@@ -41,9 +41,13 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
     const matchingRows = rows.filter((row) => {
       const matchesSearch =
         !normalizedSearch ||
-        Object.values(row).some((value) =>
-          String(value ?? "").toLowerCase().includes(normalizedSearch),
-        );
+        (row.searchText
+          ? String(row.searchText).toLowerCase().includes(normalizedSearch)
+          : Object.values(row).some(
+              (value) =>
+                typeof value !== "object" &&
+                String(value ?? "").toLowerCase().includes(normalizedSearch),
+            ));
       const matchesStatus = !status || row.status === status;
       const matchesQuickFilter = !quickFilter || quickFilter(row);
 

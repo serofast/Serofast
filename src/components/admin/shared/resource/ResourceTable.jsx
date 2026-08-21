@@ -174,7 +174,7 @@ export default function ResourceTable({
         />
       ) : (
         <>
-          <div className="hidden overflow-x-auto md:block">
+          <div className="hidden overflow-x-auto smooth-scroll-x md:block">
             <table
               className="w-full text-left text-xs"
               style={{ minWidth: tableMinWidth }}

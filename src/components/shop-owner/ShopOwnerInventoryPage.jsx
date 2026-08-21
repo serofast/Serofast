@@ -56,11 +56,22 @@ export default function ShopOwnerInventoryPage() {
     }
   }, [isModalOpen]);
 
+  const moveRafId = useRef(null);
+
   useEffect(() => {
     if (!isModalOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
-    const handleResize = () => updateSheetHeight(Math.min(sheetHeightRef.current, getExpandedHeight()));
+    let ticking = false;
+    const handleResize = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateSheetHeight(Math.min(sheetHeightRef.current, getExpandedHeight()));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     document.body.style.overflow = "hidden";
     window.addEventListener("resize", handleResize);
 
@@ -89,12 +100,23 @@ export default function ShopOwnerInventoryPage() {
     const movedBy = drag.startY - event.clientY;
     if (Math.abs(movedBy) > 3) drag.hasMoved = true;
     const nextHeight = Math.max(peekHeight, Math.min(getExpandedHeight(), drag.startHeight + movedBy));
-    updateSheetHeight(nextHeight);
+
+    if (!moveRafId.current) {
+      moveRafId.current = window.requestAnimationFrame(() => {
+        updateSheetHeight(nextHeight);
+        moveRafId.current = null;
+      });
+    }
   };
 
   const handleSheetPointerEnd = (event) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+
+    if (moveRafId.current) {
+      window.cancelAnimationFrame(moveRafId.current);
+      moveRafId.current = null;
+    }
 
     const elapsed = Math.max(performance.now() - drag.startTime, 1);
     const velocity = ((event.clientY - drag.startY) / elapsed) * 1000;
@@ -112,7 +134,6 @@ export default function ShopOwnerInventoryPage() {
         suppressClickRef.current = false;
       }, 0);
     }
-
   };
 
   const toggleStockStatus = (id) => {

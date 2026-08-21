@@ -250,31 +250,35 @@
 
 @keyframes marquee {
   0% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
 @keyframes marqueeReverse {
   0% {
-    transform: translateX(-50%);
+    transform: translate3d(-50%, 0, 0);
   }
   100% {
-    transform: translateX(0%);
+    transform: translate3d(0%, 0, 0);
   }
 }
 
 .animate-marquee {
   display: flex;
   width: max-content;
+  will-change: transform;
+  backface-visibility: hidden;
   animation: marquee 28s linear infinite;
 }
 
 .animate-marquee-reverse {
   display: flex;
   width: max-content;
+  will-change: transform;
+  backface-visibility: hidden;
   animation: marqueeReverse 28s linear infinite;
 }
 
@@ -287,6 +291,8 @@
    ========================================================= */
 
 .interactive-card {
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -299,6 +305,8 @@
 }
 
 .btn-micro {
+  touch-action: manipulation;
+  will-change: transform;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -326,6 +334,18 @@
 .accordion-inner {
   overflow: hidden;
 }
+
+/* Mobile smooth momentum scrolling */
+.smooth-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.smooth-scroll-y {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 
 
 
