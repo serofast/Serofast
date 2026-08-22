@@ -565,7 +565,7 @@ export default function ShopOwnerInventoryPage() {
                 type="button"
                 onClick={closeSheet}
                 aria-label="Close"
-                className="grid h-9 w-9 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+                className="grid h-9 w-9 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0 no-btn-anim"
               >
                 <X size={20} />
               </button>

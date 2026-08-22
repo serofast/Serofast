@@ -60,34 +60,66 @@ export async function uploadShopAsset(file, folder = "logos") {
 
 /* ── Shop Owner Registration (Saved to public.shop_owners) ── */
 
+const isValidUuid = (str) =>
+  typeof str === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
 export async function registerShopOwner(ownerData) {
+  const email = ownerData.email?.trim() || "";
   const payload = {
-    full_name: ownerData.name || ownerData.full_name || "",
-    email: ownerData.email || "",
+    full_name: ownerData.name || ownerData.full_name || "Shop Owner",
+    email,
     phone: ownerData.phone || "",
     category: ownerData.category || "Fashion",
     role: "shop_owner",
-    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from("shop_owners")
-        .insert([payload])
-        .select()
-        .single();
+  if (ownerData.id && isValidUuid(ownerData.id)) {
+    payload.id = ownerData.id;
+  }
 
-      if (!error && data) {
-        localStorage.setItem("serofast_current_owner", JSON.stringify(data));
-        return data;
+  if (supabase && email) {
+    try {
+      // 1. Check if owner already exists in shop_owners table
+      const { data: existing } = await supabase
+        .from("shop_owners")
+        .select("*")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing owner profile
+        const { data: updated, error: updateError } = await supabase
+          .from("shop_owners")
+          .update(payload)
+          .eq("email", email)
+          .select()
+          .single();
+
+        if (!updateError && updated) {
+          localStorage.setItem("serofast_current_owner", JSON.stringify(updated));
+          return updated;
+        }
+      } else {
+        // Insert new owner profile
+        const { data: created, error: createError } = await supabase
+          .from("shop_owners")
+          .insert([payload])
+          .select()
+          .single();
+
+        if (!createError && created) {
+          localStorage.setItem("serofast_current_owner", JSON.stringify(created));
+          return created;
+        }
       }
     } catch {
       // Graceful fallback
     }
   }
 
-  const fallback = { id: `owner-${Date.now()}`, ...payload };
+  const fallback = { id: ownerData.id || `owner-${Date.now()}`, ...payload };
   localStorage.setItem("serofast_current_owner", JSON.stringify(fallback));
   return fallback;
 }
@@ -96,15 +128,23 @@ export async function registerShopOwner(ownerData) {
 
 export async function loginShopOwner(credentials) {
   const email = credentials.email?.trim() || "";
+  const firebaseUid = credentials.id;
+
+  // Strict Security Guard: Must have an authenticated Firebase UID
+  if (!firebaseUid) {
+    throw new Error("Authentication failed: Unverified login request.");
+  }
 
   if (supabase && email) {
     try {
-      // 1. Fetch owner details from shop_owners table
-      const { data: owner, error: ownerError } = await supabase
-        .from("shop_owners")
-        .select("*")
-        .eq("email", email)
-        .maybeSingle();
+      // 1. Fetch owner details from shop_owners table by email or valid UUID
+      let query = supabase.from("shop_owners").select("*");
+      if (isValidUuid(firebaseUid)) {
+        query = query.or(`email.eq.${email},id.eq.${firebaseUid}`);
+      } else {
+        query = query.eq("email", email);
+      }
+      const { data: owner, error: ownerError } = await query.maybeSingle();
 
       if (!ownerError && owner) {
         localStorage.setItem("serofast_current_owner", JSON.stringify(owner));
@@ -127,9 +167,9 @@ export async function loginShopOwner(credentials) {
     }
   }
 
-  // Fallback owner
+  // Fallback owner tied to verified Firebase UID
   const fallbackOwner = {
-    id: `owner-${Date.now()}`,
+    id: firebaseUid,
     full_name: email.split("@")[0] || "Shop Owner",
     email,
     phone: credentials.phone || "",

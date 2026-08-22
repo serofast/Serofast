@@ -304,6 +304,37 @@
   border-color: rgba(210, 33, 37, 0.3);
 }
 
+/* =========================================================
+   GLOBAL BUTTON ANIMATION & HOVER SYSTEM
+   ========================================================= */
+
+button {
+  touch-action: manipulation;
+  will-change: transform;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:not(.no-btn-anim):not(:disabled):hover {
+  transform: translateY(-2px) scale(1.015);
+}
+
+button:not(.no-btn-anim):not(:disabled):active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Excluded buttons override (e.g. tabs, close buttons, toggle switches) */
+.no-btn-anim {
+  transform: none !important;
+}
+.no-btn-anim:hover,
+.no-btn-anim:active {
+  transform: none !important;
+}
+
 .btn-micro {
   touch-action: manipulation;
   will-change: transform;
@@ -311,6 +342,7 @@
               box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
               background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 
 .btn-micro:hover {
   transform: translateY(-2px);

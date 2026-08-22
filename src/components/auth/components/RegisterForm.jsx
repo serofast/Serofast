@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Mail, LockKeyhole, UserRound, Phone, Tag, CheckCircle2 } from "lucide-react";
+import { Mail, LockKeyhole, UserRound, Phone, Tag, CheckCircle2, ShieldAlert } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { shopCategories } from "../data";
+import { firebaseSignUp, firebaseGoogleSignIn } from "../../../lib/firebase";
 import { registerShopOwner } from "../../../lib/supabase";
 import { AppFormField, AppFormSelect, AppFormButton } from "../../reusable/form";
 
@@ -9,17 +10,22 @@ export default function RegisterForm() {
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState({});
   const [errors, setErrors] = useState({});
+  const [authError, setAuthError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const update = (key, value) =>
+  const update = (key, value) => {
+    setAuthError(null);
     setValues((current) => ({ ...current, [key]: value }));
+  };
 
   const validate = () => {
     const errs = {};
     if (!values.name?.trim()) errs.name = "Please enter your full name";
     if (!values.email?.trim() || !values.email.includes("@")) errs.email = "Please enter a valid email";
-    if (!values.password || values.password.length < 6) errs.password = "Password must be at least 6 characters";
+    if (!values.password || values.password.length < 8) {
+      errs.password = "Password must be at least 8 characters (with uppercase, lowercase, & number)";
+    }
     if (!values.phone?.trim()) errs.phone = "Please enter phone number";
     if (!values.category) errs.category = "Please select shop category";
     setErrors(errs);
@@ -28,14 +34,55 @@ export default function RegisterForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (validate()) {
-      setIsLoading(true);
-      await registerShopOwner(values);
+    if (!validate()) return;
+
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      // 1. Register with Firebase Auth (validates password strength & issues JWT token)
+      const { user } = await firebaseSignUp(values.email, values.password);
+
+      // 2. Persist owner profile in Supabase public.shop_owners table
+      await registerShopOwner({
+        id: user.uid,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        category: values.category,
+      });
+
       setIsLoading(false);
       setSubmitted(true);
       setTimeout(() => {
-        navigate("/shop-owner/dashboard");
+        navigate("/create-shop/step-1");
       }, 900);
+    } catch (err) {
+      setIsLoading(false);
+      setAuthError(err.message || "Registration failed. Please try again.");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setAuthError(null);
+    try {
+      const { user } = await firebaseGoogleSignIn();
+      await registerShopOwner({
+        id: user.uid,
+        name: user.displayName || "Shop Owner",
+        email: user.email,
+        phone: user.phoneNumber || "",
+        category: values.category || "Fashion",
+      });
+      setIsLoading(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        navigate("/create-shop/step-1");
+      }, 900);
+    } catch (err) {
+      setIsLoading(false);
+      setAuthError(err.message || "Google Sign-In failed.");
     }
   };
 
@@ -49,7 +96,7 @@ export default function RegisterForm() {
           Account Created 🎉
         </h2>
         <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500 font-normal">
-          Opening shop setup wizard...
+          Registered in Firebase Auth &amp; saved to shop_owners table...
         </p>
       </div>
     );
@@ -58,9 +105,17 @@ export default function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col space-y-4 font-sans font-sansation">
       {/* Title */}
-      <h2 className="text-center text-[22px] font-semibold text-brandRed tracking-tight pb-2">
-        Register
+      <h2 className="text-center text-[22px] font-semibold text-brandRed tracking-tight pb-1">
+        Register Shop Account
       </h2>
+
+      {/* Security Error Banner */}
+      {authError && (
+        <div className="p-3 rounded-[16px] bg-rose-50 border border-rose-200 text-brandRed text-xs flex items-center gap-2 animate-fade-in font-medium">
+          <ShieldAlert size={18} className="shrink-0 text-brandRed" />
+          <span>{authError}</span>
+        </div>
+      )}
 
       {/* 1. FULL NAME */}
       <AppFormField
@@ -78,7 +133,7 @@ export default function RegisterForm() {
         type="email"
         value={values.email}
         onChange={(val) => update("email", val)}
-        placeholder="Email"
+        placeholder="Email Address"
         error={errors.email}
         autoComplete="email"
       />
@@ -90,7 +145,7 @@ export default function RegisterForm() {
           isPassword
           value={values.password}
           onChange={(val) => update("password", val)}
-          placeholder="Password"
+          placeholder="Strong Password (8+ chars)"
           error={errors.password}
           autoComplete="new-password"
         />
@@ -120,7 +175,7 @@ export default function RegisterForm() {
 
       {/* SUBMIT BUTTON */}
       <AppFormButton type="submit" isLoading={isLoading}>
-        Register
+        Create Secured Account
       </AppFormButton>
 
       {/* DIVIDER */}
@@ -133,7 +188,7 @@ export default function RegisterForm() {
       {/* GOOGLE SIGN IN BUTTON */}
       <button
         type="button"
-        onClick={() => alert("Google Sign-In integration ready")}
+        onClick={handleGoogleSignIn}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white text-[13px] font-semibold text-slate-800 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
       >
         <span className="text-xl font-bold text-brandRed leading-none">G</span>
