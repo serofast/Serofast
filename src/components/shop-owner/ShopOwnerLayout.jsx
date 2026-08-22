@@ -205,7 +205,7 @@ export default function ShopOwnerLayout() {
         </aside>
 
         {/* Main Content Viewport */}
-        <main className="flex-1 p-4 sm:p-6 max-w-5xl mx-auto pb-20 md:pb-6">
+        <main className="flex-1 p-3 sm:p-6 max-w-5xl mx-auto pb-24 md:pb-6 w-full min-w-0 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

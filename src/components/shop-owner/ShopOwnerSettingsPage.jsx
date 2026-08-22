@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { QrCode, Save, ShieldCheck, Store, User, Mail, Phone, MapPin, LogOut } from "lucide-react";
+import { QrCode, Save, ShieldCheck, Store, User, Mail, Phone, MapPin, LogOut, CheckCircle2, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { initialSellerStore } from "../../data/sellerData";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
@@ -7,6 +7,7 @@ import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
 export default function ShopOwnerSettingsPage() {
   const [store, setStore] = useState(initialSellerStore);
   const [saved, setSaved] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,7 +35,16 @@ export default function ShopOwnerSettingsPage() {
   const handleSave = (e) => {
     e.preventDefault();
     setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setToastMessage("Store settings saved successfully!");
+    setTimeout(() => {
+      setSaved(false);
+      setToastMessage(null);
+    }, 3500);
+  };
+
+  const handleDownloadPoster = () => {
+    setToastMessage("Downloading printable QR code PDF poster...");
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleLogout = () => {
