@@ -25,10 +25,12 @@ CREATE TABLE IF NOT EXISTS public.shop_owners (
   phone text NOT NULL,
   category text NOT NULL DEFAULT 'Fashion'::text,
   role text NOT NULL DEFAULT 'shop_owner'::text,
+  upi_id text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT shop_owners_pkey PRIMARY KEY (id)
 );
+
 
 -- 3. SHOPS TABLE
 CREATE TABLE IF NOT EXISTS public.shops (
@@ -273,3 +275,5 @@ CREATE POLICY "Allow public read products" ON public.products FOR SELECT USING (
 CREATE POLICY "Allow full access shop_owners" ON public.shop_owners FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access shops" ON public.shops FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+
+
