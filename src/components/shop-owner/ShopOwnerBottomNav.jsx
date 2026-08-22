@@ -8,22 +8,12 @@ import {
 } from "lucide-react";
 
 export default function ShopOwnerBottomNav() {
-  const getActiveShop = () => {
-    try {
-      const stored = localStorage.getItem("serofast_active_shop");
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  };
-  const hasShop = Boolean(getActiveShop());
-
   const navItems = [
-    { label: "Overview", path: hasShop ? "/shop-owner/dashboard" : "/create-shop/basic", icon: LayoutDashboard },
-    { label: "Products", path: hasShop ? "/shop-owner/inventory" : "/create-shop/basic", icon: Package },
-    { label: "Orders", path: hasShop ? "/shop-owner/orders" : "/create-shop/basic", icon: ShoppingBag },
-    { label: "Payouts", path: hasShop ? "/shop-owner/payouts" : "/create-shop/basic", icon: CreditCard },
-    { label: "Settings", path: hasShop ? "/shop-owner/settings" : "/create-shop/basic", icon: Settings },
+    { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
+    { label: "Products", path: "/shop-owner/inventory", icon: Package },
+    { label: "Orders", path: "/shop-owner/orders", icon: ShoppingBag },
+    { label: "Payouts", path: "/shop-owner/payouts", icon: CreditCard },
+    { label: "Settings", path: "/shop-owner/settings", icon: Settings },
   ];
 
   return (
