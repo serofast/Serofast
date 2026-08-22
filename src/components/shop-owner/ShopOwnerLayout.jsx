@@ -206,7 +206,34 @@ export default function ShopOwnerLayout() {
 
         {/* Main Content Viewport */}
         <main className="flex-1 p-3 sm:p-6 max-w-5xl mx-auto pb-24 md:pb-6 w-full min-w-0 overflow-x-hidden">
-          <Outlet />
+          {!hasShop ? (
+            <div className="flex min-h-[65vh] w-full flex-col items-center justify-center py-6 px-4 font-sans font-sansation">
+              <div className="w-full max-w-[460px] rounded-[35px] bg-white border border-[#F3E5E5] px-6 py-8 sm:px-8 sm:py-9 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] text-center transition-all duration-300">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-rose-50 text-brandRed mb-4 border border-rose-100 shadow-sm">
+                  <Store size={32} />
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-brandRed tracking-tight">
+                  Create Your Shop First
+                </h2>
+
+                <p className="mt-2 text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
+                  Welcome to SeroFast! You haven't set up your campus store yet. Please complete the quick shop creation form to unlock your inventory, orders, payouts, and settings.
+                </p>
+
+                <div className="mt-6 flex flex-col gap-3">
+                  <Link
+                    to="/create-shop/basic"
+                    className="inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-brandRed px-6 text-sm font-bold text-white shadow-md shadow-brandRed/20 hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer"
+                  >
+                    <Store size={18} /> Create My Shop Now
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
 
