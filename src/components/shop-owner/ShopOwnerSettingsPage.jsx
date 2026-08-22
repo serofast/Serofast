@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
-import { fetchShopDetails, updateShopDetails } from "../../lib/supabase";
+import { fetchShopDetails, updateShopDetails, uploadShopAsset } from "../../lib/supabase";
 
 export default function ShopOwnerSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -98,9 +98,30 @@ export default function ShopOwnerSettingsPage() {
     })();
   }, []);
 
+  const [logoFile, setLogoFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaved(true);
+
+    let finalLogoUrl = logoUrl;
+    let finalCoverUrl = coverUrl;
+
+    if (logoFile) {
+      const uploaded = await uploadShopAsset(logoFile, "logos");
+      if (uploaded) {
+        finalLogoUrl = uploaded;
+        setLogoUrl(uploaded);
+      }
+    }
+    if (coverFile) {
+      const uploaded = await uploadShopAsset(coverFile, "covers");
+      if (uploaded) {
+        finalCoverUrl = uploaded;
+        setCoverUrl(uploaded);
+      }
+    }
 
     const shopPayload = {
       name: storeName,
@@ -113,8 +134,8 @@ export default function ShopOwnerSettingsPage() {
       deliveryRadiusKm: Number(deliveryRadiusKm) || 5,
       minOrderAmount: Number(minOrderAmount) || 199,
       prepTimeMins: Number(prepTimeMins) || 15,
-      avatar_url: logoUrl,
-      cover_url: coverUrl,
+      avatar_url: finalLogoUrl,
+      cover_url: finalCoverUrl,
     };
 
     const ownerPayload = {

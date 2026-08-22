@@ -1,31 +1,35 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
+// Read Supabase environment credentials cleanly
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://hjmwhsjkoyrkcwxhyedz.supabase.co";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 const STORAGE_BUCKET = import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || "shop-assets";
 
-const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-
-export const supabase = isConfigured
+export const supabase = (supabaseUrl && supabaseAnonKey)
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-/* ── Convert File to Data URL Fallback ──────────────────── */
+// UUID validation helper
+const isValidUuid = (str) =>
+  typeof str === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+/* ── Helper: File to Base64 / Data URL ───────────────────── */
 
 function fileToDataUrl(file) {
   return new Promise((resolve) => {
-    if (!file || !(file instanceof Blob)) {
-      resolve(null);
+    if (!file || typeof file === "string") {
+      resolve(file || null);
       return;
     }
     const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target?.result || null);
+    reader.onloadend = () => resolve(reader.result);
     reader.onerror = () => resolve(null);
     reader.readAsDataURL(file);
   });
 }
 
-/* ── Image Upload ───────────────────────────────────────── */
+/* ── Image Upload (Supabase Storage Bucket) ──────────────── */
 
 export async function uploadShopAsset(file, folder = "logos") {
   if (!file) return null;
@@ -49,7 +53,7 @@ export async function uploadShopAsset(file, folder = "logos") {
     }
   }
 
-  // Persistent Data URL fallback so the user's actual image is preserved in database
+  // Persistent Data URL fallback so user's image is preserved
   const dataUrl = await fileToDataUrl(file);
   if (dataUrl) return dataUrl;
 
@@ -59,10 +63,6 @@ export async function uploadShopAsset(file, folder = "logos") {
 }
 
 /* ── Shop Owner Registration (Saved to public.shop_owners) ── */
-
-const isValidUuid = (str) =>
-  typeof str === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 export async function registerShopOwner(ownerData) {
   const email = ownerData.email?.trim() || "";
@@ -130,7 +130,6 @@ export async function loginShopOwner(credentials) {
   const email = credentials.email?.trim() || "";
   const firebaseUid = credentials.id;
 
-  // Strict Security Guard: Must have an authenticated Firebase UID
   if (!firebaseUid) {
     throw new Error("Authentication failed: Unverified login request.");
   }
@@ -167,74 +166,70 @@ export async function loginShopOwner(credentials) {
     }
   }
 
-  // Fallback owner tied to verified Firebase UID
-  const fallbackOwner = {
-    id: firebaseUid,
-    full_name: email.split("@")[0] || "Shop Owner",
-    email,
-    phone: credentials.phone || "",
-    category: "Fashion",
-  };
-  localStorage.setItem("serofast_current_owner", JSON.stringify(fallbackOwner));
-  return { owner: fallbackOwner, shop: null };
+  // Local Storage Fallback
+  let owner = null;
+  let shop = null;
+  try {
+    const storedOwner = localStorage.getItem("serofast_current_owner");
+    if (storedOwner) owner = JSON.parse(storedOwner);
+    const storedShop = localStorage.getItem("serofast_active_shop");
+    if (storedShop) shop = JSON.parse(storedShop);
+  } catch {}
+
+  return { owner, shop };
 }
 
-/* ── Fetch Owner Profile (for auto-prefilling shop creation) ── */
+/* ── Fetch Owner Profile ────────────────────────────────── */
 
 export async function fetchOwnerProfile() {
   try {
     const stored = localStorage.getItem("serofast_current_owner");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      // Fetch latest from shop_owners table if supabase connected
-      if (supabase && parsed.email) {
-        const { data } = await supabase
-          .from("shop_owners")
-          .select("*")
-          .eq("email", parsed.email)
-          .maybeSingle();
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (supabase && parsed.id && isValidUuid(parsed.id)) {
+      const { data } = await supabase
+        .from("shop_owners")
+        .select("*")
+        .eq("id", parsed.id)
+        .maybeSingle();
 
-        if (data) {
-          localStorage.setItem("serofast_current_owner", JSON.stringify(data));
-          return data;
-        }
+      if (data) {
+        localStorage.setItem("serofast_current_owner", JSON.stringify(data));
+        return data;
       }
-      return parsed;
     }
+    return parsed;
   } catch {
     // Graceful fallback
   }
   return null;
 }
 
-/* ── Fetch Warehouse Products (admin catalog) ───────────── */
+/* ── Fetch Warehouse Products (Admin Catalog) ───────────── */
 
 export async function fetchWarehouseProducts() {
   if (supabase) {
     try {
-      // 1. Try warehouse_products table
-      const { data: wData, error: wError } = await supabase
+      const { data, error } = await supabase
         .from("warehouse_products")
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!wError && wData?.length) return wData;
-
-      // 2. Fallback to products table if warehouse_products is empty
-      const { data: pData, error: pError } = await supabase
-        .from("products")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!pError && pData?.length) return pData;
+      if (!error && data?.length) return data;
     } catch {
       // Graceful fallback
     }
   }
+
+  try {
+    const stored = localStorage.getItem("serofast_warehouse_products");
+    if (stored) return JSON.parse(stored);
+  } catch {}
+
   return [];
 }
 
-/* ── Create Shop (saves ALL details to public.shops) ────── */
+/* ── Create Shop (Saves ALL details to public.shops) ────── */
 
 export async function createShopInSupabase(shopData) {
   let ownerId = null;
@@ -245,7 +240,6 @@ export async function createShopInSupabase(shopData) {
     // Graceful fallback
   }
 
-  // Upload images upon launch if file objects exist
   let avatarUrl = shopData.logo || "";
   let coverUrl = shopData.cover || "";
 
@@ -262,11 +256,18 @@ export async function createShopInSupabase(shopData) {
   const id = window.crypto?.randomUUID?.()
     || `shop-${Math.random().toString(36).slice(2, 10)}`;
 
+  // Format shop address (location, city, pincode separated by commas)
+  const fullAddress = [shopData.address, shopData.city, shopData.pincode]
+    .filter(Boolean)
+    .map((s) => String(s).trim())
+    .join(", ");
+
   const payload = {
     id,
     name: shopData.shopName || shopData.name || "My Campus Shop",
     tagline: shopData.tagline || "",
     description: shopData.description || "",
+    address: fullAddress,
     cover_url: coverUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
     avatar_url: avatarUrl || "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=300&q=80",
     category_id: (shopData.category || "fashion").toLowerCase(),
@@ -274,8 +275,25 @@ export async function createShopInSupabase(shopData) {
     created_at: new Date().toISOString(),
   };
 
-  if (ownerId && !String(ownerId).startsWith("owner-")) {
+  if (ownerId && isValidUuid(ownerId)) {
     payload.owner_id = ownerId;
+  }
+
+  // Update phone, full_name, email in public.shop_owners table
+  if (supabase && ownerId && isValidUuid(ownerId)) {
+    try {
+      const ownerUpdate = { updated_at: new Date().toISOString() };
+      if (shopData.phone) ownerUpdate.phone = shopData.phone;
+      if (shopData.ownerName) ownerUpdate.full_name = shopData.ownerName;
+      if (shopData.email) ownerUpdate.email = shopData.email;
+
+      await supabase
+        .from("shop_owners")
+        .update(ownerUpdate)
+        .eq("id", ownerId);
+    } catch {
+      // Graceful fallback
+    }
   }
 
   if (supabase) {
@@ -289,7 +307,6 @@ export async function createShopInSupabase(shopData) {
       if (!error && data) {
         localStorage.setItem("serofast_active_shop", JSON.stringify(data));
 
-        // Link selected products to this shop
         if (shopData.selectedProducts?.length) {
           await linkProductsToShop(data.id, shopData.selectedProducts);
         }
@@ -304,27 +321,26 @@ export async function createShopInSupabase(shopData) {
   return payload;
 }
 
-/* ── Fetch Shop Products from public.shop_products Table ───── */
+/* ── Fetch Shop Products for Inventory (Shop Products Junction) ── */
 
 export async function fetchShopProducts(shopId) {
   let list = [];
+  if (!shopId) return list;
 
-  if (supabase && shopId && !String(shopId).startsWith("shop-")) {
+  if (supabase && isValidUuid(shopId)) {
     try {
-      // 1. Fetch warehouse products linked to this shop
       const { data: spData, error: spError } = await supabase
         .from("shop_products")
         .select("*, warehouse_products(*)")
-        .eq("shop_id", shopId)
-        .order("added_at", { ascending: false });
+        .eq("shop_id", shopId);
 
       if (!spError && spData?.length) {
-        const warehouseItems = spData.map((sp) => {
+        list = spData.map((sp) => {
           const wp = sp.warehouse_products || {};
           return {
             id: sp.id || wp.id,
             warehouseId: sp.warehouse_product_id,
-            isWarehouse: true, // Read-only warehouse product mark
+            isWarehouse: true,
             name: wp.title || wp.name || "Warehouse Product",
             category: wp.category || "General Catalog",
             price: Number(sp.selling_price || wp.retail_price || wp.base_price || 499),
@@ -335,30 +351,6 @@ export async function fetchShopProducts(shopId) {
             image: wp.image_url || wp.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
           };
         });
-        list = [...list, ...warehouseItems];
-      }
-
-      // 2. Fetch direct products created for this shop
-      const { data: pData, error: pError } = await supabase
-        .from("products")
-        .select("*")
-        .eq("shop_id", shopId)
-        .order("created_at", { ascending: false });
-
-      if (!pError && pData?.length) {
-        const directItems = pData.map((p) => ({
-          id: p.id,
-          isWarehouse: false,
-          name: p.title || p.name,
-          category: p.category_id || "General",
-          price: Number(p.price || 0),
-          originalPrice: Number(p.original_price || p.price || 0),
-          stock: 10,
-          status: "In Stock",
-          salesCount: 0,
-          image: p.image_urls?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
-        }));
-        list = [...list, ...directItems];
       }
 
       if (list.length > 0) return list;
@@ -375,14 +367,16 @@ export async function fetchShopProducts(shopId) {
   return list;
 }
 
-
-/* ── Link Selected Products to Shop ─────────────────────── */
+/* ── Link Warehouse Products to Shop ─────────────────────── */
 
 export async function linkProductsToShop(shopId, productIds) {
-  if (!supabase || !productIds?.length) return;
+  if (!supabase || !productIds?.length || !isValidUuid(shopId)) return;
 
   try {
-    const payload = productIds.map((pid) => ({
+    const validPids = productIds.filter((pid) => isValidUuid(pid));
+    if (!validPids.length) return;
+
+    const payload = validPids.map((pid) => ({
       shop_id: shopId,
       warehouse_product_id: pid,
       allocated_stock: 10,
@@ -397,9 +391,7 @@ export async function linkProductsToShop(shopId, productIds) {
   }
 }
 
-
-
-/* ── Fetch Shop & Owner Details ─────────────────────────── */
+/* ── Fetch Shop & Owner Details (Settings Page) ─────────── */
 
 export async function fetchShopDetails(shopId, ownerId) {
   let shopData = null;
@@ -407,11 +399,11 @@ export async function fetchShopDetails(shopId, ownerId) {
 
   if (supabase) {
     try {
-      if (shopId && !String(shopId).startsWith("shop-")) {
+      if (shopId && isValidUuid(shopId)) {
         const { data: s } = await supabase.from("shops").select("*").eq("id", shopId).maybeSingle();
         if (s) shopData = s;
       }
-      if (ownerId && !String(ownerId).startsWith("owner-")) {
+      if (ownerId && isValidUuid(ownerId)) {
         const { data: o } = await supabase.from("shop_owners").select("*").eq("id", ownerId).maybeSingle();
         if (o) ownerData = o;
       }
@@ -420,7 +412,6 @@ export async function fetchShopDetails(shopId, ownerId) {
     }
   }
 
-  // Local Storage Fallback
   if (!shopData) {
     try {
       const storedShop = localStorage.getItem("serofast_active_shop");
@@ -437,69 +428,77 @@ export async function fetchShopDetails(shopId, ownerId) {
   return { shop: shopData, owner: ownerData };
 }
 
-/* ── Update Shop & Owner Details ────────────────────────── */
+/* ── Update Shop & Owner Details (Settings Page) ────────── */
 
-export async function updateShopDetails(shopId, ownerId, shopPayload, ownerPayload) {
+export async function updateShopDetails(shopId, ownerId, rawShopPayload, rawOwnerPayload) {
   if (supabase) {
     try {
-      if (shopId && !String(shopId).startsWith("shop-") && shopPayload) {
-        await supabase.from("shops").update({
-          ...shopPayload,
-          updated_at: new Date().toISOString(),
-        }).eq("id", shopId);
+      if (shopId && isValidUuid(shopId) && rawShopPayload) {
+        // Filter strictly valid columns in public.shops table
+        const cleanShopPayload = { updated_at: new Date().toISOString() };
+        if (rawShopPayload.name !== undefined) cleanShopPayload.name = rawShopPayload.name;
+        if (rawShopPayload.tagline !== undefined) cleanShopPayload.tagline = rawShopPayload.tagline;
+        if (rawShopPayload.description !== undefined) cleanShopPayload.description = rawShopPayload.description;
+        if (rawShopPayload.address !== undefined) cleanShopPayload.address = rawShopPayload.address;
+        if (rawShopPayload.avatar_url !== undefined) cleanShopPayload.avatar_url = rawShopPayload.avatar_url;
+        if (rawShopPayload.cover_url !== undefined) cleanShopPayload.cover_url = rawShopPayload.cover_url;
+        if (rawShopPayload.category_id !== undefined) cleanShopPayload.category_id = rawShopPayload.category_id;
+
+        await supabase.from("shops").update(cleanShopPayload).eq("id", shopId);
       }
-      if (ownerId && !String(ownerId).startsWith("owner-") && ownerPayload) {
-        await supabase.from("shop_owners").update({
-          ...ownerPayload,
-          updated_at: new Date().toISOString(),
-        }).eq("id", ownerId);
+      if (ownerId && isValidUuid(ownerId) && rawOwnerPayload) {
+        // Filter strictly valid columns in public.shop_owners table
+        const cleanOwnerPayload = { updated_at: new Date().toISOString() };
+        if (rawOwnerPayload.full_name !== undefined) cleanOwnerPayload.full_name = rawOwnerPayload.full_name;
+        if (rawOwnerPayload.email !== undefined) cleanOwnerPayload.email = rawOwnerPayload.email;
+        if (rawOwnerPayload.phone !== undefined) cleanOwnerPayload.phone = rawOwnerPayload.phone;
+        if (rawOwnerPayload.category !== undefined) cleanOwnerPayload.category = rawOwnerPayload.category;
+
+        await supabase.from("shop_owners").update(cleanOwnerPayload).eq("id", ownerId);
       }
     } catch {
       // Graceful fallback
     }
   }
 
-  // Update Local Storage
-  if (shopPayload) {
+  if (rawShopPayload) {
     try {
       const storedShop = localStorage.getItem("serofast_active_shop");
       const current = storedShop ? JSON.parse(storedShop) : {};
-      localStorage.setItem("serofast_active_shop", JSON.stringify({ ...current, ...shopPayload }));
+      localStorage.setItem("serofast_active_shop", JSON.stringify({ ...current, ...rawShopPayload }));
     } catch {}
   }
-  if (ownerPayload) {
+  if (rawOwnerPayload) {
     try {
       const storedOwner = localStorage.getItem("serofast_current_owner");
       const current = storedOwner ? JSON.parse(storedOwner) : {};
-      localStorage.setItem("serofast_current_owner", JSON.stringify({ ...current, ...ownerPayload }));
+      localStorage.setItem("serofast_current_owner", JSON.stringify({ ...current, ...rawOwnerPayload }));
     } catch {}
   }
-
-  return true;
 }
 
-/* ── Fetch Shop Orders (Filtered by shop_id) ─────────────── */
+/* ── Fetch Shop Orders (from public.orders) ─────────────── */
 
 export async function fetchShopOrders(shopId) {
-  if (supabase && shopId && !String(shopId).startsWith("shop-")) {
+  if (supabase && shopId && isValidUuid(shopId)) {
     try {
-      const { data: orders, error } = await supabase
+      const { data, error } = await supabase
         .from("orders")
         .select("*, order_items(*)")
         .eq("shop_id", shopId)
         .order("created_at", { ascending: false });
 
-      if (!error && orders) {
-        return orders.map((o) => ({
+      if (!error && data?.length) {
+        return data.map((o) => ({
           id: o.order_number || o.id,
           rawId: o.id,
-          customerName: o.shipping_address?.full_name || o.shipping_address?.name || "Customer",
-          phone: o.customer_phone || o.shipping_address?.phone || "",
-          address: o.address || o.shipping_address?.address_line1 || "Campus Address",
+          customerName: o.shipping_address?.full_name || "Campus Customer",
+          phone: o.shipping_address?.phone || "",
+          address: o.delivery_location || o.shipping_address?.address || "Campus Hostel",
           items: (o.order_items || []).map((item) => ({
-            name: item.product_title,
+            name: item.product_name || "Item",
             qty: item.quantity,
-            price: item.total_price || item.unit_price,
+            price: item.unit_price,
           })),
           totalAmount: o.total_amount,
           paymentMethod: o.payment_method === "COD" ? "Cash on Delivery" : "UPI Direct",
@@ -514,7 +513,6 @@ export async function fetchShopOrders(shopId) {
     }
   }
 
-  // Local Storage Fallback
   try {
     const stored = localStorage.getItem(`serofast_orders_${shopId}`);
     if (stored) return JSON.parse(stored);
@@ -526,7 +524,7 @@ export async function fetchShopOrders(shopId) {
 /* ── Update Order Status in Supabase ─────────────────────── */
 
 export async function updateOrderStatusInSupabase(rawOrderId, status) {
-  if (supabase && rawOrderId && !String(rawOrderId).startsWith("SF-")) {
+  if (supabase && rawOrderId && isValidUuid(rawOrderId)) {
     try {
       await supabase
         .from("orders")
@@ -541,11 +539,11 @@ export async function updateOrderStatusInSupabase(rawOrderId, status) {
 /* ── Fetch & Update Owner UPI ID (Saved in shop_owners table) ─ */
 
 export async function fetchOwnerUpiId(ownerId) {
-  if (supabase && ownerId && !String(ownerId).startsWith("owner-")) {
+  if (supabase && ownerId && isValidUuid(ownerId)) {
     try {
       const { data, error } = await supabase
         .from("shop_owners")
-        .select("upi_id")
+        .select("*")
         .eq("id", ownerId)
         .maybeSingle();
 
@@ -554,20 +552,11 @@ export async function fetchOwnerUpiId(ownerId) {
       // Graceful fallback
     }
   }
-
-  try {
-    const stored = localStorage.getItem("serofast_current_owner");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.upi_id || parsed.upiId) return parsed.upi_id || parsed.upiId;
-    }
-  } catch {}
-
   return "";
 }
 
 export async function updateOwnerUpiId(ownerId, upiId) {
-  if (supabase && ownerId && !String(ownerId).startsWith("owner-")) {
+  if (supabase && ownerId && isValidUuid(ownerId)) {
     try {
       await supabase
         .from("shop_owners")
@@ -580,139 +569,10 @@ export async function updateOwnerUpiId(ownerId, upiId) {
 
   try {
     const stored = localStorage.getItem("serofast_current_owner");
-    const current = stored ? JSON.parse(stored) : {};
-    localStorage.setItem(
-      "serofast_current_owner",
-      JSON.stringify({ ...current, upi_id: upiId, upiId })
-    );
-  } catch {}
-
-  return true;
-}
-
-/* ── Fetch Seller Payout Settings ───────────────────────── */
-
-export async function fetchSellerPayoutSettings(shopId, ownerId) {
-
-  if (supabase) {
-    try {
-      let query = supabase.from("seller_payout_settings").select("*");
-      if (shopId && !String(shopId).startsWith("shop-")) {
-        query = query.eq("shop_id", shopId);
-      } else if (ownerId && !String(ownerId).startsWith("owner-")) {
-        query = query.eq("owner_id", ownerId);
-      }
-      const { data, error } = await query.maybeSingle();
-      if (!error && data) return data;
-    } catch {
-      // Graceful fallback
+    if (stored) {
+      const owner = JSON.parse(stored);
+      owner.upi_id = upiId;
+      localStorage.setItem("serofast_current_owner", JSON.stringify(owner));
     }
-  }
-
-  try {
-    const stored = localStorage.getItem("serofast_payout_settings");
-    if (stored) return JSON.parse(stored);
   } catch {}
-
-  return null;
 }
-
-/* ── Update Seller Payout Settings ───────────────────────── */
-
-export async function updateSellerPayoutSettings(shopId, ownerId, settings) {
-  const payload = {
-    account_name: settings.accountName || "",
-    upi_vpa: settings.upiVpa || "",
-    bank_account: settings.bankAccount || "",
-    ifsc_code: settings.ifscCode || "",
-    updated_at: new Date().toISOString(),
-  };
-
-  if (shopId && !String(shopId).startsWith("shop-")) payload.shop_id = shopId;
-  if (ownerId && !String(ownerId).startsWith("owner-")) payload.owner_id = ownerId;
-
-  if (supabase) {
-    try {
-      const existing = await fetchSellerPayoutSettings(shopId, ownerId);
-      if (existing?.id) {
-        await supabase.from("seller_payout_settings").update(payload).eq("id", existing.id);
-      } else {
-        await supabase.from("seller_payout_settings").insert([payload]);
-      }
-    } catch {
-      // Graceful fallback
-    }
-  }
-
-  localStorage.setItem("serofast_payout_settings", JSON.stringify(settings));
-  return true;
-}
-
-/* ── Fetch Seller Payouts History ───────────────────────── */
-
-export async function fetchSellerPayouts(shopId, ownerId) {
-  if (supabase) {
-    try {
-      let query = supabase.from("seller_payouts").select("*").order("created_at", { ascending: false });
-      if (shopId && !String(shopId).startsWith("shop-")) {
-        query = query.eq("shop_id", shopId);
-      } else if (ownerId && !String(ownerId).startsWith("owner-")) {
-        query = query.eq("owner_id", ownerId);
-      }
-      const { data, error } = await query;
-      if (!error && data) {
-        return data.map((p) => ({
-          id: p.payout_number || p.id,
-          rawId: p.id,
-          date: new Date(p.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }),
-          amount: Number(p.amount) || 0,
-          ordersCount: p.orders_count || 0,
-          status: p.status || "Settled",
-          method: p.method || "UPI Direct",
-        }));
-      }
-    } catch {
-      // Graceful fallback
-    }
-  }
-
-  try {
-    const stored = localStorage.getItem("serofast_payouts_history");
-    if (stored) return JSON.parse(stored);
-  } catch {}
-
-  return [];
-}
-
-/* ── Create Seller Payout Record ────────────────────────── */
-
-export async function createSellerPayout(payoutData) {
-  const payload = {
-    payout_number: payoutData.id || `PAY-${Math.floor(1000 + Math.random() * 9000)}`,
-    amount: payoutData.amount || 0,
-    orders_count: payoutData.ordersCount || 1,
-    status: payoutData.status || "Settled",
-    method: payoutData.method || "UPI Direct",
-    created_at: new Date().toISOString(),
-  };
-
-  if (payoutData.shopId && !String(payoutData.shopId).startsWith("shop-")) payload.shop_id = payoutData.shopId;
-  if (payoutData.ownerId && !String(payoutData.ownerId).startsWith("owner-")) payload.owner_id = payoutData.ownerId;
-
-  if (supabase) {
-    try {
-      await supabase.from("seller_payouts").insert([payload]);
-    } catch {
-      // Graceful fallback
-    }
-  }
-
-  try {
-    const current = await fetchSellerPayouts(payoutData.shopId, payoutData.ownerId);
-    const updated = [payoutData, ...current];
-    localStorage.setItem("serofast_payouts_history", JSON.stringify(updated));
-  } catch {}
-
-  return true;
-}
-

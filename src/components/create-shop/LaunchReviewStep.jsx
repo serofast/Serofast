@@ -94,7 +94,11 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           <p className="text-xs text-slate-500 font-normal leading-relaxed">{form.description || "Your store description will appear here."}</p>
 
           <div className="flex items-center gap-3 pt-2 border-t border-slate-100 text-[11px]">
-            <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.city || "Chennai"}</span>
+            {form.city ? (
+              <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.city}</span>
+            ) : form.address ? (
+              <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.address}</span>
+            ) : null}
             <span className="flex items-center gap-1 text-emerald-600 font-semibold"><CheckCircle2 size={12} /> Verified Seller</span>
           </div>
         </div>

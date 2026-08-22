@@ -69,7 +69,9 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {products.map((p) => {
               const checked = isSelected(p.id);
-              const imgUrl = p.image_urls?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";
+              const imgUrl = p.image_url || p.image_urls?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";
+              const retailPrice = Number(p.retail_price || p.price || p.base_price || 0);
+              const basePrice = Number(p.base_price || p.original_price || 0);
 
               return (
                 <button
@@ -91,16 +93,16 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
 
                   <img
                     src={imgUrl}
-                    alt={p.title}
+                    alt={p.title || p.name}
                     className="w-full aspect-square rounded-xl object-cover bg-slate-100"
                   />
 
                   <div className="mt-2 space-y-0.5">
-                    <h4 className="text-xs font-semibold text-slate-900 leading-tight line-clamp-2">{p.title}</h4>
+                    <h4 className="text-xs font-semibold text-slate-900 leading-tight line-clamp-2">{p.title || p.name}</h4>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-bold text-slate-900">₹{p.price}</span>
-                      {p.original_price && p.original_price > p.price && (
-                        <span className="text-[10px] text-slate-400 line-through">₹{p.original_price}</span>
+                      <span className="text-sm font-bold text-slate-900">₹{retailPrice}</span>
+                      {basePrice > retailPrice && (
+                        <span className="text-[10px] text-slate-400 line-through">₹{basePrice}</span>
                       )}
                     </div>
                   </div>
