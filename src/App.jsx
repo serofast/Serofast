@@ -209,6 +209,29 @@ function LandingPage() {
    ROUTES
    ========================================================= */
 
+/* =========================================================
+   PROTECTED ROUTE GUARD
+   ========================================================= */
+
+function ProtectedRoute({ children }) {
+  const getStoredOwner = () => {
+    try {
+      const storedOwner = localStorage.getItem("serofast_current_owner");
+      return storedOwner ? JSON.parse(storedOwner) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const isAuthenticated = Boolean(getStoredOwner());
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
+
 function CreateShopRoute() {
   const navigate = useNavigate();
 
@@ -230,10 +253,26 @@ export default function App() {
       <Route path="/register" element={<Navigate to="/signup" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/become-shop-owner/*" element={<Navigate to="/signup" replace />} />
-      <Route path="/create-shop/*" element={<CreateShopRoute />} />
 
-      {/* Shop Owner Management Portal Routes */}
-      <Route path="/shop-owner" element={<ShopOwnerLayout />}>
+      {/* Protected Create Shop Wizard Route */}
+      <Route
+        path="/create-shop/*"
+        element={
+          <ProtectedRoute>
+            <CreateShopRoute />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Shop Owner Management Portal Routes */}
+      <Route
+        path="/shop-owner"
+        element={
+          <ProtectedRoute>
+            <ShopOwnerLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<ShopOwnerDashboardPage />} />
         <Route path="inventory" element={<ShopOwnerInventoryPage />} />
