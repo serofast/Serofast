@@ -77,25 +77,6 @@ CREATE TABLE IF NOT EXISTS public.shop_products (
   CONSTRAINT shop_products_warehouse_product_id_fkey FOREIGN KEY (warehouse_product_id) REFERENCES public.warehouse_products(id)
 );
 
--- 6. PRODUCTS TABLE (Direct Shop Products)
-CREATE TABLE IF NOT EXISTS public.products (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  title text NOT NULL,
-  description text,
-  price numeric NOT NULL,
-  original_price numeric,
-  discount_percentage integer DEFAULT 0,
-  category_id uuid,
-  shop_id uuid,
-  image_urls text[] DEFAULT '{}'::text[],
-  sizes text[] DEFAULT '{}'::text[],
-  is_popular boolean DEFAULT false,
-  created_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT products_pkey PRIMARY KEY (id),
-  CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id),
-  CONSTRAINT products_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id)
-);
-
 -- 7. PROFILES TABLE (Students / Customers)
 CREATE TABLE IF NOT EXISTS public.profiles (
   id text NOT NULL,
@@ -255,7 +236,6 @@ ALTER TABLE public.shop_owners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shops ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.warehouse_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shop_products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -263,7 +243,6 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow public read warehouse_products" ON public.warehouse_products;
 DROP POLICY IF EXISTS "Allow public read shops" ON public.shops;
 DROP POLICY IF EXISTS "Allow public read shop_products" ON public.shop_products;
-DROP POLICY IF EXISTS "Allow public read products" ON public.products;
 DROP POLICY IF EXISTS "Allow full access shop_owners" ON public.shop_owners;
 DROP POLICY IF EXISTS "Allow full access shops" ON public.shops;
 DROP POLICY IF EXISTS "Allow full access orders" ON public.orders;
@@ -271,9 +250,9 @@ DROP POLICY IF EXISTS "Allow full access orders" ON public.orders;
 CREATE POLICY "Allow public read warehouse_products" ON public.warehouse_products FOR SELECT USING (true);
 CREATE POLICY "Allow public read shops" ON public.shops FOR SELECT USING (true);
 CREATE POLICY "Allow public read shop_products" ON public.shop_products FOR SELECT USING (true);
-CREATE POLICY "Allow public read products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Allow full access shop_owners" ON public.shop_owners FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access shops" ON public.shops FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+
 
 

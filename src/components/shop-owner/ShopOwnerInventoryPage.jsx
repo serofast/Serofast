@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import {
   Plus,
   Search,
-  Edit3,
   CheckCircle2,
   XCircle,
   X,
@@ -13,20 +12,19 @@ import {
   Trash2,
   ShieldAlert,
 } from "lucide-react";
-import { initialSellerProducts } from "../../data/sellerData";
 import { fetchWarehouseProducts, linkProductsToShop, fetchShopProducts } from "../../lib/supabase";
 import { AppFormField } from "../reusable/form";
 import { AppMetricCard } from "../reusable";
 
 export default function ShopOwnerInventoryPage() {
-  const [products, setProducts] = useState(initialSellerProducts);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // View, Edit, and Delete modal states
+  // View and Delete modal states
   const [productToView, setProductToView] = useState(null);
-  const [productToEdit, setProductToEdit] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // Warehouse selection state
@@ -50,11 +48,16 @@ export default function ShopOwnerInventoryPage() {
     setActiveShopId(sId);
 
     (async () => {
-      if (sId) {
-        const dbProducts = await fetchShopProducts(sId);
-        if (dbProducts && dbProducts.length > 0) {
-          setProducts(dbProducts);
+      setLoadingProducts(true);
+      try {
+        if (sId) {
+          const dbProducts = await fetchShopProducts(sId);
+          setProducts(dbProducts || []);
+        } else {
+          setProducts([]);
         }
+      } finally {
+        setLoadingProducts(false);
       }
     })();
   }, []);
@@ -120,7 +123,6 @@ export default function ShopOwnerInventoryPage() {
   }, [isModalOpen]);
 
   const handleSheetPointerDown = (event) => {
-    // Only capture touch pointers on mobile devices (< 640px)
     if (window.innerWidth >= 640) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragState.current = {
@@ -190,37 +192,6 @@ export default function ShopOwnerInventoryPage() {
     );
   };
 
-  const handleOpenEdit = (product) => {
-    if (product.isWarehouse) {
-      alert("Warehouse Managed Product: Shop owners cannot edit catalog-managed warehouse items.");
-      return;
-    }
-    setProductToEdit({ ...product });
-    setProductToView(null);
-  };
-
-  const handleSaveEdit = (e) => {
-    if (e) e.preventDefault();
-    if (!productToEdit) return;
-
-    const updatedPrice = Number(productToEdit.price) || 0;
-    const updatedOriginalPrice = Number(productToEdit.originalPrice) || 0;
-    const updatedStock = Number(productToEdit.stock) || 0;
-
-    const updatedProduct = {
-      ...productToEdit,
-      price: updatedPrice,
-      originalPrice: updatedOriginalPrice,
-      stock: updatedStock,
-      status: updatedStock > 0 ? productToEdit.status : "Out of Stock",
-    };
-
-    setProducts((prev) =>
-      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-    );
-    setProductToEdit(null);
-  };
-
   const handleDeleteProduct = (id) => {
     const target = products.find((p) => p.id === id);
     if (target?.isWarehouse) {
@@ -230,7 +201,6 @@ export default function ShopOwnerInventoryPage() {
     }
     setProducts((prev) => prev.filter((p) => p.id !== id));
     setDeleteConfirmId(null);
-    if (productToEdit?.id === id) setProductToEdit(null);
     if (productToView?.id === id) setProductToView(null);
   };
 
@@ -248,7 +218,7 @@ export default function ShopOwnerInventoryPage() {
     const newMappedProducts = selectedItems.map((item) => ({
       id: item.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       warehouseId: item.id,
-      isWarehouse: true, // Marked as Read-Only Warehouse Product
+      isWarehouse: true,
       name: item.title || item.name || "Warehouse Product",
       category: item.category || "General Catalog",
       price: Number(item.retail_price || item.price || item.base_price || 499),
@@ -271,7 +241,7 @@ export default function ShopOwnerInventoryPage() {
     const addedCount = selectedWarehouseIds.length;
     closeSheet();
 
-    setToastMessage(`${addedCount} product${addedCount > 1 ? "s" : ""} added to inventory.`);
+    setToastMessage(`${addedCount} product${addedCount > 1 ? "s" : ""} added to shop inventory.`);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -396,182 +366,162 @@ export default function ShopOwnerInventoryPage() {
         placeholder="Search store products by name..."
       />
 
-      {/* Mobile Card Stack */}
-      <div className="space-y-3 sm:hidden">
-        {filteredProducts.length === 0 ? (
-          <div className="p-8 text-center bg-white rounded-[28px] border border-[#F3E5E5] text-slate-400">
-            <Package size={32} className="mx-auto mb-2" />
-            <span className="text-xs font-normal">No products matching current filter.</span>
+      {/* Loading state */}
+      {loadingProducts ? (
+        <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="animate-spin text-brandRed" size={24} />
+          <span className="text-xs">Loading shop inventory from database...</span>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="w-full rounded-[35px] bg-white border border-[#F3E5E5] p-10 text-center shadow-[-4px_5px_10px_rgba(211,47,47,0.24)] space-y-3">
+          <Package className="mx-auto text-slate-300" size={42} />
+          <div>
+            <h4 className="text-base font-semibold text-slate-800">No Products Added Yet</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+              Add products from the warehouse catalog to display inventory for your campus store.
+            </p>
           </div>
-        ) : (
-          filteredProducts.map((prod) => (
-            <div key={prod.id} className="rounded-[28px] bg-white border border-[#F3E5E5] p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] space-y-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={prod.image}
-                  alt={prod.name}
-                  className="h-14 w-14 rounded-[18px] object-cover border border-slate-100 shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-normal text-slate-900 block text-xs truncate">{prod.name}</span>
-                    {prod.isWarehouse && (
-                      <span className="shrink-0 text-[9px] font-medium bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md">
-                        Warehouse
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-[10px] text-slate-400 block font-normal">Category: {prod.category}</span>
-                  <span className="text-sm font-normal text-brandRed mt-0.5 block">₹{prod.price}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                <button
-                  type="button"
-                  onClick={() => toggleStockStatus(prod.id)}
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
-                    prod.status === "In Stock"
-                      ? "bg-rose-50 text-brandRed border border-rose-100"
-                      : "bg-slate-100 text-slate-600 border border-slate-200"
-                  }`}
-                >
-                  {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                  <span>{prod.status} ({prod.stock})</span>
-                </button>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setProductToView(prod)}
-                    className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer flex items-center gap-1 text-xs"
-                    title="View Details"
-                  >
-                    <Eye size={16} />
-                    {prod.isWarehouse && <span className="text-[10px] font-medium text-slate-400">View Only</span>}
-                  </button>
-
-                  {!prod.isWarehouse && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(prod)}
-                        className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                        title="Edit Product"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmId(prod.id)}
-                        className="p-1.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                        title="Delete Product"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Desktop Product Table */}
-      <div className="hidden sm:block overflow-hidden rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-100 bg-[#FAF8F5] font-normal text-slate-600">
-              <tr>
-                <th className="px-5 py-3.5 font-normal">Product</th>
-                <th className="px-5 py-3.5 font-normal">Category</th>
-                <th className="px-5 py-3.5 font-normal">Price</th>
-                <th className="px-5 py-3.5 font-normal">Stock Status</th>
-                <th className="px-5 py-3.5 font-normal">Catalog Source</th>
-                <th className="px-5 py-3.5 text-right font-normal">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-normal">
-              {filteredProducts.map((prod) => (
-                <tr key={prod.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={prod.image}
-                        alt={prod.name}
-                        className="h-10 w-10 rounded-[14px] object-cover border border-slate-100 shrink-0"
-                      />
-                      <div>
-                        <span className="font-normal text-slate-900 block text-xs">{prod.name}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">ID: {prod.id}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.category}</td>
-                  <td className="px-5 py-3.5 font-normal text-brandRed text-sm">₹{prod.price}</td>
-                  <td className="px-5 py-3.5">
-                    <button
-                      type="button"
-                      onClick={() => toggleStockStatus(prod.id)}
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
-                        prod.status === "In Stock"
-                          ? "bg-rose-50 text-brandRed border border-rose-100"
-                          : "bg-slate-100 text-slate-600 border border-slate-200"
-                      }`}
-                    >
-                      {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                      <span>{prod.status} ({prod.stock})</span>
-                    </button>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 font-normal">
-                    {prod.isWarehouse ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                        Warehouse Catalog
-                      </span>
-                    ) : (
-                      <span className="text-slate-500 font-normal">Direct Product</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setProductToView(prod)}
-                        className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                        title="View Details"
-                      >
-                        <Eye size={16} />
-                      </button>
-
-                      {!prod.isWarehouse && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEdit(prod)}
-                            className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                            title="Edit Product"
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmId(prod.id)}
-                            className="rounded-full p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                            title="Delete Product"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brandRed px-4 py-2 text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer"
+          >
+            <Plus size={15} />
+            <span>Browse Warehouse Catalog</span>
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Mobile Card Stack */}
+          <div className="space-y-3 sm:hidden">
+            {filteredProducts.map((prod) => (
+              <div key={prod.id} className="rounded-[28px] bg-white border border-[#F3E5E5] p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] space-y-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={prod.image}
+                    alt={prod.name}
+                    className="h-14 w-14 rounded-[18px] object-cover border border-slate-100 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-normal text-slate-900 block text-xs truncate">{prod.name}</span>
+                      {prod.isWarehouse && (
+                        <span className="shrink-0 text-[9px] font-medium bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md">
+                          Warehouse
+                        </span>
                       )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    <span className="text-[10px] text-slate-400 block font-normal">Category: {prod.category}</span>
+                    <span className="text-sm font-normal text-brandRed mt-0.5 block">₹{prod.price}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleStockStatus(prod.id)}
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
+                      prod.status === "In Stock"
+                        ? "bg-rose-50 text-brandRed border border-rose-100"
+                        : "bg-slate-100 text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                    <span>{prod.status} ({prod.stock})</span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setProductToView(prod)}
+                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer flex items-center gap-1 text-xs"
+                      title="View Details"
+                    >
+                      <Eye size={16} />
+                      <span className="text-[10px] font-medium text-slate-400">View</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Product Table */}
+          <div className="hidden sm:block overflow-hidden rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-slate-100 bg-[#FAF8F5] font-normal text-slate-600">
+                  <tr>
+                    <th className="px-5 py-3.5 font-normal">Product</th>
+                    <th className="px-5 py-3.5 font-normal">Category</th>
+                    <th className="px-5 py-3.5 font-normal">Price</th>
+                    <th className="px-5 py-3.5 font-normal">Stock Status</th>
+                    <th className="px-5 py-3.5 font-normal">Catalog Source</th>
+                    <th className="px-5 py-3.5 text-right font-normal">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-normal">
+                  {filteredProducts.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-slate-50/50 transition">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={prod.image}
+                            alt={prod.name}
+                            className="h-10 w-10 rounded-[14px] object-cover border border-slate-100 shrink-0"
+                          />
+                          <div>
+                            <span className="font-normal text-slate-900 block text-xs">{prod.name}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">ID: {prod.id}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.category}</td>
+                      <td className="px-5 py-3.5 font-normal text-brandRed text-sm">₹{prod.price}</td>
+                      <td className="px-5 py-3.5">
+                        <button
+                          type="button"
+                          onClick={() => toggleStockStatus(prod.id)}
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
+                            prod.status === "In Stock"
+                              ? "bg-rose-50 text-brandRed border border-rose-100"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}
+                        >
+                          {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                          <span>{prod.status} ({prod.stock})</span>
+                        </button>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 font-normal">
+                        {prod.isWarehouse ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                            Warehouse Catalog
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 font-normal">Direct Product</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setProductToView(prod)}
+                            className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer flex items-center gap-1 text-xs"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                            <span className="text-[11px]">View</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Warehouse Product Selector Modal / Bottom Sheet */}
       {isModalOpen && (
@@ -758,7 +708,7 @@ export default function ShopOwnerInventoryPage() {
               {productToView.isWarehouse && (
                 <div className="flex items-center gap-2 p-3 rounded-[16px] bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
                   <ShieldAlert size={16} className="text-amber-600 shrink-0" />
-                  <span>Warehouse Catalog Managed: This item is read-only for shop owners.</span>
+                  <span>Warehouse Catalog Managed: Read-only product for shop owners.</span>
                 </div>
               )}
 
@@ -805,187 +755,6 @@ export default function ShopOwnerInventoryPage() {
                 className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 Close
-              </button>
-              {!productToView.isWarehouse && (
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(productToView)}
-                  className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
-                >
-                  <Edit3 size={15} />
-                  <span>Edit Product</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Product Dialog Modal */}
-      {productToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
-          <form
-            onSubmit={handleSaveEdit}
-            className="w-full max-w-lg max-h-[88vh] rounded-[32px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[0_20px_50px_rgba(211,47,47,0.25)] flex flex-col space-y-4 relative animate-scale-up"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
-              <div>
-                <h3 className="text-lg font-normal text-brandRed tracking-tight">Edit Product</h3>
-                <p className="text-xs text-slate-500 font-normal mt-0.5">Modify inventory details for ID: {productToEdit.id}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setProductToEdit(null)}
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1">
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1">Product Name</label>
-                <input
-                  type="text"
-                  required
-                  value={productToEdit.name}
-                  onChange={(e) => setProductToEdit({ ...productToEdit, name: e.target.value })}
-                  className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Category</label>
-                  <input
-                    type="text"
-                    required
-                    value={productToEdit.category}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, category: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Status</label>
-                  <select
-                    value={productToEdit.status}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, status: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none bg-white"
-                  >
-                    <option value="In Stock">In Stock</option>
-                    <option value="Out of Stock">Out of Stock</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Price (₹)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={productToEdit.price}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, price: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">MRP Price (₹)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={productToEdit.originalPrice || ""}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, originalPrice: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Qty</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={productToEdit.stock}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, stock: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1">Image URL</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={productToEdit.image || ""}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, image: e.target.value })}
-                    className="flex-1 h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                  {productToEdit.image && (
-                    <img
-                      src={productToEdit.image}
-                      alt="Preview"
-                      className="w-10 h-10 rounded-[12px] object-cover border border-slate-200 shrink-0"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(productToEdit.id)}
-                className="px-3 h-11 rounded-[30px] border border-rose-200 bg-rose-50 text-xs font-medium text-red-600 hover:bg-rose-100 transition cursor-pointer flex items-center gap-1"
-              >
-                <Trash2 size={14} />
-                <span>Delete</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setProductToEdit(null)}
-                className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-sm rounded-[30px] bg-white border border-[#F3E5E5] p-5 sm:p-6 shadow-[0_20px_50px_rgba(211,47,47,0.25)] text-center space-y-4 animate-scale-up">
-            <div className="w-12 h-12 rounded-full bg-rose-100 text-brandRed flex items-center justify-center mx-auto">
-              <Trash2 size={24} />
-            </div>
-            <div>
-              <h4 className="text-base font-semibold text-slate-900">Delete Product?</h4>
-              <p className="text-xs text-slate-500 font-normal mt-1">
-                Are you sure you want to remove this product from your inventory? This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 h-10 rounded-[25px] border border-[#E5E7EB] text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeleteProduct(deleteConfirmId)}
-                className="flex-1 h-10 rounded-[25px] bg-red-600 text-xs font-semibold text-white hover:bg-red-700 transition cursor-pointer shadow-sm"
-              >
-                Yes, Delete
               </button>
             </div>
           </div>

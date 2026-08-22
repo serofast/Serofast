@@ -267,16 +267,19 @@ export async function createShopInSupabase(shopData) {
 /* ── Fetch Shop Products from public.shop_products Table ───── */
 
 export async function fetchShopProducts(shopId) {
+  let list = [];
+
   if (supabase && shopId && !String(shopId).startsWith("shop-")) {
     try {
-      const { data, error } = await supabase
+      // 1. Fetch warehouse products linked to this shop
+      const { data: spData, error: spError } = await supabase
         .from("shop_products")
         .select("*, warehouse_products(*)")
         .eq("shop_id", shopId)
         .order("added_at", { ascending: false });
 
-      if (!error && data?.length) {
-        return data.map((sp) => {
+      if (!spError && spData?.length) {
+        const warehouseItems = spData.map((sp) => {
           const wp = sp.warehouse_products || {};
           return {
             id: sp.id || wp.id,
@@ -292,7 +295,33 @@ export async function fetchShopProducts(shopId) {
             image: wp.image_url || wp.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
           };
         });
+        list = [...list, ...warehouseItems];
       }
+
+      // 2. Fetch direct products created for this shop
+      const { data: pData, error: pError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("shop_id", shopId)
+        .order("created_at", { ascending: false });
+
+      if (!pError && pData?.length) {
+        const directItems = pData.map((p) => ({
+          id: p.id,
+          isWarehouse: false,
+          name: p.title || p.name,
+          category: p.category_id || "General",
+          price: Number(p.price || 0),
+          originalPrice: Number(p.original_price || p.price || 0),
+          stock: 10,
+          status: "In Stock",
+          salesCount: 0,
+          image: p.image_urls?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+        }));
+        list = [...list, ...directItems];
+      }
+
+      if (list.length > 0) return list;
     } catch {
       // Graceful fallback
     }
@@ -303,8 +332,9 @@ export async function fetchShopProducts(shopId) {
     if (stored) return JSON.parse(stored);
   } catch {}
 
-  return null;
+  return list;
 }
+
 
 /* ── Link Selected Products to Shop ─────────────────────── */
 
