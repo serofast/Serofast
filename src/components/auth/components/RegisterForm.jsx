@@ -93,7 +93,7 @@ export default function RegisterForm() {
           <CheckCircle2 size={28} />
         </div>
         <h2 className="mt-4 text-xl font-bold text-slate-800">
-          Account Created 🎉
+          Account Created
         </h2>
         <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500 font-normal">
           Registered in Firebase Auth &amp; saved to shop_owners table...

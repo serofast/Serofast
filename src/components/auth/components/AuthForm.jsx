@@ -109,7 +109,7 @@ export default function AuthForm({ mode, role }) {
           <CheckCircle2 size={32} />
         </div>
         <h1 className="mt-5 text-2xl font-black text-textPrimary">
-          {isLogin ? "Welcome Back, Shop Owner!" : "Shop Owner Profile Created! 🎉"}
+          {isLogin ? "Welcome Back, Shop Owner!" : "Shop Owner Profile Created!"}
         </h1>
         <p className="mx-auto mt-2 max-w-md text-xs leading-6 text-textSecondary">
           {registerShop

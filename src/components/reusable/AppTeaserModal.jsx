@@ -204,7 +204,7 @@ export default function AppTeaserModal({ isOpen, onClose, initialItemName }) {
                     <Star size={20} />
                   </div>
                   <h4 className="mt-1.5 text-xs font-bold text-slate-900">
-                    VIP Reserved! 🎉
+                    VIP Reserved!
                   </h4>
                   <p className="mt-0.5 text-[11px] text-slate-600">
                     ₹100 reserved for <strong className="text-slate-900">{waitlistEmail}</strong>.

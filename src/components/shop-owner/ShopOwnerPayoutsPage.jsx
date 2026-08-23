@@ -12,6 +12,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
+import { AppSuccessModal } from "../reusable";
 import { fetchOwnerUpiId, updateOwnerUpiId } from "../../lib/supabase";
 
 export default function ShopOwnerPayoutsPage() {
@@ -153,7 +154,7 @@ export default function ShopOwnerPayoutsPage() {
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <AppFormButton type="submit" icon={Save}>
-                {saved ? "UPI ID Saved to Shop Owner Table! ✓" : "Save UPI ID"}
+                {saved ? "UPI ID Saved to Shop Owner Table" : "Save UPI ID"}
               </AppFormButton>
 
               {upiId && (
@@ -184,13 +185,25 @@ export default function ShopOwnerPayoutsPage() {
         </p>
       </div>
 
-      {/* Toast Notification */}
-      {payoutInitiated && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-[20px] bg-slate-900 text-white px-5 py-3.5 text-xs font-normal shadow-2xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 size={18} className="text-blue-400" />
-          <span>Razorpay Payout request initiated to {upiId}!</span>
-        </div>
-      )}
+      {/* Brand Red Success Status Modal Dialog */}
+      <AppSuccessModal
+        isOpen={saved || payoutInitiated}
+        onClose={() => {
+          setSaved(false);
+          setPayoutInitiated(false);
+        }}
+        title={saved ? "UPI Settings Saved" : "Payout Request Initiated"}
+        message={
+          saved
+            ? "Your settlement UPI ID has been updated in the database."
+            : `Razorpay Payout request initiated successfully to ${upiId || "your UPI address"}.`
+        }
+        primaryActionLabel="Continue"
+        onPrimaryAction={() => {
+          setSaved(false);
+          setPayoutInitiated(false);
+        }}
+      />
     </div>
   );
 }

@@ -27,7 +27,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           <CheckCircle2 size={44} />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Your shop is live! 🎉</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Your shop is live!</h1>
           <p className="mt-2 text-xs sm:text-sm text-slate-500 font-normal max-w-xs mx-auto">
             <strong className="text-slate-900">{form.shopName || "Your Shop"}</strong> is now registered on SeroFast and saved to the database.
           </p>

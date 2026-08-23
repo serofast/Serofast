@@ -31,14 +31,17 @@ function fileToDataUrl(file) {
 
 /* ── Image Upload (Supabase Storage Bucket) ──────────────── */
 
-export async function uploadShopAsset(file, folder = "logos") {
+export async function uploadShopAsset(file, folder = "logos", shopIdentifier = "") {
   if (!file) return null;
   if (typeof file === "string") return file; // already a URL
 
   if (supabase) {
     try {
       const ext = file.name?.split(".").pop() || "png";
-      const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const shopFolder = shopIdentifier
+        ? String(shopIdentifier).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "general"
+        : "general";
+      const path = `shops/${shopFolder}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
@@ -396,24 +399,21 @@ export async function createShopInSupabase(shopData) {
     // Graceful fallback
   }
 
+  const shopName = shopData.shopName || shopData.name || "My Campus Shop";
+  const shopIdSlug = generateShopSlug(shopName);
+
   let avatarUrl = shopData.logo || "";
   let coverUrl = shopData.cover || "";
 
   if (shopData.logoFile) {
-    const uploadedLogo = await uploadShopAsset(shopData.logoFile, "logos");
+    const uploadedLogo = await uploadShopAsset(shopData.logoFile, "logos", shopName);
     if (uploadedLogo) avatarUrl = uploadedLogo;
   }
 
   if (shopData.coverFile) {
-    const uploadedCover = await uploadShopAsset(shopData.coverFile, "covers");
+    const uploadedCover = await uploadShopAsset(shopData.coverFile, "covers", shopName);
     if (uploadedCover) coverUrl = uploadedCover;
   }
-
-  const id = window.crypto?.randomUUID?.()
-    || `shop-${Math.random().toString(36).slice(2, 10)}`;
-
-  const shopName = shopData.shopName || shopData.name || "My Campus Shop";
-  const shopIdSlug = generateShopSlug(shopName);
 
   const ownerName = shopData.ownerName || currentOwnerObj?.full_name || currentOwnerObj?.name || "Shop Owner";
   const ownerEmail = shopData.email || currentOwnerObj?.email || "";
@@ -826,28 +826,16 @@ export async function updateOwnerUpiId(ownerId, upiId) {
 export async function fetchNotifications({ role = "shop_owner", recipientId = null, shopId = null }) {
   if (supabase) {
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from("notifications")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
-      // Filter by recipient role if column exists
-      try {
-        query = query.or(`recipient_role.eq.${role},recipient_role.is.null`);
-      } catch {}
-
-      if (recipientId) {
-        query = query.or(`user_id.eq.${recipientId},recipient_id.eq.${recipientId},user_id.is.null,recipient_id.is.null`);
-      }
-
-      const { data, error } = await query;
       if (!error && data && data.length > 0) {
         return data
           .filter((n) => {
-            // Filter by role if column exists on the row
-            if (n.recipient_role && n.recipient_role !== role) return false;
-            // Filter by recipient if specific
-            if (n.user_id && recipientId && n.user_id !== recipientId && n.user_id !== "all") return false;
+            if (n.recipient_role && n.recipient_role !== role && n.recipient_role !== "all") return false;
             if (n.recipient_id && recipientId && n.recipient_id !== recipientId && n.recipient_id !== "all") return false;
             if (n.shop_id && shopId && n.shop_id !== shopId) return false;
             return true;
@@ -855,13 +843,13 @@ export async function fetchNotifications({ role = "shop_owner", recipientId = nu
           .map((n) => ({
             id: n.id,
             title: n.title || "Notification",
-            message: n.body || n.message || "",
+            message: n.message || n.body || "",
             time: formatNotificationTime(n.created_at),
             date: new Date(n.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
             type: (n.type || "system").toLowerCase(),
             unread: n.is_read !== undefined ? !n.is_read : true,
-            actionLink: n.action_route || n.action_link || "",
-            actionLabel: n.action_label || (n.action_route ? "View Details" : "View"),
+            actionLink: n.action_link || n.action_route || "",
+            actionLabel: n.action_label || "View",
             details: n.details || {},
             rawCreatedAt: n.created_at,
           }));
@@ -890,18 +878,15 @@ export async function sendNotification({
 }) {
   const finalMessage = body || message || "";
   const finalAction = action_route || action_link || "";
-  const targetUser = user_id || recipient_id || "all";
+  const targetUser = recipient_id || user_id || "all";
 
   const payload = {
-    user_id: targetUser,
-    recipient_id: targetUser,
     recipient_role,
+    recipient_id: targetUser,
     shop_id: shop_id && isValidUuid(shop_id) ? shop_id : null,
     title,
-    body: finalMessage,
     message: finalMessage,
-    type: type.toUpperCase(),
-    action_route: finalAction,
+    type: type.toLowerCase(),
     action_link: finalAction,
     action_label,
     details,
@@ -922,7 +907,7 @@ export async function sendNotification({
     }
   }
 
-  return payload;
+  return null;
 }
 
 export async function markNotificationAsReadInSupabase(notificationId) {
@@ -944,7 +929,9 @@ export async function markAllNotificationsAsReadInSupabase({ role = "shop_owner"
         .update({ is_read: true });
 
       if (recipientId) {
-        query = query.or(`user_id.eq.${recipientId},recipient_id.eq.${recipientId}`);
+        query = query.eq("recipient_id", recipientId);
+      } else if (role) {
+        query = query.eq("recipient_role", role);
       }
 
       await query;

@@ -18,15 +18,19 @@ import {
   Image as ImageIcon,
   Loader2,
   Sparkles,
+  Upload,
+  Camera,
+  Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
+import { AppSuccessModal, AppErrorModal } from "../reusable";
 import { fetchShopDetails, updateShopDetails, uploadShopAsset } from "../../lib/supabase";
 
 export default function ShopOwnerSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
 
   // IDs
@@ -49,9 +53,14 @@ export default function ShopOwnerSettingsPage() {
   const [minOrderAmount, setMinOrderAmount] = useState(199);
   const [prepTimeMins, setPrepTimeMins] = useState(15);
 
-  // Media URLs
+  // Media URLs & File Upload States
   const [logoUrl, setLogoUrl] = useState("");
   const [coverUrl, setCoverUrl] = useState("");
+  const [logoFile, setLogoFile] = useState(null);
+  const [coverFile, setCoverFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     let sId = null;
@@ -100,63 +109,100 @@ export default function ShopOwnerSettingsPage() {
     })();
   }, []);
 
-  const [logoFile, setLogoFile] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleCoverChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverFile(file);
+      setCoverPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoUrl("");
+  };
+
+  const handleRemoveCover = () => {
+    setCoverFile(null);
+    setCoverPreview(null);
+    setCoverUrl("");
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    setSaved(true);
+    setIsSaving(true);
+    setSaved(false);
 
     let finalLogoUrl = logoUrl;
     let finalCoverUrl = coverUrl;
 
-    if (logoFile) {
-      const uploaded = await uploadShopAsset(logoFile, "logos");
-      if (uploaded) {
-        finalLogoUrl = uploaded;
-        setLogoUrl(uploaded);
+    try {
+      if (logoFile) {
+        setToastMessage("Uploading new shop logo to Supabase storage bucket...");
+        const uploadedLogo = await uploadShopAsset(logoFile, "logos", storeName || activeShopId);
+        if (uploadedLogo) {
+          finalLogoUrl = uploadedLogo;
+          setLogoUrl(uploadedLogo);
+          setLogoFile(null);
+          setLogoPreview(null);
+        }
       }
-    }
-    if (coverFile) {
-      const uploaded = await uploadShopAsset(coverFile, "covers");
-      if (uploaded) {
-        finalCoverUrl = uploaded;
-        setCoverUrl(uploaded);
+
+      if (coverFile) {
+        setToastMessage("Uploading new cover banner to Supabase storage bucket...");
+        const uploadedCover = await uploadShopAsset(coverFile, "covers", storeName || activeShopId);
+        if (uploadedCover) {
+          finalCoverUrl = uploadedCover;
+          setCoverUrl(uploadedCover);
+          setCoverFile(null);
+          setCoverPreview(null);
+        }
       }
-    }
 
-    const effectivePhone = phone?.trim() || "";
+      const effectivePhone = phone?.trim() || "";
 
-    const shopPayload = {
-      name: storeName,
-      tagline,
-      category_id: category.toLowerCase(),
-      category,
-      description,
-      address,
-      status: isOnline ? "online" : "offline",
-      deliveryRadiusKm: Number(deliveryRadiusKm) || 5,
-      minOrderAmount: Number(minOrderAmount) || 199,
-      prepTimeMins: Number(prepTimeMins) || 15,
-      avatar_url: finalLogoUrl,
-      cover_url: finalCoverUrl,
-    };
-    if (effectivePhone) shopPayload.owner_phone = effectivePhone;
+      const shopPayload = {
+        name: storeName,
+        tagline,
+        category_id: category.toLowerCase(),
+        category,
+        description,
+        address,
+        status: isOnline ? "online" : "offline",
+        deliveryRadiusKm: Number(deliveryRadiusKm) || 5,
+        minOrderAmount: Number(minOrderAmount) || 199,
+        prepTimeMins: Number(prepTimeMins) || 15,
+        avatar_url: finalLogoUrl,
+        cover_url: finalCoverUrl,
+      };
+      if (effectivePhone) shopPayload.owner_phone = effectivePhone;
 
-    const ownerPayload = {
-      full_name: ownerName,
-      email,
-      category,
-    };
-    if (effectivePhone) ownerPayload.phone = effectivePhone;
+      const ownerPayload = {
+        full_name: ownerName,
+        email,
+        category,
+      };
+      if (effectivePhone) ownerPayload.phone = effectivePhone;
 
-    await updateShopDetails(activeShopId, activeOwnerId, shopPayload, ownerPayload);
+      await updateShopDetails(activeShopId, activeOwnerId, shopPayload, ownerPayload);
 
-    setToastMessage("🎉 Store settings & profile successfully saved to database!");
-    setTimeout(() => {
-      setSaved(false);
+      setSaved(true);
       setToastMessage(null);
-    }, 4000);
+    } catch (err) {
+      console.error(err);
+      setToastMessage("Failed to update store settings. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDownloadPoster = () => {
@@ -348,49 +394,173 @@ export default function ShopOwnerSettingsPage() {
               </AppFormCard>
 
               {/* Section 4: Brand Assets & Media */}
-              <AppFormCard className="max-w-full" title="Brand Assets &amp; Images" subtitle="Update store logo and cover banner image URLs">
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <AppFormField
-                        label="Store Logo Image URL"
-                        icon={ImageIcon}
-                        value={logoUrl}
-                        onChange={(val) => setLogoUrl(val)}
-                        placeholder="https://..."
-                      />
-                      {logoUrl && (
-                        <img
-                          src={logoUrl}
-                          alt="Logo Preview"
-                          className="mt-2 h-14 w-14 rounded-2xl object-cover border border-slate-200"
-                        />
-                      )}
-                    </div>
+              <AppFormCard
+                className="max-w-full"
+                title="Brand Assets & Images"
+                subtitle="Upload and manage your store's logo and cover banner in your dedicated Supabase storage folder"
+              >
+                <div className="space-y-6">
+                  {/* 1. Store Cover Banner Section */}
+                  <div className="space-y-3">
+                    <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <ImageIcon size={15} className="text-brandRed" /> Store Cover Banner
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-normal">Recommended: 1200 × 400px</span>
+                    </label>
 
-                    <div>
-                      <AppFormField
-                        label="Store Cover Banner URL"
-                        icon={ImageIcon}
-                        value={coverUrl}
-                        onChange={(val) => setCoverUrl(val)}
-                        placeholder="https://..."
-                      />
-                      {coverUrl && (
-                        <img
-                          src={coverUrl}
-                          alt="Cover Preview"
-                          className="mt-2 h-14 w-full rounded-2xl object-cover border border-slate-200"
-                        />
-                      )}
+                    {/* Banner Card Container */}
+                    <div className="rounded-[24px] border border-[#E5E7EB] bg-slate-50/50 p-3 sm:p-4 space-y-3">
+                      {/* Image Preview Box */}
+                      <div className="relative h-44 sm:h-52 w-full rounded-[18px] overflow-hidden bg-slate-100 border border-slate-200/80 group">
+                        {coverPreview || coverUrl ? (
+                          <img
+                            src={coverPreview || coverUrl}
+                            alt="Store Cover Banner"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full flex-col items-center justify-center text-slate-400 gap-1.5 p-4 text-center">
+                            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white text-slate-400 shadow-sm border border-slate-200/60">
+                              <ImageIcon size={24} />
+                            </div>
+                            <span className="text-xs font-medium text-slate-600">No Cover Banner Uploaded</span>
+                            <span className="text-[11px] text-slate-400">Add a banner to make your shop stand out on campus</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Controls Bar (Mobile & Desktop Responsive) */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                        <div className="flex items-center gap-2">
+                          {coverFile ? (
+                            <span className="text-[11px] font-semibold text-rose-700 flex items-center gap-1.5 bg-rose-50 border border-rose-200/80 px-3 py-1.5 rounded-full">
+                              <CheckCircle2 size={13} className="text-brandRed" /> Selected: {coverFile.name} (Will upload on save)
+                            </span>
+                          ) : coverUrl ? (
+                            <span className="text-[11px] font-semibold text-rose-700 flex items-center gap-1.5 bg-rose-50 border border-rose-200/80 px-3 py-1.5 rounded-full">
+                              <CheckCircle2 size={13} className="text-brandRed" /> Active Cover Banner Set
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-slate-500 font-normal">
+                              No cover banner image active
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <label className="flex-1 sm:flex-initial flex h-11 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer font-sans font-sansation">
+                            <Upload size={14} />
+                            <span>{coverPreview || coverUrl ? "Change Banner" : "Upload Banner"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleCoverChange}
+                            />
+                          </label>
+
+                          {(coverPreview || coverUrl) && (
+                            <button
+                              type="button"
+                              onClick={handleRemoveCover}
+                              className="flex h-11 items-center justify-center gap-1.5 rounded-[30px] border border-rose-200 bg-rose-50 px-4 text-xs font-semibold text-brandRed hover:bg-brandRed hover:text-white transition active:scale-[0.98] cursor-pointer font-sans font-sansation"
+                            >
+                              <Trash2 size={14} />
+                              <span className="hidden sm:inline">Remove</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Shop Profile Logo Section */}
+                  <div className="space-y-3 pt-2 border-t border-slate-100">
+                    <label className="block text-xs font-semibold text-slate-700 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Camera size={15} className="text-brandRed" /> Shop Profile Logo
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-normal">Square 1:1 ratio (300 × 300px)</span>
+                    </label>
+
+                    {/* Logo Card Container */}
+                    <div className="rounded-[24px] border border-[#E5E7EB] bg-slate-50/50 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5">
+                      {/* Avatar Preview Circle */}
+                      <div className="relative group shrink-0 h-24 w-24 sm:h-28 sm:w-28 rounded-[24px] border-2 border-white shadow-md overflow-hidden bg-slate-100 grid place-items-center">
+                        {logoPreview || logoUrl ? (
+                          <img
+                            src={logoPreview || logoUrl}
+                            alt="Shop Logo"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <Store size={40} className="text-slate-300" />
+                        )}
+
+                        <label className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white cursor-pointer backdrop-blur-xs">
+                          <Upload size={20} />
+                          <span className="text-[10px] font-bold mt-1 tracking-wider uppercase">CHANGE</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleLogoChange}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Info & Action Controls */}
+                      <div className="flex-1 space-y-3 text-center sm:text-left w-full">
+                        <div>
+                          <h4 className="text-xs font-semibold text-slate-800">Shop Logo</h4>
+                          <p className="text-[11px] text-slate-500 font-normal mt-0.5 leading-relaxed">
+                            Your logo appears on product listings, search cards, and customer order invoices across SeroFast.
+                          </p>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-1">
+                          <label className="flex h-11 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.3)] hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer font-sans font-sansation">
+                            <Upload size={14} />
+                            <span>{logoPreview || logoUrl ? "Change Logo" : "Upload New Logo"}</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleLogoChange}
+                            />
+                          </label>
+
+                          {(logoPreview || logoUrl) && (
+                            <button
+                              type="button"
+                              onClick={handleRemoveLogo}
+                              className="flex h-11 items-center justify-center gap-1.5 rounded-[30px] border border-rose-200 bg-rose-50 px-4 text-xs font-semibold text-brandRed hover:bg-brandRed hover:text-white transition active:scale-[0.98] cursor-pointer font-sans font-sansation"
+                            >
+                              <Trash2 size={14} />
+                              <span>Remove</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {logoFile ? (
+                          <div className="text-[11px] font-semibold text-rose-700 flex items-center justify-center sm:justify-start gap-1.5 bg-rose-50 border border-rose-200/80 px-3 py-1.5 rounded-full w-fit">
+                            <CheckCircle2 size={13} className="text-brandRed" /> Selected: {logoFile.name} (Will upload on save)
+                          </div>
+                        ) : logoUrl ? (
+                          <div className="text-[11px] font-semibold text-rose-700 flex items-center justify-center sm:justify-start gap-1.5 bg-rose-50 border border-rose-200/80 px-3 py-1.5 rounded-full w-fit">
+                            <CheckCircle2 size={13} className="text-brandRed" /> Active Shop Logo Set
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 </div>
               </AppFormCard>
 
               <div className="pt-2">
-                <AppFormButton type="submit" icon={Save}>
-                  {saved ? "All Store Settings Saved to Database! ✓" : "Save Store & Profile Settings"}
+                <AppFormButton type="submit" icon={Save} isLoading={isSaving}>
+                  {saved ? "All Store Settings Saved to Database" : "Save Store & Profile Settings"}
                 </AppFormButton>
               </div>
             </form>
@@ -441,13 +611,28 @@ export default function ShopOwnerSettingsPage() {
         </div>
       )}
 
-      {/* Animated Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-[22px] bg-slate-900 text-white px-5 py-3.5 text-xs font-normal shadow-2xl flex items-center gap-2.5 animate-bounce font-sans font-sansation">
-          <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      {/* Brand Red Success Status Modal Dialog */}
+      <AppSuccessModal
+        isOpen={saved}
+        onClose={() => setSaved(false)}
+        title="Settings Saved Successfully"
+        message="Your store profile, contact details, logo, and cover banner have been updated in the database."
+        details={storeName ? `Active Store: ${storeName}` : null}
+        primaryActionLabel="Continue"
+        onPrimaryAction={() => setSaved(false)}
+      />
+
+      {/* Brand Red Error Status Modal Dialog */}
+      <AppErrorModal
+        isOpen={!!errorMessage}
+        onClose={() => setErrorMessage(null)}
+        title="Update Failed"
+        message={errorMessage || "Failed to update store settings. Please try again."}
+        primaryActionLabel="Try Again"
+        onPrimaryAction={() => {
+          setErrorMessage(null);
+        }}
+      />
     </div>
   );
 }

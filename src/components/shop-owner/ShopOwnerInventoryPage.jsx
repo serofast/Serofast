@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { fetchWarehouseProducts, linkProductsToShop, fetchShopProducts } from "../../lib/supabase";
 import { AppFormField } from "../reusable/form";
-import { AppMetricCard } from "../reusable";
+import { AppMetricCard, AppSuccessModal, AppErrorModal } from "../reusable";
 
 export default function ShopOwnerInventoryPage() {
   const [products, setProducts] = useState([]);
@@ -32,7 +32,7 @@ export default function ShopOwnerInventoryPage() {
   const [loadingWarehouse, setLoadingWarehouse] = useState(false);
   const [selectedWarehouseIds, setSelectedWarehouseIds] = useState([]);
   const [warehouseSearchQuery, setWarehouseSearchQuery] = useState("");
-  const [toastMessage, setToastMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Active shop context
   const [activeShopId, setActiveShopId] = useState(null);
@@ -241,8 +241,7 @@ export default function ShopOwnerInventoryPage() {
     const addedCount = selectedWarehouseIds.length;
     closeSheet();
 
-    setToastMessage(`${addedCount} product${addedCount > 1 ? "s" : ""} added to shop inventory.`);
-    setTimeout(() => setToastMessage(null), 3000);
+    setSuccessMessage(`${addedCount} product${addedCount > 1 ? "s" : ""} added to shop inventory.`);
   };
 
   // KPI Metrics Calculation
@@ -761,13 +760,15 @@ export default function ShopOwnerInventoryPage() {
         </div>
       )}
 
-      {/* Minimal Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-20 sm:bottom-6 right-6 z-[70] rounded-[20px] bg-slate-900 text-white px-4 py-2.5 text-xs font-normal shadow-lg flex items-center gap-2 animate-fade-in font-sans font-sansation">
-          <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+      {/* Brand Red Success Status Modal Dialog */}
+      <AppSuccessModal
+        isOpen={!!successMessage}
+        onClose={() => setSuccessMessage(null)}
+        title="Inventory Updated"
+        message={successMessage || "Items successfully updated in your store catalog."}
+        primaryActionLabel="Continue"
+        onPrimaryAction={() => setSuccessMessage(null)}
+      />
     </div>
   );
 }

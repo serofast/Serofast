@@ -6,13 +6,13 @@ export default function PlatformDemoUI() {
   const [activeTab, setActiveTab] = useState("terminal");
   const [copied, setCopied] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState([
-    "🚀 Initializing SeroFast Store engine v2.4...",
-    "📦 Reading store metadata: 'Urban Styles Minimal'",
-    "⚡ Registering ₹50 merchant account...",
-    "✅ Storefront deployed instantly at https://serofast.com/urban-styles",
-    "🔔 [LIVE STREAM] Customer #4092 placed order for 'Men's Casual Shirt' (₹999)",
-    "🚚 Dispatching local student runner... Estimated delivery: 28 mins",
-    "✨ 100% Margin payout ₹999 transferred via instant UPI!",
+    "Initializing SeroFast Store engine v2.4...",
+    "Reading store metadata: 'Urban Styles Minimal'",
+    "Registering merchant account...",
+    "Storefront deployed instantly at https://serofast.com/urban-styles",
+    "[LIVE STREAM] Customer #4092 placed order for 'Men's Casual Shirt' (₹999)",
+    "Dispatching local student runner... Estimated delivery: 28 mins",
+    "100% Margin payout ₹999 transferred via instant UPI!",
   ]);
   const [isSimulating, setIsSimulating] = useState(false);
 
@@ -27,9 +27,9 @@ export default function PlatformDemoUI() {
     setTimeout(() => {
       setTerminalLogs((prev) => [
         ...prev,
-        `🔔 [LIVE STREAM] New Order #${newOrderNumber} received for '${randomItem}'`,
-        `🚚 Partner runner assigned. ETA: ${randomTime}`,
-        `💰 Instant settlement ₹${Math.floor(800 + Math.random() * 2000)} credited to bank!`,
+        `[LIVE STREAM] New Order #${newOrderNumber} received for '${randomItem}'`,
+        `Partner runner assigned. ETA: ${randomTime}`,
+        `Instant settlement ₹${Math.floor(800 + Math.random() * 2000)} credited to bank!`,
       ]);
       setIsSimulating(false);
     }, 600);

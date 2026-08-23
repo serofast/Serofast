@@ -198,7 +198,7 @@ export default function ShopOwnerNotificationsPage() {
             {isMarkingAll
               ? "Marking all..."
               : justMarkedAll
-              ? "All caught up! ✓"
+              ? "All caught up"
               : "Mark all as read"}
           </span>
         </button>

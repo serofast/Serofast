@@ -232,7 +232,7 @@ function Documents() {
               </div>
               <p className="text-xs font-semibold text-slate-800">{selectedDoc} (PDF Preview)</p>
               <p className="text-[11px] text-slate-500 font-normal">
-                Status: Verified ✓ · Uploaded on 12 Aug 2026
+                Status: Verified · Uploaded on 12 Aug 2026
               </p>
             </div>
             <button
