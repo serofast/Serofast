@@ -56,6 +56,39 @@ export default function CreateShopPage({ onClose, onComplete }) {
   const [form, setForm] = useState(initialForm);
   const [showExitModal, setShowExitModal] = useState(false);
 
+  useEffect(() => {
+    try {
+      const activeShopStr = localStorage.getItem("serofast_active_shop");
+      const ownerStr = localStorage.getItem("serofast_current_owner");
+      const patch = {};
+
+      if (ownerStr) {
+        const owner = JSON.parse(ownerStr);
+        if (owner.full_name) patch.ownerName = owner.full_name;
+        if (owner.phone) patch.phone = owner.phone;
+        if (owner.email) patch.email = owner.email;
+        if (owner.category) patch.category = owner.category;
+      }
+
+      if (activeShopStr) {
+        const shop = JSON.parse(activeShopStr);
+        if (shop.name) patch.shopName = shop.name;
+        if (shop.tagline) patch.tagline = shop.tagline;
+        if (shop.description) patch.description = shop.description;
+        if (shop.address) patch.address = shop.address;
+        if (shop.cover_url) patch.cover = shop.cover_url;
+        if (shop.avatar_url) patch.logo = shop.avatar_url;
+        if (shop.owner_name) patch.ownerName = shop.owner_name;
+        if (shop.owner_phone) patch.phone = shop.owner_phone;
+        if (shop.owner_email) patch.email = shop.owner_email;
+      }
+
+      if (Object.keys(patch).length > 0) {
+        setForm((c) => ({ ...c, ...patch }));
+      }
+    } catch {}
+  }, []);
+
   const updateForm = (patch) => setForm((c) => ({ ...c, ...patch }));
   const next = () => navigate(STEP_PATHS[Math.min(5, step + 1)]);
   const back = () => navigate(STEP_PATHS[Math.max(1, step - 1)]);

@@ -58,10 +58,13 @@ CREATE TABLE IF NOT EXISTS public.shops (
   CONSTRAINT shops_pkey PRIMARY KEY (id),
   CONSTRAINT shops_shop_id_key UNIQUE (shop_id),
   CONSTRAINT shops_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.shop_owners (id) ON DELETE CASCADE,
+  CONSTRAINT shops_owner_email_key UNIQUE (owner_email),
   CONSTRAINT shops_setup_progress_check CHECK (setup_progress >= 0 AND setup_progress <= 100),
   CONSTRAINT shops_status_check CHECK (status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'active'::text, 'suspended'::text, 'rejected'::text, 'closed'::text]))
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS shops_owner_email_unique ON public.shops (lower(trim(owner_email))) WHERE (owner_email IS NOT NULL AND owner_email <> '');
+CREATE UNIQUE INDEX IF NOT EXISTS shops_owner_id_unique ON public.shops (owner_id) WHERE (owner_id IS NOT NULL);
 CREATE INDEX IF NOT EXISTS shops_owner_id_idx ON public.shops USING btree (owner_id);
 CREATE INDEX IF NOT EXISTS shops_status_idx ON public.shops USING btree (status);
 -- 4. WAREHOUSE PRODUCTS TABLE (Admin Catalog)
@@ -239,6 +242,30 @@ CREATE TABLE IF NOT EXISTS public.coupons (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT coupons_pkey PRIMARY KEY (id)
 );
+-- 13. NOTIFICATIONS TABLE (Multi-tenant Role-Based Real-time Notifications)
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  recipient_role text NOT NULL DEFAULT 'shop_owner'::text, -- 'shop_owner', 'user', 'admin'
+  recipient_id text,                                      -- specific user/owner ID or email, NULL = broadcast to all in role
+  shop_id uuid,                                           -- associated shop id if applicable
+  title text NOT NULL,
+  message text NOT NULL,
+  type text NOT NULL DEFAULT 'system'::text,              -- 'order', 'payout', 'promoter', 'system', 'alert'
+  is_read boolean NOT NULL DEFAULT false,
+  action_link text,
+  action_label text,
+  details jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT notifications_pkey PRIMARY KEY (id),
+  CONSTRAINT notifications_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE,
+  CONSTRAINT notifications_recipient_role_check CHECK (recipient_role = ANY (ARRAY['shop_owner'::text, 'user'::text, 'admin'::text]))
+);
+
+CREATE INDEX IF NOT EXISTS notifications_recipient_role_idx ON public.notifications (recipient_role);
+CREATE INDEX IF NOT EXISTS notifications_recipient_id_idx ON public.notifications (recipient_id);
+CREATE INDEX IF NOT EXISTS notifications_shop_id_idx ON public.notifications (shop_id);
+CREATE INDEX IF NOT EXISTS notifications_created_at_idx ON public.notifications (created_at DESC);
+
 -- ROW LEVEL SECURITY (RLS) POLICIES
 ALTER TABLE public.shop_owners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shops ENABLE ROW LEVEL SECURITY;
@@ -247,12 +274,16 @@ ALTER TABLE public.shop_products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
 DROP POLICY IF EXISTS "Allow public read warehouse_products" ON public.warehouse_products;
 DROP POLICY IF EXISTS "Allow public read shops" ON public.shops;
 DROP POLICY IF EXISTS "Allow public read shop_products" ON public.shop_products;
 DROP POLICY IF EXISTS "Allow full access shop_owners" ON public.shop_owners;
 DROP POLICY IF EXISTS "Allow full access shops" ON public.shops;
 DROP POLICY IF EXISTS "Allow full access orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow full access notifications" ON public.notifications;
+
 CREATE POLICY "Allow public read warehouse_products" ON public.warehouse_products FOR
 SELECT USING (true);
 CREATE POLICY "Allow public read shops" ON public.shops FOR
@@ -262,6 +293,10 @@ SELECT USING (true);
 CREATE POLICY "Allow full access shop_owners" ON public.shop_owners FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access shops" ON public.shops FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow full access notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
+
+GRANT ALL ON public.notifications TO anon, authenticated, service_role;
+
 -- SUPABASE STORAGE BUCKET FOR SHOP ASSETS (LOGOS & COVERS)
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('shop-assets', 'shop-assets', true) ON CONFLICT (id) DO NOTHING;

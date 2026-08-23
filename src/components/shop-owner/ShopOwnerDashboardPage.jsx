@@ -102,11 +102,11 @@ export default function ShopOwnerDashboardPage() {
 
         <div className="flex gap-2">
           <Link
-            to="/create-shop"
+            to="/shop-owner/settings"
             className="flex-1 sm:flex-initial h-10 flex items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition"
           >
-            <Plus size={15} />
-            <span>Add Shop</span>
+            <Store size={15} />
+            <span>Shop Settings</span>
           </Link>
           <Link
             to="/shop-owner/settings"

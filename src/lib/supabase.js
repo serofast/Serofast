@@ -388,19 +388,50 @@ export async function createShopInSupabase(shopData) {
 
   if (supabase) {
     try {
-      const { data, error } = await supabase
-        .from("shops")
-        .insert([payload])
-        .select()
-        .single();
+      // 1. Check if a shop already exists for this owner email or owner_id (1 shop per owner rule)
+      let checkQuery = supabase.from("shops").select("*");
+      if (ownerEmail && ownerId && isValidUuid(ownerId)) {
+        checkQuery = checkQuery.or(`owner_email.eq.${ownerEmail},owner_id.eq.${ownerId}`);
+      } else if (ownerEmail) {
+        checkQuery = checkQuery.eq("owner_email", ownerEmail);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        checkQuery = checkQuery.eq("owner_id", ownerId);
+      }
 
-      if (!error && data) {
-        localStorage.setItem("serofast_active_shop", JSON.stringify(data));
+      const { data: existingShop } = await checkQuery.maybeSingle();
 
-        if (shopData.selectedProducts?.length) {
-          await linkProductsToShop(data.id, shopData.selectedProducts);
+      if (existingShop) {
+        // Update existing shop instead of creating duplicate
+        const { id: existingId, created_at, ...updateFields } = payload;
+        const { data: updated, error: updateError } = await supabase
+          .from("shops")
+          .update({ ...updateFields, updated_at: new Date().toISOString() })
+          .eq("id", existingShop.id)
+          .select()
+          .single();
+
+        if (!updateError && updated) {
+          localStorage.setItem("serofast_active_shop", JSON.stringify(updated));
+          if (shopData.selectedProducts?.length) {
+            await linkProductsToShop(updated.id, shopData.selectedProducts);
+          }
+          return updated;
         }
-        return data;
+      } else {
+        // Insert single new shop
+        const { data, error } = await supabase
+          .from("shops")
+          .insert([payload])
+          .select()
+          .single();
+
+        if (!error && data) {
+          localStorage.setItem("serofast_active_shop", JSON.stringify(data));
+          if (shopData.selectedProducts?.length) {
+            await linkProductsToShop(data.id, shopData.selectedProducts);
+          }
+          return data;
+        }
       }
     } catch {
       // Graceful fallback
@@ -677,3 +708,215 @@ export async function updateOwnerUpiId(ownerId, upiId) {
     }
   } catch {}
 }
+
+/* ── Realtime Role-Based Notifications (User, Shop Owner, Admin) ── */
+
+export async function fetchNotifications({ role = "shop_owner", recipientId = null, shopId = null }) {
+  if (supabase) {
+    try {
+      let query = supabase
+        .from("notifications")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      // Filter by recipient role if column exists
+      try {
+        query = query.or(`recipient_role.eq.${role},recipient_role.is.null`);
+      } catch {}
+
+      if (recipientId) {
+        query = query.or(`user_id.eq.${recipientId},recipient_id.eq.${recipientId},user_id.is.null,recipient_id.is.null`);
+      }
+
+      const { data, error } = await query;
+      if (!error && data && data.length > 0) {
+        return data
+          .filter((n) => {
+            // Filter by role if column exists on the row
+            if (n.recipient_role && n.recipient_role !== role) return false;
+            // Filter by recipient if specific
+            if (n.user_id && recipientId && n.user_id !== recipientId && n.user_id !== "all") return false;
+            if (n.recipient_id && recipientId && n.recipient_id !== recipientId && n.recipient_id !== "all") return false;
+            if (n.shop_id && shopId && n.shop_id !== shopId) return false;
+            return true;
+          })
+          .map((n) => ({
+            id: n.id,
+            title: n.title || "Notification",
+            message: n.body || n.message || "",
+            time: formatNotificationTime(n.created_at),
+            date: new Date(n.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+            type: (n.type || "system").toLowerCase(),
+            unread: n.is_read !== undefined ? !n.is_read : true,
+            actionLink: n.action_route || n.action_link || "",
+            actionLabel: n.action_label || (n.action_route ? "View Details" : "View"),
+            details: n.details || {},
+            rawCreatedAt: n.created_at,
+          }));
+      }
+    } catch {
+      // Graceful fallback
+    }
+  }
+
+  return [];
+}
+
+export async function sendNotification({
+  recipient_role = "shop_owner",
+  recipient_id = null,
+  user_id = null,
+  shop_id = null,
+  title,
+  body = null,
+  message = null,
+  type = "system",
+  action_route = null,
+  action_link = null,
+  action_label = "View",
+  details = {},
+}) {
+  const finalMessage = body || message || "";
+  const finalAction = action_route || action_link || "";
+  const targetUser = user_id || recipient_id || "all";
+
+  const payload = {
+    user_id: targetUser,
+    recipient_id: targetUser,
+    recipient_role,
+    shop_id: shop_id && isValidUuid(shop_id) ? shop_id : null,
+    title,
+    body: finalMessage,
+    message: finalMessage,
+    type: type.toUpperCase(),
+    action_route: finalAction,
+    action_link: finalAction,
+    action_label,
+    details,
+    is_read: false,
+    created_at: new Date().toISOString(),
+  };
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("notifications")
+        .insert([payload])
+        .select()
+        .single();
+      if (!error && data) return data;
+    } catch {
+      // Graceful fallback
+    }
+  }
+
+  return payload;
+}
+
+export async function markNotificationAsReadInSupabase(notificationId) {
+  if (supabase && notificationId && isValidUuid(notificationId)) {
+    try {
+      await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("id", notificationId);
+    } catch {}
+  }
+}
+
+export async function markAllNotificationsAsReadInSupabase({ role = "shop_owner", recipientId = null, shopId = null }) {
+  if (supabase) {
+    try {
+      let query = supabase
+        .from("notifications")
+        .update({ is_read: true });
+
+      if (recipientId) {
+        query = query.or(`user_id.eq.${recipientId},recipient_id.eq.${recipientId}`);
+      }
+
+      await query;
+    } catch {}
+  }
+}
+
+export async function deleteNotificationFromSupabase(notificationId) {
+  if (supabase && notificationId && isValidUuid(notificationId)) {
+    try {
+      await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", notificationId);
+    } catch {}
+  }
+}
+
+export function subscribeToRealtimeNotifications({ role = "shop_owner", recipientId = null, shopId = null, onNotification }) {
+  if (!supabase) return () => {};
+
+  try {
+    const channelName = `realtime_notifs_${role}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+        },
+        (payload) => {
+          const newRow = payload.new;
+          if (!newRow) return;
+
+          // Check if notification is intended for this role
+          if (newRow.recipient_role && newRow.recipient_role !== role) return;
+
+          // Check recipient filtering
+          const targetId = newRow.user_id || newRow.recipient_id;
+          if (targetId && targetId !== "all" && recipientId && targetId !== recipientId) {
+            return;
+          }
+          if (newRow.shop_id && shopId && newRow.shop_id !== shopId) {
+            return;
+          }
+
+          const formatted = {
+            id: newRow.id,
+            title: newRow.title || "Notification",
+            message: newRow.body || newRow.message || "",
+            time: "Just now",
+            date: new Date(newRow.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+            type: (newRow.type || "system").toLowerCase(),
+            unread: newRow.is_read !== undefined ? !newRow.is_read : true,
+            actionLink: newRow.action_route || newRow.action_link || "",
+            actionLabel: newRow.action_label || (newRow.action_route ? "View Details" : "View"),
+            details: newRow.details || {},
+            rawCreatedAt: newRow.created_at,
+          };
+
+          if (onNotification) onNotification(formatted);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch {
+    return () => {};
+  }
+}
+
+function formatNotificationTime(dateStr) {
+  if (!dateStr) return "Recently";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / (1000 * 60));
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+

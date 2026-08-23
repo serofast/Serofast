@@ -16,10 +16,12 @@ import {
 import ShopOwnerBottomNav from "./ShopOwnerBottomNav";
 import { Logo } from "../reusable";
 
-import { fetchShopDetails } from "../../lib/supabase";
+import { fetchShopDetails, fetchShopOrders, fetchNotifications } from "../../lib/supabase";
 
 export default function ShopOwnerLayout() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState(0);
   const navigate = useNavigate();
 
   const [activeShop, setActiveShop] = useState(() => {
@@ -44,8 +46,9 @@ export default function ShopOwnerLayout() {
     const syncShopState = async () => {
       try {
         const storedShop = localStorage.getItem("serofast_active_shop");
-        if (storedShop) {
-          setActiveShop(JSON.parse(storedShop));
+        let shopObj = storedShop ? JSON.parse(storedShop) : null;
+        if (shopObj) {
+          setActiveShop(shopObj);
         }
 
         const storedOwner = localStorage.getItem("serofast_current_owner");
@@ -53,13 +56,33 @@ export default function ShopOwnerLayout() {
         if (ownerObj) setCurrentOwner(ownerObj);
 
         // If owner is present but activeShop is not loaded, attempt to re-hydrate from Supabase
-        if (ownerObj?.id && (!storedShop || !activeShop)) {
+        if (ownerObj?.id && (!shopObj || !activeShop)) {
           const { shop } = await fetchShopDetails(null, ownerObj.id);
           if (shop) {
+            shopObj = shop;
             setActiveShop(shop);
             localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
           }
         }
+
+        // Fetch live pending orders count (only show badge when action is needed)
+        if (shopObj?.id) {
+          const orders = await fetchShopOrders(shopObj.id);
+          const pending = orders.filter((o) => {
+            const st = String(o.status || "").toLowerCase();
+            return st === "pending" || st === "needs shipping" || st === "awaiting shipping";
+          }).length;
+          setPendingOrdersCount(pending);
+        }
+
+        // Fetch live unread notifications count
+        const notifs = await fetchNotifications({
+          role: "shop_owner",
+          recipientId: ownerObj?.id,
+          shopId: shopObj?.id,
+        });
+        const unread = notifs.filter((n) => n.unread).length;
+        setUnreadNotifsCount(unread);
       } catch (e) {
         console.warn("Storage/Shop sync error", e);
       }
@@ -79,7 +102,12 @@ export default function ShopOwnerLayout() {
   const navItems = [
     { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
     { label: "Products", path: "/shop-owner/inventory", icon: Package },
-    { label: "Orders", path: "/shop-owner/orders", icon: ShoppingBag, badge: hasShop ? "3" : null },
+    {
+      label: "Orders",
+      path: "/shop-owner/orders",
+      icon: ShoppingBag,
+      badge: pendingOrdersCount > 0 ? String(pendingOrdersCount) : null,
+    },
     { label: "Payouts", path: "/shop-owner/payouts", icon: CreditCard },
     { label: "Settings", path: "/shop-owner/settings", icon: Settings },
   ];
@@ -111,9 +139,9 @@ export default function ShopOwnerLayout() {
             title="Notifications"
           >
             <Bell size={18} className="text-slate-700" />
-            {hasShop && (
-              <span className="absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white">
-                2
+            {unreadNotifsCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white shadow-xs">
+                {unreadNotifsCount}
               </span>
             )}
           </Link>
@@ -256,7 +284,7 @@ export default function ShopOwnerLayout() {
         </main>
       </div>
 
-      <ShopOwnerBottomNav />
+      <ShopOwnerBottomNav pendingOrdersCount={pendingOrdersCount} />
     </div>
   );
 }
