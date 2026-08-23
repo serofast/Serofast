@@ -64,7 +64,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
   }
 
   return (
-    <div className="space-y-7 font-sans max-w-2xl mx-auto">
+    <div className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-amber-600">

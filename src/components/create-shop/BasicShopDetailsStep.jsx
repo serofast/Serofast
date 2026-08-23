@@ -56,12 +56,12 @@ export default function BasicShopDetailsStep({ form, updateForm, onNext }) {
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); if (validate()) onNext(); }}
-      className="space-y-6 max-w-2xl mx-auto"
+      className="space-y-6 w-full max-w-full lg:max-w-5xl mx-auto"
     >
       <AppFormCard
         title="Create Your Campus Shop"
         subtitle="Step 1 of 5: Basic Shop Details"
-        className="max-w-2xl"
+        className="w-full max-w-full lg:max-w-5xl mx-auto"
       >
         <div className="space-y-5">
           {/* Shop Name */}

@@ -18,32 +18,52 @@ CREATE TABLE IF NOT EXISTS public.categories (
 CREATE TABLE IF NOT EXISTS public.shop_owners (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   full_name text NOT NULL,
-  email text NOT NULL UNIQUE,
+  email text NOT NULL,
   phone text NOT NULL,
   category text NOT NULL DEFAULT 'Fashion'::text,
   role text NOT NULL DEFAULT 'shop_owner'::text,
   upi_id text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT shop_owners_pkey PRIMARY KEY (id)
+  user_id uuid NULL,
+  is_shop_created boolean NULL DEFAULT false,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  CONSTRAINT shop_owners_pkey PRIMARY KEY (id),
+  CONSTRAINT shop_owners_email_key UNIQUE (email),
+  CONSTRAINT shop_owners_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS shop_owners_user_id_unique ON public.shop_owners (user_id) WHERE (user_id IS NOT NULL);
+CREATE INDEX IF NOT EXISTS shop_owners_user_id_idx ON public.shop_owners (user_id);
+
 -- 3. SHOPS TABLE
 CREATE TABLE IF NOT EXISTS public.shops (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
+  shop_id text NULL,
   name text NOT NULL,
-  tagline text,
-  description text,
-  address text,
-  cover_url text,
-  avatar_url text,
-  category_id text DEFAULT 'fashion'::text,
-  rating numeric DEFAULT 4.8,
-  created_at timestamp with time zone DEFAULT now(),
-  owner_id uuid,
+  tagline text NULL,
+  description text NULL,
+  address text NOT NULL,
+  cover_url text NULL,
+  avatar_url text NULL,
+  category_id text NULL DEFAULT 'fashion'::text,
+  rating numeric(3, 2) NULL DEFAULT 4.8,
+  owner_id uuid NULL,
+  owner_name text NULL,
+  owner_email text NULL,
+  owner_phone text NULL,
+  status text NOT NULL DEFAULT 'active'::text,
+  setup_progress integer NOT NULL DEFAULT 100,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT shops_pkey PRIMARY KEY (id),
-  CONSTRAINT shops_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.shop_owners(id)
+  CONSTRAINT shops_shop_id_key UNIQUE (shop_id),
+  CONSTRAINT shops_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.shop_owners (id) ON DELETE CASCADE,
+  CONSTRAINT shops_setup_progress_check CHECK (setup_progress >= 0 AND setup_progress <= 100),
+  CONSTRAINT shops_status_check CHECK (status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'active'::text, 'suspended'::text, 'rejected'::text, 'closed'::text]))
 );
-ALTER TABLE public.shops ADD COLUMN IF NOT EXISTS address text;
+
+CREATE INDEX IF NOT EXISTS shops_owner_id_idx ON public.shops USING btree (owner_id);
+CREATE INDEX IF NOT EXISTS shops_status_idx ON public.shops USING btree (status);
 -- 4. WAREHOUSE PRODUCTS TABLE (Admin Catalog)
 CREATE TABLE IF NOT EXISTS public.warehouse_products (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

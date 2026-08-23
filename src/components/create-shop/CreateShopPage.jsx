@@ -21,12 +21,14 @@ const STEP_PATHS = {
 
 const PATH_TO_STEP = {
   "/create-shop": 1,
+  "/create-shop/step-1": 1,
+  "/create-shop/basic": 1,
+  "/create-shop/details": 1,
   "/create-shop/step2": 2,
   "/create-shop/step3": 3,
+  "/create-shop/products": 3,
   "/create-shop/step4": 4,
   "/create-shop/step5": 5,
-  "/create-shop/details": 1,
-  "/create-shop/products": 3,
   "/create-shop/launch": 5,
 };
 
@@ -81,7 +83,7 @@ export default function CreateShopPage({ onClose, onComplete }) {
       <OnboardingHeader onClose={handleOpenExitModal} />
 
       <main className="min-h-[calc(100svh-64px)]">
-        <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:py-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
           <ProgressSteps step={step} />
 
           {step === 1 ? (

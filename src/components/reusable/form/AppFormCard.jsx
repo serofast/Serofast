@@ -7,7 +7,7 @@ import React from "react";
 export default function AppFormCard({ children, className = "", title, subtitle }) {
   return (
     <div
-      className={`w-full max-w-[440px] rounded-[35px] bg-white border border-[#F3E5E5] px-6 py-7 sm:px-8 sm:py-8 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] transition-all duration-300 font-sans font-sansation ${className}`}
+      className={`w-full rounded-[35px] bg-white border border-[#F3E5E5] px-6 py-7 sm:px-8 sm:py-8 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] transition-all duration-300 font-sans font-sansation ${className}`}
     >
       {(title || subtitle) && (
         <div className="text-center pb-4">

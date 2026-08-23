@@ -36,7 +36,7 @@ export default function SellerInfoStep({ form, updateForm, onNext, onBack }) {
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); if (validate()) onNext(); }}
-      className="space-y-7 font-sans max-w-2xl mx-auto"
+      className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto"
     >
       {/* Header */}
       <div className="flex items-center gap-3">

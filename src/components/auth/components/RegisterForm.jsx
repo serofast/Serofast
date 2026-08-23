@@ -55,7 +55,7 @@ export default function RegisterForm() {
       setIsLoading(false);
       setSubmitted(true);
       setTimeout(() => {
-        navigate("/create-shop/step-1");
+        navigate("/shop-owner/dashboard");
       }, 900);
     } catch (err) {
       setIsLoading(false);
@@ -78,7 +78,7 @@ export default function RegisterForm() {
       setIsLoading(false);
       setSubmitted(true);
       setTimeout(() => {
-        navigate("/create-shop/step-1");
+        navigate("/shop-owner/dashboard");
       }, 900);
     } catch (err) {
       setIsLoading(false);

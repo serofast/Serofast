@@ -166,7 +166,7 @@ export default function ShopOwnerSettingsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="space-y-6 animate-fade-in font-sans font-sansation w-full pb-6">
       <div>
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Store Settings &amp; Profile

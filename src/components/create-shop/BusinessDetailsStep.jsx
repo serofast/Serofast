@@ -20,7 +20,7 @@ export default function BusinessDetailsStep({ form, updateForm, onNext, onBack }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 font-sans max-w-2xl mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-6 font-sans w-full max-w-full lg:max-w-5xl mx-auto">
       <div>
         <span className="text-xs font-bold uppercase tracking-wider text-brandRed">Step 3 of 6</span>
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Business Details</h2>

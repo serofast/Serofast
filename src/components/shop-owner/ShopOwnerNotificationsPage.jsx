@@ -138,7 +138,7 @@ export default function ShopOwnerNotificationsPage() {
   };
 
   return (
-    <div className="w-full max-w-full min-w-0 overflow-x-hidden space-y-6 animate-fade-in font-sans font-sansation max-w-4xl mx-auto pb-6">
+    <div className="w-full max-w-full min-w-0 overflow-x-hidden space-y-6 animate-fade-in font-sans font-sansation pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

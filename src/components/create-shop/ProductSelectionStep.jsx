@@ -30,7 +30,7 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
   const isSelected = (id) => selected.includes(id);
 
   return (
-    <div className="space-y-7 font-sans max-w-2xl mx-auto">
+    <div className="space-y-7 font-sans w-full max-w-full lg:max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brandRed/10 text-brandRed">
@@ -66,7 +66,7 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
             <span className="text-[10px]">Ask the SeroFast admin to add products first.</span>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
             {products.map((p) => {
               const checked = isSelected(p.id);
               const imgUrl = p.image_url || p.image_urls?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";

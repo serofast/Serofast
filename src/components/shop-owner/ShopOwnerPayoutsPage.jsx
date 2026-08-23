@@ -59,7 +59,7 @@ export default function ShopOwnerPayoutsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="space-y-6 animate-fade-in font-sans font-sansation w-full pb-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
