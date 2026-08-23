@@ -78,11 +78,15 @@ export function generateShopSlug(name) {
 
 export async function registerShopOwner(ownerData) {
   const email = ownerData.email?.trim() || "";
+  const inputPhone = ownerData.phone?.trim() || "";
+  const inputName = ownerData.name || ownerData.full_name || "";
+  const inputCategory = ownerData.category || "Fashion";
+
   const payload = {
-    full_name: ownerData.name || ownerData.full_name || "Shop Owner",
+    full_name: inputName || "Shop Owner",
     email,
-    phone: ownerData.phone || "",
-    category: ownerData.category || "Fashion",
+    phone: inputPhone,
+    category: inputCategory,
     role: "shop_owner",
     is_shop_created: false,
     updated_at: new Date().toISOString(),
@@ -102,10 +106,34 @@ export async function registerShopOwner(ownerData) {
         .maybeSingle();
 
       if (existing) {
-        const updatePayload = { ...payload };
-        if (existing.is_shop_created) {
-          updatePayload.is_shop_created = true;
-        }
+        // Cross-check if there is a registered shop with an owner_phone
+        let shopPhone = "";
+        let shopObj = null;
+        try {
+          const { data: shop } = await supabase
+            .from("shops")
+            .select("*")
+            .or(`owner_id.eq.${existing.id},owner_email.eq.${email}`)
+            .maybeSingle();
+          if (shop) {
+            shopObj = shop;
+            if (shop.owner_phone?.trim()) shopPhone = shop.owner_phone.trim();
+          }
+        } catch {}
+
+        const finalPhone = inputPhone || existing.phone?.trim() || shopPhone || "";
+        const finalName = inputName || existing.full_name?.trim() || "Shop Owner";
+        const finalCategory = ownerData.category || existing.category || "Fashion";
+
+        const updatePayload = {
+          full_name: finalName,
+          email,
+          phone: finalPhone,
+          category: finalCategory,
+          is_shop_created: Boolean(existing.is_shop_created || shopObj),
+          updated_at: new Date().toISOString(),
+        };
+
         const { data: updated, error: updateError } = await supabase
           .from("shop_owners")
           .update(updatePayload)
@@ -118,6 +146,22 @@ export async function registerShopOwner(ownerData) {
           return updated;
         }
       } else {
+        // If creating new owner, check if an existing shop has owner_phone
+        try {
+          const { data: shop } = await supabase
+            .from("shops")
+            .select("*")
+            .eq("owner_email", email)
+            .maybeSingle();
+
+          if (shop) {
+            payload.is_shop_created = true;
+            if (shop.owner_phone?.trim() && !payload.phone) {
+              payload.phone = shop.owner_phone.trim();
+            }
+          }
+        } catch {}
+
         const { data: created, error: createError } = await supabase
           .from("shop_owners")
           .insert([payload])
@@ -179,37 +223,65 @@ export async function loginShopOwner(credentials) {
 
         const hasShop = Boolean(shop);
 
-        // Auto-heal missing owner_id on shop if found by email
-        if (shop && !shop.owner_id && owner.id) {
-          try {
-            await supabase
-              .from("shops")
-              .update({
-                owner_id: owner.id,
-                owner_name: owner.full_name || shop.owner_name,
-                owner_email: owner.email || shop.owner_email,
-                owner_phone: owner.phone || shop.owner_phone,
-              })
-              .eq("id", shop.id);
-            shop.owner_id = owner.id;
-          } catch {}
+        // Bidirectional Auto-Heal for phone number
+        const effectivePhone = owner.phone?.trim() || shop?.owner_phone?.trim() || "";
+
+        let ownerUpdated = false;
+        const ownerUpdatePayload = {};
+
+        if (hasShop && !owner.is_shop_created) {
+          ownerUpdatePayload.is_shop_created = true;
+          ownerUpdated = true;
         }
 
-        // Auto-heal is_shop_created flag on owner if shop exists
-        if (hasShop && !owner.is_shop_created) {
+        if (effectivePhone && !owner.phone?.trim()) {
+          ownerUpdatePayload.phone = effectivePhone;
+          owner.phone = effectivePhone;
+          ownerUpdated = true;
+        }
+
+        if (ownerUpdated) {
           try {
             await supabase
               .from("shop_owners")
-              .update({ is_shop_created: true })
+              .update(ownerUpdatePayload)
               .eq("id", owner.id);
           } catch {}
         }
 
-        const ownerWithStatus = { ...owner, is_shop_created: hasShop || Boolean(owner.is_shop_created) };
+        if (shop) {
+          const shopUpdatePayload = {};
+          if (!shop.owner_id && owner.id) shopUpdatePayload.owner_id = owner.id;
+          if (!shop.owner_name && owner.full_name) shopUpdatePayload.owner_name = owner.full_name;
+          if (!shop.owner_email && owner.email) shopUpdatePayload.owner_email = owner.email;
+          if (effectivePhone && !shop.owner_phone?.trim()) {
+            shopUpdatePayload.owner_phone = effectivePhone;
+            shop.owner_phone = effectivePhone;
+          }
+
+          if (Object.keys(shopUpdatePayload).length > 0) {
+            try {
+              await supabase
+                .from("shops")
+                .update(shopUpdatePayload)
+                .eq("id", shop.id);
+              if (shopUpdatePayload.owner_id) shop.owner_id = owner.id;
+            } catch {}
+          }
+        }
+
+        const ownerWithStatus = {
+          ...owner,
+          phone: effectivePhone || owner.phone || "",
+          is_shop_created: hasShop || Boolean(owner.is_shop_created),
+        };
 
         localStorage.setItem("serofast_current_owner", JSON.stringify(ownerWithStatus));
 
         if (hasShop && shop) {
+          if (effectivePhone && !shop.owner_phone) {
+            shop.owner_phone = effectivePhone;
+          }
           localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
           return { owner: ownerWithStatus, shop };
         }
@@ -228,6 +300,14 @@ export async function loginShopOwner(credentials) {
     if (storedOwner) owner = JSON.parse(storedOwner);
     const storedShop = localStorage.getItem("serofast_active_shop");
     if (storedShop) shop = JSON.parse(storedShop);
+
+    if (owner && shop) {
+      const effectivePhone = owner.phone?.trim() || shop.owner_phone?.trim() || "";
+      if (effectivePhone) {
+        if (!owner.phone) owner.phone = effectivePhone;
+        if (!shop.owner_phone) shop.owner_phone = effectivePhone;
+      }
+    }
   } catch {}
 
   return { owner, shop };
@@ -248,6 +328,24 @@ export async function fetchOwnerProfile() {
         .maybeSingle();
 
       if (data) {
+        // Auto-heal phone from shops table if data.phone is empty
+        if (!data.phone?.trim()) {
+          const { data: shop } = await supabase
+            .from("shops")
+            .select("owner_phone")
+            .or(`owner_id.eq.${data.id},owner_email.eq.${data.email}`)
+            .maybeSingle();
+
+          if (shop?.owner_phone?.trim()) {
+            data.phone = shop.owner_phone.trim();
+            try {
+              await supabase
+                .from("shop_owners")
+                .update({ phone: data.phone })
+                .eq("id", data.id);
+            } catch {}
+          }
+        }
         localStorage.setItem("serofast_current_owner", JSON.stringify(data));
         return data;
       }
@@ -554,6 +652,14 @@ export async function fetchShopDetails(shopId, ownerId) {
     } catch {}
   }
 
+  const effectivePhone = ownerData?.phone?.trim() || shopData?.owner_phone?.trim() || "";
+  if (ownerData && effectivePhone && !ownerData.phone?.trim()) {
+    ownerData.phone = effectivePhone;
+  }
+  if (shopData && effectivePhone && !shopData.owner_phone?.trim()) {
+    shopData.owner_phone = effectivePhone;
+  }
+
   return { shop: shopData, owner: ownerData };
 }
 
@@ -574,7 +680,10 @@ export async function updateShopDetails(shopId, ownerId, rawShopPayload, rawOwne
         if (rawShopPayload.category_id !== undefined) cleanShopPayload.category_id = rawShopPayload.category_id;
         if (rawShopPayload.owner_name !== undefined) cleanShopPayload.owner_name = rawShopPayload.owner_name;
         if (rawShopPayload.owner_email !== undefined) cleanShopPayload.owner_email = rawShopPayload.owner_email;
-        if (rawShopPayload.owner_phone !== undefined) cleanShopPayload.owner_phone = rawShopPayload.owner_phone;
+        if (rawShopPayload.owner_phone !== undefined && rawShopPayload.owner_phone !== null) {
+          const p = String(rawShopPayload.owner_phone).trim();
+          if (p) cleanShopPayload.owner_phone = p;
+        }
 
         await supabase.from("shops").update(cleanShopPayload).eq("id", shopId);
       }
@@ -583,7 +692,10 @@ export async function updateShopDetails(shopId, ownerId, rawShopPayload, rawOwne
         const cleanOwnerPayload = { updated_at: new Date().toISOString() };
         if (rawOwnerPayload.full_name !== undefined) cleanOwnerPayload.full_name = rawOwnerPayload.full_name;
         if (rawOwnerPayload.email !== undefined) cleanOwnerPayload.email = rawOwnerPayload.email;
-        if (rawOwnerPayload.phone !== undefined) cleanOwnerPayload.phone = rawOwnerPayload.phone;
+        if (rawOwnerPayload.phone !== undefined && rawOwnerPayload.phone !== null) {
+          const p = String(rawOwnerPayload.phone).trim();
+          if (p) cleanOwnerPayload.phone = p;
+        }
         if (rawOwnerPayload.category !== undefined) cleanOwnerPayload.category = rawOwnerPayload.category;
 
         await supabase.from("shop_owners").update(cleanOwnerPayload).eq("id", ownerId);

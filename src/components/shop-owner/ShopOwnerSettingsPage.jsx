@@ -89,8 +89,10 @@ export default function ShopOwnerSettingsPage() {
         if (owner) {
           setOwnerName(owner.full_name || owner.name || owner.ownerName || "");
           setEmail(owner.email || "");
-          setPhone(owner.phone || "");
+          setPhone(owner.phone || shop?.owner_phone || "");
           if (!category) setCategory(owner.category || "Fashion");
+        } else if (shop) {
+          setPhone(shop.owner_phone || "");
         }
       } finally {
         setLoading(false);
@@ -123,6 +125,8 @@ export default function ShopOwnerSettingsPage() {
       }
     }
 
+    const effectivePhone = phone?.trim() || "";
+
     const shopPayload = {
       name: storeName,
       tagline,
@@ -137,13 +141,14 @@ export default function ShopOwnerSettingsPage() {
       avatar_url: finalLogoUrl,
       cover_url: finalCoverUrl,
     };
+    if (effectivePhone) shopPayload.owner_phone = effectivePhone;
 
     const ownerPayload = {
       full_name: ownerName,
       email,
-      phone,
       category,
     };
+    if (effectivePhone) ownerPayload.phone = effectivePhone;
 
     await updateShopDetails(activeShopId, activeOwnerId, shopPayload, ownerPayload);
 
