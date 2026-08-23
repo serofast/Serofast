@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, Eye, PackageCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, BulkActionBar, ConfirmDialog, FilterBar, PageHeader, StatGrid, StatusBadge, StatusCard, Toast } from "../../shared/ui";
@@ -6,13 +6,15 @@ import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { useOrders } from "../hooks/useOrders";
 import { ORDER_STATUSES, orderService } from "../services/orderService";
+import { fetchAdminOrders, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 const inputClass = "h-11 min-w-0 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs outline-none focus:border-brandRed";
 
 export default function OrdersPage() {
   const navigate = useNavigate();
-  const { orders } = useOrders();
+  const { orders: localOrders } = useOrders();
+  const [dbOrders, setDbOrders] = useState([]);
   const [payment, setPayment] = useState("");
   const [shop, setShop] = useState("");
   const [minAmount, setMinAmount] = useState("");
@@ -21,12 +23,45 @@ export default function OrdersPage() {
   const [dateTo, setDateTo] = useState("");
   const [pendingBulk, setPendingBulk] = useState(null);
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    async function loadOrders() {
+      const data = await fetchAdminOrders();
+      if (data) {
+        const mapped = data.map((o) => ({
+          id: o.order_number || o.id,
+          customerName: o.user_id ? "Customer " + o.user_id.slice(0, 6) : "Guest Customer",
+          customerEmail: o.customer_phone ? o.customer_phone : "customer@serofast.com",
+          shopName: o.shops?.name || "SeroFast Store",
+          itemsCount: 1,
+          amount: Number(o.total_amount) || 0,
+          paymentStatus: o.payment_status || "Pending",
+          status: o.order_status || o.status || "Pending",
+          createdAt: o.created_at || new Date().toISOString(),
+          lines: [],
+        }));
+        setDbOrders(mapped);
+      }
+    }
+
+    loadOrders();
+    const unsubscribe = subscribeToAdminTableChanges("orders", () => {
+      loadOrders();
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const orders = useMemo(() => {
+    return [...dbOrders, ...localOrders];
+  }, [dbOrders, localOrders]);
+
   const shops = [...new Set(orders.map((order) => order.shopName))];
   const payments = [...new Set(orders.map((order) => order.paymentStatus))];
   const rows = useMemo(() => orders.filter((order) => {
     const created = new Date(order.createdAt);
     return (!payment || order.paymentStatus === payment) && (!shop || order.shopName === shop) && (!minAmount || order.amount >= Number(minAmount)) && (!maxAmount || order.amount <= Number(maxAmount)) && (!dateFrom || created >= new Date(`${dateFrom}T00:00:00`)) && (!dateTo || created <= new Date(`${dateTo}T23:59:59`));
-  }).map((order) => ({ ...order, customer: order.customerName, shop: order.shopName, items: order.itemsCount, amountDisplay: currency.format(order.amount), payment: order.paymentStatus, date: new Date(order.createdAt).toLocaleString("en-IN"), searchText: [order.id, order.customerName, order.customerEmail, order.shopName, ...order.lines.flatMap((line) => [line.productName, line.sku])].join(" ") })), [dateFrom, dateTo, maxAmount, minAmount, orders, payment, shop]);
+  }).map((order) => ({ ...order, customer: order.customerName, shop: order.shopName, items: order.itemsCount, amountDisplay: currency.format(order.amount), payment: order.paymentStatus, date: new Date(order.createdAt).toLocaleString("en-IN"), searchText: [order.id, order.customerName, order.customerEmail, order.shopName, ...((order.lines || []).flatMap((line) => [line.productName, line.sku]))].join(" ") })), [dateFrom, dateTo, maxAmount, minAmount, orders, payment, shop]);
   const resource = useResourceList(rows);
 
   const columns = [

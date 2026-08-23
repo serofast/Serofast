@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   Card,
@@ -8,17 +8,49 @@ import {
   Tabs,
   Toast,
 } from "../../shared/ui";
-import { customers } from "../../shared/adminData";
+import { fetchAdminCustomerDetails } from "../../../../lib/supabase";
 
 const tabs = ["Overview", "Orders", "Returns", "Reviews", "Wishlist", "Addresses", "Support", "Activity"];
 
 export default function CustomerDetailsPage() {
   const { customerId } = useParams();
-  const source = customers.find((item) => item.id === customerId) ?? customers[0];
-  const [customer, setCustomer] = useState(source);
+  const [customer, setCustomer] = useState({
+    id: customerId,
+    name: "Customer Profile",
+    email: "",
+    phone: "",
+    orders: 0,
+    spent: "₹0",
+    avgOrder: "₹0",
+    returns: 0,
+    status: "Active",
+    joined: "Recently",
+  });
   const [activeTab, setActiveTab] = useState("Overview");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    async function loadCustomer() {
+      if (!customerId) return;
+      const data = await fetchAdminCustomerDetails(customerId);
+      if (data) {
+        setCustomer({
+          id: data.id,
+          name: data.full_name || "Registered Customer",
+          email: data.email || "",
+          phone: data.phone || "",
+          orders: data.orders?.length || 0,
+          spent: `₹${(data.orders || []).reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0).toLocaleString("en-IN")}`,
+          avgOrder: "₹0",
+          returns: 0,
+          status: "Active",
+          joined: new Date(data.created_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
+        });
+      }
+    }
+    loadCustomer();
+  }, [customerId]);
 
   function confirmStatus() {
     setCustomer((current) => ({ ...current, status: pendingStatus }));

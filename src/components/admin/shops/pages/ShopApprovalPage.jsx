@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Check, FileCheck2, MessageSquareWarning, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -10,15 +10,42 @@ import {
   StatusBadge,
   Toast,
 } from "../../shared/ui";
-import { shopApprovals } from "../../shared/adminData";
+import { fetchAdminShops, updateShopStatusInSupabase, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 export default function ShopApprovalPage() {
-  const [rows, setRows] = useState(shopApprovals);
+  const [rows, setRows] = useState([]);
   const [pendingAction, setPendingAction] = useState(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function loadShops() {
+      const dbShops = await fetchAdminShops();
+      if (dbShops) {
+        const pending = dbShops
+          .filter((s) => s.status === "pending_review" || s.status === "draft" || s.status === "pending")
+          .map((s) => ({
+            id: s.id,
+            name: s.name || "Untitled Shop",
+            owner: s.owner_name || s.shop_owners?.full_name || "Shop Owner",
+            category: s.category_id || "Fashion",
+            verification: "Business & Bank submitted",
+            submitted: new Date(s.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+            status: s.status,
+          }));
+        setRows(pending);
+      }
+    }
+
+    loadShops();
+    const unsubscribe = subscribeToAdminTableChanges("shops", () => {
+      loadShops();
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const stats = useMemo(
     () => [
@@ -37,11 +64,14 @@ export default function ShopApprovalPage() {
     setPendingAction({ shop, status });
   }
 
-  function confirmAction() {
+  async function confirmAction() {
     if (pendingAction.status !== "Active" && !reason.trim()) {
       setReasonError("Explain why this application cannot be approved yet.");
       return;
     }
+
+    const newStatus = pendingAction.status === "Active" ? "active" : "rejected";
+    await updateShopStatusInSupabase(pendingAction.shop.id, newStatus);
 
     setRows((current) => current.filter((item) => item.id !== pendingAction.shop.id));
     setToast(

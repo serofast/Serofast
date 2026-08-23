@@ -1019,3 +1019,263 @@ function formatNotificationTime(dateStr) {
   return `${days}d ago`;
 }
 
+/* ── Admin Portal Supabase API Integration ────────────────── */
+
+export async function fetchAdminShops() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("shops")
+        .select("*, shop_owners(*)")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminShopOwners() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("shop_owners")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminWarehouseProducts() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("warehouse_products")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminOrders() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, shops(name, avatar_url)")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminProfiles() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminCategories() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function updateShopStatusInSupabase(shopId, status) {
+  if (supabase && shopId) {
+    try {
+      const { data, error } = await supabase
+        .from("shops")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", shopId)
+        .select()
+        .single();
+
+      if (!error && data) return data;
+    } catch {}
+  }
+  return null;
+}
+
+export async function fetchAdminOverviewStats() {
+  let shops = [];
+  let owners = [];
+  let orders = [];
+  let products = [];
+  let profiles = [];
+
+  if (supabase) {
+    try {
+      const [shopsRes, ownersRes, ordersRes, productsRes, profilesRes] = await Promise.all([
+        supabase.from("shops").select("*"),
+        supabase.from("shop_owners").select("*"),
+        supabase.from("orders").select("*"),
+        supabase.from("warehouse_products").select("*"),
+        supabase.from("profiles").select("*"),
+      ]);
+
+      if (shopsRes.data) shops = shopsRes.data;
+      if (ownersRes.data) owners = ownersRes.data;
+      if (ordersRes.data) orders = ordersRes.data;
+      if (productsRes.data) products = productsRes.data;
+      if (profilesRes.data) profiles = profilesRes.data;
+    } catch {}
+  }
+
+  const activeShops = shops.filter((s) => s.status === "active").length;
+  const pendingShops = shops.filter((s) => s.status === "pending_review" || s.status === "draft").length;
+  const totalGMV = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+  const pendingOrders = orders.filter((o) => o.order_status === "PENDING" || o.status === "Pending").length;
+
+  return {
+    totalShops: shops.length,
+    activeShops,
+    pendingShops,
+    totalMerchants: owners.length,
+    totalOrders: orders.length,
+    pendingOrders,
+    totalProducts: products.length,
+    totalCustomers: profiles.length,
+    totalGMV,
+    shops,
+    owners,
+    orders,
+    products,
+    profiles,
+  };
+}
+
+export async function fetchAdminCoupons() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("coupons")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminBanners() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("banners")
+        .select("*")
+        .order("sort_order", { ascending: true });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminSupportTickets() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*, profiles(full_name, email)")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminReviews() {
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("*, profiles(full_name, email), shops(name)")
+        .order("created_at", { ascending: false });
+
+      if (!error && data?.length) return data;
+    } catch {}
+  }
+  return [];
+}
+
+export async function fetchAdminShopDetails(shopId) {
+  if (supabase && shopId) {
+    try {
+      const { data, error } = await supabase
+        .from("shops")
+        .select("*, shop_owners(*)")
+        .eq("id", shopId)
+        .single();
+
+      if (!error && data) return data;
+    } catch {}
+  }
+  return null;
+}
+
+export async function fetchAdminCustomerDetails(customerId) {
+  if (supabase && customerId) {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*, orders(*)")
+        .eq("id", customerId)
+        .single();
+
+      if (!error && data) return data;
+    } catch {}
+  }
+  return null;
+}
+
+export function subscribeToAdminTableChanges(tableName, onChangeCallback) {
+  if (!supabase || !tableName) return () => {};
+
+  try {
+    const channelName = `admin_realtime_${tableName}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: tableName },
+        (payload) => {
+          if (onChangeCallback) onChangeCallback(payload);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch {
+    return () => {};
+  }
+}
+

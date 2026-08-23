@@ -17,6 +17,7 @@ import { useResourceList } from "../../shared/resource/useResourceList";
 import { useProducts } from "../hooks/useProducts";
 import { productService } from "../services/productService";
 import { discountPercentage } from "../validation/productValidation";
+import { fetchAdminWarehouseProducts, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 const currency = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -24,11 +25,51 @@ export default function ProductsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { products, categories } = useProducts();
+  const [dbProducts, setDbProducts] = useState([]);
   const [categoryId, setCategoryId] = useState("");
   const [pendingArchive, setPendingArchive] = useState([]);
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    async function loadWarehouse() {
+      const data = await fetchAdminWarehouseProducts();
+      if (data) {
+        const mapped = data.map((p) => ({
+          id: p.id,
+          name: p.title || p.name || "Warehouse Item",
+          sku: p.sku || `SKU-${p.id.slice(0, 6)}`,
+          shopName: "Central Warehouse",
+          categoryName: p.category || "General",
+          price: Number(p.retail_price || p.base_price) || 299,
+          discountPrice: null,
+          stock: Number(p.warehouse_stock) || 50,
+          lowStockThreshold: 10,
+          status: "Active",
+          approvalStatus: "Approved",
+          featured: false,
+          tags: [p.category?.toLowerCase() || "warehouse"],
+          images: [{ url: p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80" }],
+          variants: [],
+          createdAt: p.created_at || new Date().toISOString(),
+        }));
+        setDbProducts(mapped);
+      }
+    }
+
+    loadWarehouse();
+    const unsubscribe = subscribeToAdminTableChanges("warehouse_products", () => {
+      loadWarehouse();
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const allProductsList = useMemo(() => {
+    return [...dbProducts, ...products];
+  }, [dbProducts, products]);
+
   const rows = useMemo(
-    () => products
+    () => allProductsList
       .filter((product) => !categoryId || product.categoryId === categoryId)
       .map((product) => ({
         ...product,
@@ -39,9 +80,9 @@ export default function ProductsPage() {
         approval: product.approvalStatus,
         inventoryStatus: product.stock === 0 ? "Out of Stock" : product.stock <= product.lowStockThreshold ? "Low Stock" : "In Stock",
         created: new Date(product.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-        searchText: [product.name, product.sku, product.shopName, product.categoryName, ...product.tags, ...product.variants.map((variant) => variant.sku)].join(" "),
+        searchText: [product.name, product.sku, product.shopName, product.categoryName, ...(product.tags || []), ...((product.variants || []).map((variant) => variant.sku))].join(" "),
       })),
-    [categoryId, products],
+    [categoryId, allProductsList],
   );
   const resource = useResourceList(rows);
 
