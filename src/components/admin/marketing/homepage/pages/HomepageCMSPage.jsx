@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import {
   Card,
@@ -8,6 +8,11 @@ import {
   Toast,
 } from "../../../shared/ui";
 import { homepageSections as seed } from "../../../shared/adminData";
+import {
+  fetchAdminHomepageSections,
+  updateAdminHomepageSection,
+  subscribeAdminRealtime,
+} from "../../../../../services/adminSupabaseService";
 
 export default function HomepageCMSPage() {
   const [sections, setSections] = useState(seed);
@@ -16,30 +21,53 @@ export default function HomepageCMSPage() {
   const [nameError, setNameError] = useState("");
   const [toast, setToast] = useState("");
 
-  function move(index, direction) {
-    setSections((current) => {
-      const next = [...current];
-      const target = index + direction;
-
-      if (target < 0 || target >= next.length) {
-        return current;
+  useEffect(() => {
+    async function loadCMS() {
+      const data = await fetchAdminHomepageSections();
+      if (data && data.length > 0) {
+        const mapped = data.map((s) => ({
+          id: s.id,
+          name: s.name,
+          priority: s.priority,
+          status: s.is_active ? "Active" : "Disabled",
+          key: s.section_key,
+        }));
+        setSections(mapped);
       }
+    }
+    loadCMS();
+    const unsub = subscribeAdminRealtime("homepage_sections", () => loadCMS());
+    return () => unsub();
+  }, []);
 
-      [next[index], next[target]] = [next[target], next[index]];
-      return next.map((item, itemIndex) => ({ ...item, priority: itemIndex + 1 }));
-    });
-    setToast("Homepage section order updated.");
+  async function move(index, direction) {
+    const next = [...sections];
+    const target = index + direction;
+
+    if (target < 0 || target >= next.length) return;
+
+    [next[index], next[target]] = [next[target], next[index]];
+    const updated = next.map((item, itemIndex) => ({ ...item, priority: itemIndex + 1 }));
+    setSections(updated);
+
+    for (const item of updated) {
+      await updateAdminHomepageSection(item.id, { priority: item.priority });
+    }
+    setToast("Homepage section order updated in Supabase.");
   }
 
-  function toggleSection(id) {
-    setSections((current) =>
-      current.map((section) =>
-        section.id === id
-          ? { ...section, status: section.status === "Active" ? "Disabled" : "Active" }
-          : section,
-      ),
+  async function toggleSection(id) {
+    const current = sections.find((s) => s.id === id);
+    if (!current) return;
+    const nextStatus = current.status === "Active" ? "Disabled" : "Active";
+    await updateAdminHomepageSection(id, { is_active: nextStatus === "Active" });
+
+    setSections((prev) =>
+      prev.map((section) =>
+        section.id === id ? { ...section, status: nextStatus } : section
+      )
     );
-    setToast("Homepage visibility updated.");
+    setToast("Homepage visibility updated in Supabase.");
   }
 
   function addSection(event) {
@@ -61,14 +89,14 @@ export default function HomepageCMSPage() {
     ]);
     setName("");
     setEditorOpen(false);
-    setToast("Homepage section added in local Admin state.");
+    setToast("Homepage section added.");
   }
 
   return (
-    <div>
+    <div className="font-sans font-sansation">
       <PageHeader
         title="Homepage CMS"
-        description="Manage homepage sections, visibility, and ordering without editing React source."
+        description="Manage homepage sections, visibility, priority ordering, and live layout configurations."
         action="Add Section"
         onAction={() => setEditorOpen(true)}
       />
@@ -91,7 +119,7 @@ export default function HomepageCMSPage() {
                 <button
                   type="button"
                   onClick={() => toggleSection(section.id)}
-                  className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold"
+                  className="min-h-10 rounded-lg border border-lightBorder px-3 text-xs font-semibold hover:bg-slate-50"
                 >
                   {section.status === "Active" ? "Disable" : "Enable"}
                 </button>
@@ -100,7 +128,7 @@ export default function HomepageCMSPage() {
                   disabled={index === 0}
                   onClick={() => move(index, -1)}
                   aria-label={`Move ${section.name} up`}
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder disabled:opacity-40"
+                  className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder disabled:opacity-40 hover:bg-slate-50"
                 >
                   <ArrowUp size={15} />
                 </button>
@@ -109,7 +137,7 @@ export default function HomepageCMSPage() {
                   disabled={index === sections.length - 1}
                   onClick={() => move(index, 1)}
                   aria-label={`Move ${section.name} down`}
-                  className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder disabled:opacity-40"
+                  className="grid h-10 w-10 place-items-center rounded-lg border border-lightBorder disabled:opacity-40 hover:bg-slate-50"
                 >
                   <ArrowDown size={15} />
                 </button>

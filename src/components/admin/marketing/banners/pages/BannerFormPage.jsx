@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 import { banners } from "../../../shared/adminData";
+import { saveAdminBanner } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   title: "",
@@ -82,7 +83,7 @@ export default function BannerFormPage() {
     setErrors((current) => ({ ...current, image: "" }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
     const priority = Number(form.priority);
@@ -99,9 +100,6 @@ export default function BannerFormPage() {
     if (!isValidTarget(form.targetUrl)) {
       nextErrors.targetUrl = "Use a valid https:// URL or an internal /path.";
     }
-    if (!bannerId && !previewUrl) {
-      nextErrors.image = "Select an image for the new banner.";
-    }
     if (!form.start) {
       nextErrors.start = "Start date is required.";
     }
@@ -116,7 +114,25 @@ export default function BannerFormPage() {
       return;
     }
 
-    setToast(bannerId ? "Banner updated." : "Banner created in local Admin state.");
+    try {
+      await saveAdminBanner({
+        id: bannerId,
+        title: form.title,
+        placement: form.placement,
+        target_route: form.targetUrl,
+        priority,
+        status: form.status,
+      });
+
+      setToast(
+        bannerId
+          ? "Banner updated in Supabase."
+          : "Banner created in Supabase."
+      );
+      window.setTimeout(() => navigate("/admin/marketing/banners"), 350);
+    } catch {
+      setToast("Error saving banner to Supabase.");
+    }
   }
 
   return (

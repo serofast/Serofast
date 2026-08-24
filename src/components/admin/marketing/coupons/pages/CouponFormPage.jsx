@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
 import { coupons } from "../../../shared/adminData";
+import { saveAdminCoupon } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   code: "",
@@ -81,7 +82,7 @@ export default function CouponFormPage() {
     setErrors((current) => ({ ...current, [key]: "" }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = validateCoupon(form);
 
@@ -90,7 +91,26 @@ export default function CouponFormPage() {
       return;
     }
 
-    setToast(couponId ? "Coupon updated in local Admin state." : "Coupon created in local Admin state.");
+    try {
+      await saveAdminCoupon({
+        id: couponId,
+        code: form.code,
+        type: form.type,
+        value: form.value,
+        minOrder: form.minOrder,
+        status: form.status,
+        end: form.end,
+      });
+
+      setToast(
+        couponId
+          ? "Coupon successfully updated in Supabase."
+          : "Coupon successfully created in Supabase."
+      );
+      window.setTimeout(() => navigate("/admin/marketing/coupons"), 350);
+    } catch {
+      setToast("Error saving coupon to Supabase.");
+    }
   }
 
   return (

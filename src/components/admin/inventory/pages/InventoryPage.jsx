@@ -106,10 +106,10 @@ export default function InventoryPage() {
     setBulkDraft({ mode: "add", value: "", reason: "" });
   }
 
-  function confirmBulk() {
+  async function confirmBulk() {
     try {
-      inventoryService.bulkUpdate(resource.selectedIds, bulkDraft);
-      setToast(`${resource.selectedIds.length} inventory records updated with movement history.`);
+      await inventoryService.bulkUpdate(resource.selectedIds, bulkDraft);
+      setToast(`${resource.selectedIds.length} inventory records updated in Supabase.`);
       resource.setSelectedIds([]);
       setBulkConfirm(false);
       setBulkDraft(null);
@@ -171,11 +171,11 @@ function StockOperationModal({ operation, onClose, onSuccess }) {
   const current = Number(operation.record.quantity);
   const entered = type === "Adjustment" ? Number(draft.actualCount || current) : Number(draft.quantity || 0);
   const preview = type === "Adjustment" ? entered : current + (["Stock In", "Return"].includes(type) ? entered : -entered);
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
     try {
-      inventoryService.applyOperation({ inventoryId: operation.record.id, type, ...draft });
-      onSuccess(`${type} recorded: ${current} → ${preview}.`);
+      await inventoryService.applyOperation({ inventoryId: operation.record.id, type, ...draft });
+      onSuccess(`${type} recorded in Supabase: ${current} → ${preview}.`);
     } catch (error) { onSuccess(error.message); }
   }
   return <Modal open onClose={onClose} title={type}><form onSubmit={submit} className="space-y-4"><div className="rounded-[20px] bg-[#FAF8F5] p-4 text-xs"><p className="font-medium text-slate-900">{operation.record.productName}</p><p className="mt-1 text-slate-500">{operation.record.sku} · {operation.record.variantLabel} · {operation.record.shopName}</p><p className="mt-3">Current stock: <strong>{current}</strong> · New stock: <strong className={preview < 0 ? "text-brandRed" : "text-slate-900"}>{preview}</strong></p></div>{operation.type !== "Adjustment" && <label className="block"><span className="mb-1.5 block text-xs font-medium">Movement Type</span><AdminSelect value={type} onChange={(value) => setDraft((currentDraft) => ({ ...currentDraft, type: value }))} options={operation.type === "Stock In" ? ["Stock In", "Return"] : ["Stock Out", "Sale", "Damage", "Other"]} ariaLabel="Inventory movement type" /></label>}{type === "Adjustment" ? <label className="block"><span className="mb-1.5 block text-xs font-medium">Actual Count</span><input type="number" min="0" step="1" value={draft.actualCount} onChange={(event) => setDraft((value) => ({ ...value, actualCount: event.target.value }))} className={fieldClass} /></label> : <label className="block"><span className="mb-1.5 block text-xs font-medium">Quantity</span><input type="number" min="1" step="1" value={draft.quantity} onChange={(event) => setDraft((value) => ({ ...value, quantity: event.target.value }))} className={fieldClass} /></label>}<label className="block"><span className="mb-1.5 block text-xs font-medium">Reason</span><input value={draft.reason} onChange={(event) => setDraft((value) => ({ ...value, reason: event.target.value }))} placeholder={["Stock Out", "Sale", "Damage", "Other"].includes(type) ? "Sale, damaged, expired, supplier return, other..." : "Purchase, restock, physical count..."} className={fieldClass} /></label><label className="block"><span className="mb-1.5 block text-xs font-medium">Reference (optional)</span><input value={draft.reference} onChange={(event) => setDraft((value) => ({ ...value, reference: event.target.value }))} className={fieldClass} /></label><div className="flex justify-end gap-2"><button type="button" onClick={onClose} className="h-10 rounded-[30px] border border-[#E5E7EB] px-4 text-xs">Cancel</button><button type="submit" className="h-10 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white">Record {type}</button></div></form></Modal>;

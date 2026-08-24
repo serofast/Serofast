@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, SearchCheck, ShieldBan, ShieldX } from "lucide-react";
 import {
   BulkActionBar,
@@ -14,6 +14,11 @@ import {
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { riskAlerts as seed } from "../../shared/adminData";
+import {
+  fetchAdminRiskAlerts,
+  updateAdminRiskAlertStatus,
+  subscribeAdminRealtime,
+} from "../../../../services/adminSupabaseService";
 
 const columns = [
   { key: "id", label: "Alert ID" },
@@ -29,17 +34,41 @@ const columns = [
 ];
 
 export default function RiskDashboardPage() {
-  const resource = useResourceList(seed);
+  const [rows, setRows] = useState(seed);
+  const resource = useResourceList(rows);
   const [selected, setSelected] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
 
-  function updateAlert(row, status) {
+  useEffect(() => {
+    async function loadAlerts() {
+      const data = await fetchAdminRiskAlerts();
+      if (data && data.length > 0) {
+        const mapped = data.map((a) => ({
+          id: a.id,
+          type: a.type,
+          entity: `${a.entity_type}: ${a.entity_name}`,
+          score: a.score,
+          status: a.status,
+          time: new Date(a.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+        }));
+        setRows(mapped);
+      }
+    }
+    loadAlerts();
+    const unsub = subscribeAdminRealtime("risk_alerts", () => loadAlerts());
+    return () => unsub();
+  }, []);
+
+  async function updateAlert(row, status) {
+    try {
+      await updateAdminRiskAlertStatus(row.id, status);
+    } catch {}
     resource.updateRow(row.id, { status });
     if (selected?.id === row.id) {
       setSelected((current) => ({ ...current, status }));
     }
-    setToast(`Risk alert marked ${status.toLowerCase()}.`);
+    setToast(`Risk alert marked ${status.toLowerCase()} in Supabase.`);
   }
 
   function confirmAction() {

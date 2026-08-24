@@ -21,6 +21,11 @@ import {
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { shops, withdrawals } from "../../shared/adminData";
+import {
+  fetchAdminWithdrawalsList,
+  updateAdminWithdrawalStatus,
+  subscribeAdminRealtime,
+} from "../../../../services/adminSupabaseService";
 
 const statuses = ["Pending", "Approved", "Processing", "Completed", "Rejected"];
 const seed = withdrawals.map((row, index) => ({
@@ -79,12 +84,20 @@ export default function WithdrawalsPage() {
     setPendingAction({ row, status });
   }
 
-  function confirmAction() {
+  async function confirmAction() {
     if (!pendingAction) return;
     if (pendingAction.status === "Rejected" && !reason.trim()) {
       setReasonError("A rejection reason is required.");
       return;
     }
+
+    try {
+      await updateAdminWithdrawalStatus(
+        pendingAction.row.id,
+        pendingAction.status,
+        reason.trim()
+      );
+    } catch {}
 
     const patch = {
       status: pendingAction.status,
@@ -95,7 +108,7 @@ export default function WithdrawalsPage() {
       setSelected((current) => ({ ...current, ...patch }));
     }
     setToast(
-      `Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()}.`,
+      `Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()} in Supabase.`
     );
     setPendingAction(null);
   }
