@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import ResourcePage from '../../../shared/resource/ResourcePage';
+import { coupons as fallbackRows } from '../../../shared/adminData';
 import { fetchAdminCoupons, subscribeToAdminTableChanges } from '../../../../../lib/supabase';
 
 const columns = ['id', 'code', 'type', 'value', 'minOrder', 'usage', 'status', 'expires'].map(key => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1) }));
 
 export default function CouponsPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(fallbackRows);
 
   useEffect(() => {
     async function loadCoupons() {
       const data = await fetchAdminCoupons();
-      if (data) {
+      if (data?.length) {
         const mapped = data.map((c) => ({
           id: c.id,
           code: c.code,
@@ -22,6 +23,8 @@ export default function CouponsPage() {
           expires: c.valid_until ? new Date(c.valid_until).toLocaleDateString('en-IN') : 'No Expiry',
         }));
         setRows(mapped);
+      } else {
+        setRows(fallbackRows);
       }
     }
 

@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import ResourcePage from '../../shared/resource/ResourcePage';
+import { shops as fallbackRows } from '../../shared/adminData';
 import { fetchAdminShops, subscribeToAdminTableChanges } from '../../../../lib/supabase';
 
 const columns = [{ key: 'shop', label: 'Shop' }, { key: 'owner', label: 'Owner' }, { key: 'category', label: 'Category' }, { key: 'products', label: 'Products' }, { key: 'orders', label: 'Orders' }, { key: 'revenue', label: 'Revenue' }, { key: 'rating', label: 'Rating' }, { key: 'status', label: 'Status' }, { key: 'joined', label: 'Joined' }];
 
 export default function ShopsPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(fallbackRows);
 
   useEffect(() => {
     async function loadDbShops() {
       const dbShops = await fetchAdminShops();
-      if (dbShops) {
+      if (dbShops?.length) {
         const mapped = dbShops.map((s) => ({
           id: s.id,
           shop: s.name || 'Untitled Shop',
@@ -24,6 +25,8 @@ export default function ShopsPage() {
           joined: new Date(s.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
         }));
         setRows(mapped);
+      } else {
+        setRows(fallbackRows);
       }
     }
 

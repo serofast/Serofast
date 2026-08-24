@@ -49,7 +49,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadStats() {
       const statsData = await fetchAdminOverviewStats();
-      if (statsData) setDbOverview(statsData);
+      const hasLiveData = statsData && (
+        statsData.totalShops > 0 ||
+        statsData.totalOrders > 0 ||
+        statsData.totalProducts > 0 ||
+        statsData.totalCustomers > 0
+      );
+      setDbOverview(hasLiveData ? statsData : null);
     }
     loadStats();
 
@@ -73,12 +79,6 @@ export default function DashboardPage() {
       if (item.label === "Pending Shop Approvals") return { ...item, value: dbOverview.pendingShops ?? 0 };
       if (item.label === "Total Sales") return { ...item, value: `₹${(dbOverview.totalGMV || 0).toLocaleString("en-IN")}` };
     }
-    if (item.label === "Today's Orders") return { ...item, value: 0 };
-    if (item.label === "Pending Orders") return { ...item, value: 0 };
-    if (item.label === "Active Shops") return { ...item, value: 0 };
-    if (item.label === "Registered Customers") return { ...item, value: 0 };
-    if (item.label === "Pending Shop Approvals") return { ...item, value: 0 };
-    if (item.label === "Total Sales") return { ...item, value: "₹0" };
     return item;
   });
   const maximumSale = Math.max(...salesSeries, 1);

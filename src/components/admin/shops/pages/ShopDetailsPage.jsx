@@ -10,6 +10,7 @@ import {
   Toast,
 } from "../../shared/ui";
 import { fetchAdminShopDetails, updateShopStatusInSupabase } from "../../../../lib/supabase";
+import { shops as shopSeed } from "../../shared/adminData";
 
 const tabs = [
   "Overview",
@@ -26,20 +27,8 @@ const tabs = [
 
 export default function ShopDetailsPage() {
   const { shopId } = useParams();
-  const [shop, setShop] = useState({
-    id: shopId,
-    shop: "Loading Shop...",
-    owner: "Shop Owner",
-    email: "",
-    phone: "",
-    category: "Fashion",
-    products: 0,
-    orders: 0,
-    revenue: "₹0",
-    rating: "4.8",
-    status: "Active",
-    joined: "Recently",
-  });
+  const fallbackShop = shopSeed.find((item) => item.id === shopId) ?? shopSeed[0];
+  const [shop, setShop] = useState(fallbackShop);
   const [activeTab, setActiveTab] = useState("Overview");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [reason, setReason] = useState("");
@@ -68,6 +57,8 @@ export default function ShopDetailsPage() {
           cover_url: data.cover_url,
           avatar_url: data.avatar_url,
         });
+      } else {
+        setShop(shopSeed.find((item) => item.id === shopId) ?? shopSeed[0]);
       }
     }
     loadShop();

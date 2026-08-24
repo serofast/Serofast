@@ -9,23 +9,14 @@ import {
   Toast,
 } from "../../shared/ui";
 import { fetchAdminCustomerDetails } from "../../../../lib/supabase";
+import { customers as customerSeed } from "../../shared/adminData";
 
 const tabs = ["Overview", "Orders", "Returns", "Reviews", "Wishlist", "Addresses", "Support", "Activity"];
 
 export default function CustomerDetailsPage() {
   const { customerId } = useParams();
-  const [customer, setCustomer] = useState({
-    id: customerId,
-    name: "Customer Profile",
-    email: "",
-    phone: "",
-    orders: 0,
-    spent: "₹0",
-    avgOrder: "₹0",
-    returns: 0,
-    status: "Active",
-    joined: "Recently",
-  });
+  const fallbackCustomer = customerSeed.find((item) => item.id === customerId) ?? customerSeed[0];
+  const [customer, setCustomer] = useState(fallbackCustomer);
   const [activeTab, setActiveTab] = useState("Overview");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [toast, setToast] = useState("");
@@ -47,6 +38,8 @@ export default function CustomerDetailsPage() {
           status: "Active",
           joined: new Date(data.created_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
         });
+      } else {
+        setCustomer(customerSeed.find((item) => item.id === customerId) ?? customerSeed[0]);
       }
     }
     loadCustomer();

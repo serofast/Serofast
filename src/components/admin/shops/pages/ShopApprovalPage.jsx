@@ -11,9 +11,22 @@ import {
   Toast,
 } from "../../shared/ui";
 import { fetchAdminShops, updateShopStatusInSupabase, subscribeToAdminTableChanges } from "../../../../lib/supabase";
+import { shops as shopSeed } from "../../shared/adminData";
+
+const fallbackApprovals = shopSeed
+  .filter((shop) => shop.status === "Pending")
+  .map((shop) => ({
+    id: shop.id,
+    name: shop.shop,
+    owner: shop.owner,
+    category: shop.category,
+    verification: "Business & Bank submitted",
+    submitted: shop.joined,
+    status: "Pending",
+  }));
 
 export default function ShopApprovalPage() {
-  const [rows, setRows] = useState([]);
+  const [rows, setRows] = useState(fallbackApprovals);
   const [pendingAction, setPendingAction] = useState(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
@@ -23,7 +36,7 @@ export default function ShopApprovalPage() {
   useEffect(() => {
     async function loadShops() {
       const dbShops = await fetchAdminShops();
-      if (dbShops) {
+      if (dbShops?.length) {
         const pending = dbShops
           .filter((s) => s.status === "pending_review" || s.status === "draft" || s.status === "pending")
           .map((s) => ({
@@ -35,7 +48,9 @@ export default function ShopApprovalPage() {
             submitted: new Date(s.created_at).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
             status: s.status,
           }));
-        setRows(pending);
+        setRows(pending.length ? pending : fallbackApprovals);
+      } else {
+        setRows(fallbackApprovals);
       }
     }
 
