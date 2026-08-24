@@ -13,7 +13,6 @@ import {
 } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
-import { riskAlerts as seed } from "../../shared/adminData";
 import {
   fetchAdminRiskAlerts,
   updateAdminRiskAlertStatus,
@@ -34,27 +33,31 @@ const columns = [
 ];
 
 export default function RiskDashboardPage() {
-  const [rows, setRows] = useState(seed);
+  const [rows, setRows] = useState([]);
   const resource = useResourceList(rows);
   const [selected, setSelected] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    async function loadAlerts() {
+  async function loadAlerts() {
+    try {
       const data = await fetchAdminRiskAlerts();
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map((a) => ({
           id: a.id,
-          type: a.type,
-          entity: `${a.entity_type}: ${a.entity_name}`,
-          score: a.score,
-          status: a.status,
-          time: new Date(a.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+          type: a.type || "Risk Alert",
+          entity: `${a.entity_type || "System"}: ${a.entity_name || "Target"}`,
+          score: a.score || "LOW",
+          status: a.status || "Open",
+          time: new Date(a.created_at || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
         }));
         setRows(mapped);
+        resource.setRows(mapped);
       }
-    }
+    } catch {}
+  }
+
+  useEffect(() => {
     loadAlerts();
     const unsub = subscribeAdminRealtime("risk_alerts", () => loadAlerts());
     return () => unsub();

@@ -46,13 +46,40 @@ const columns = [
 export default function WithdrawalsPage() {
   const navigate = useNavigate();
   const { withdrawalId } = useParams();
-  const resource = useResourceList(seed);
+  const [rows, setRows] = useState([]);
+  const resource = useResourceList(rows);
   const [selected, setSelected] = useState(null);
   const [drawerSection, setDrawerSection] = useState("review");
   const [pendingAction, setPendingAction] = useState(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
+
+  async function loadWithdrawals() {
+    try {
+      const data = await fetchAdminWithdrawalsList();
+      if (Array.isArray(data)) {
+        const mapped = data.map((w, idx) => ({
+          id: w.payout_number || w.id,
+          rawId: w.id,
+          shop: w.shops?.name || "Merchant Shop",
+          owner: w.shop_owners?.full_name || "Shop Owner",
+          amount: `₹${w.amount || 0}`,
+          method: w.payout_method || "UPI",
+          status: w.status || "Pending",
+          requested: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN"),
+          accountDetails: w.account_details || {},
+        }));
+        setRows(mapped);
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    loadWithdrawals();
+    const unsub = subscribeAdminRealtime("withdrawals", () => loadWithdrawals());
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     if (!withdrawalId) return;

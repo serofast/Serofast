@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import ResourcePage from "../../../shared/resource/ResourcePage";
-import { campaigns as seed } from "../../../shared/adminData";
 import {
   fetchAdminCampaigns,
   subscribeAdminRealtime,
@@ -18,12 +17,13 @@ const columns = [
 ].map((key) => ({ key, label: key.charAt(0).toUpperCase() + key.slice(1) }));
 
 export default function CampaignsPage() {
-  const [rows, setRows] = useState(seed);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadCampaigns() {
+  async function loadCampaigns() {
+    try {
       const data = await fetchAdminCampaigns();
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map((c) => ({
           id: c.id,
           name: c.name,
@@ -36,10 +36,16 @@ export default function CampaignsPage() {
         }));
         setRows(mapped);
       } else {
-        setRows(seed);
+        setRows([]);
       }
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadCampaigns();
     const unsub = subscribeAdminRealtime("campaigns", () => loadCampaigns());
     return () => unsub();
@@ -47,13 +53,15 @@ export default function CampaignsPage() {
 
   return (
     <ResourcePage
-      title="Campaigns"
-      description="Plan, launch and monitor marketplace marketing campaigns and seasonal promotional events."
+      title="Marketing Campaigns"
+      description="Live promotional campaigns, student audience targeting, and marketing budgets from Supabase."
       seed={rows}
       columns={columns}
       createLabel="Add New"
       createPath="/admin/marketing/campaigns/new"
       editPath={(row) => `/admin/marketing/campaigns/${encodeURIComponent(row.id)}/edit`}
+      emptyTitle={loading ? "Loading campaigns..." : "No active campaigns found"}
+      emptyDescription="Launch seasonal campaigns and promotional banners for your marketplace."
     />
   );
 }

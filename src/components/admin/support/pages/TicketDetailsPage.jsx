@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import {
-  AdminSelect,
   Card,
   ConfirmDialog,
-  PageHeader,
   StatusBadge,
   Toast,
 } from "../../shared/ui";
-import { supportTickets as fallbackTickets } from "../../shared/adminData";
 import {
   fetchAdminSupportTicketDetails,
   addAdminSupportMessage,
@@ -18,15 +16,13 @@ import {
 
 export default function TicketDetailsPage() {
   const { ticketId } = useParams();
-  const [ticket, setTicket] = useState(
-    fallbackTickets.find((item) => item.id === ticketId) ?? fallbackTickets[0]
-  );
-  const [status, setStatus] = useState(ticket.status || "OPEN");
-  const [assignedTo, setAssignedTo] = useState(ticket.assigned_to || "Unassigned");
+  const navigate = useNavigate();
+  const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState("OPEN");
+  const [assignedTo, setAssignedTo] = useState("Unassigned");
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([
-    { id: 1, author: ticket.requester || "User", body: "Please help me resolve this issue." },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [internalNote, setInternalNote] = useState("");
   const [notes, setNotes] = useState([]);
   const [pendingStatus, setPendingStatus] = useState(null);
@@ -34,36 +30,48 @@ export default function TicketDetailsPage() {
 
   async function loadTicket() {
     if (!ticketId) return;
-    const data = await fetchAdminSupportTicketDetails(ticketId);
-    if (data) {
-      setTicket({
-        id: data.ticket_number || data.id,
-        rawId: data.id,
-        subject: data.subject,
-        requester: data.profiles?.full_name || data.profiles?.email || "Customer",
-        type: data.category,
-        priority: data.priority,
-        status: data.status,
-        updated: new Date(data.updated_at).toLocaleDateString("en-IN"),
-      });
-      setStatus(data.status);
-      setAssignedTo(data.assigned_to || "Unassigned");
-      if (data.support_messages && data.support_messages.length > 0) {
-        const publicMsgs = data.support_messages
-          .filter((m) => !m.is_internal_note)
-          .map((m) => ({
-            id: m.id,
-            author: m.sender_name,
-            body: m.message,
-            time: new Date(m.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
-          }));
-        const internalMsgs = data.support_messages
-          .filter((m) => m.is_internal_note)
-          .map((m) => m.message);
+    setLoading(true);
+    try {
+      const data = await fetchAdminSupportTicketDetails(ticketId);
+      if (data) {
+        setTicket({
+          id: data.ticket_number || data.id,
+          rawId: data.id,
+          subject: data.subject || "Support Inquiry",
+          requester: data.profiles?.full_name || data.profiles?.email || "Customer",
+          type: data.category || "General",
+          priority: data.priority || "MEDIUM",
+          status: data.status || "OPEN",
+          updated: new Date(data.updated_at || data.created_at || Date.now()).toLocaleDateString("en-IN"),
+        });
+        setStatus(data.status || "OPEN");
+        setAssignedTo(data.assigned_to || "Unassigned");
+        if (data.support_messages && data.support_messages.length > 0) {
+          const publicMsgs = data.support_messages
+            .filter((m) => !m.is_internal_note)
+            .map((m) => ({
+              id: m.id,
+              author: m.sender_name,
+              body: m.message,
+              time: new Date(m.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+            }));
+          const internalMsgs = data.support_messages
+            .filter((m) => m.is_internal_note)
+            .map((m) => m.message);
 
-        setMessages(publicMsgs.length > 0 ? publicMsgs : [{ id: 1, author: data.profiles?.full_name || "User", body: data.subject }]);
-        setNotes(internalMsgs);
+          setMessages(publicMsgs.length > 0 ? publicMsgs : [{ id: 1, author: data.profiles?.full_name || "Customer", body: data.subject }]);
+          setNotes(internalMsgs);
+        } else {
+          setMessages([{ id: 1, author: data.profiles?.full_name || "Customer", body: data.subject || "Customer ticket created." }]);
+          setNotes([]);
+        }
+      } else {
+        setTicket(null);
       }
+    } catch {
+      setTicket(null);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -74,45 +82,83 @@ export default function TicketDetailsPage() {
   }, [ticketId]);
 
   async function sendReply() {
-    if (!message.trim()) return;
+    if (!message.trim() || !ticket?.rawId) return;
 
-    if (ticket.rawId) {
+    try {
       await addAdminSupportMessage(ticket.rawId, message.trim(), false);
+      setMessages((current) => [
+        ...current,
+        { id: Date.now(), author: "SeroFast Support Lead", body: message.trim(), time: "Just now" },
+      ]);
+      setMessage("");
+      setStatus("IN_PROGRESS");
+      setToast("Reply sent and logged in Supabase.");
+    } catch {
+      setToast("Failed to send reply to Supabase.");
     }
-
-    setMessages((current) => [
-      ...current,
-      { id: Date.now(), author: "SeroFast Support Lead", body: message.trim(), time: "Just now" },
-    ]);
-    setMessage("");
-    setStatus("IN_PROGRESS");
-    setToast("Reply sent and logged in Supabase.");
   }
 
   async function addNote() {
-    if (!internalNote.trim()) return;
+    if (!internalNote.trim() || !ticket?.rawId) return;
 
-    if (ticket.rawId) {
+    try {
       await addAdminSupportMessage(ticket.rawId, internalNote.trim(), true);
+      setNotes((current) => [...current, internalNote.trim()]);
+      setInternalNote("");
+      setToast("Internal staff note saved in Supabase.");
+    } catch {
+      setToast("Failed to save note in database.");
     }
-
-    setNotes((current) => [...current, internalNote.trim()]);
-    setInternalNote("");
-    setToast("Internal staff note logged in Supabase.");
   }
 
   async function confirmStatus() {
-    if (ticket.rawId) {
+    if (!ticket?.rawId) return;
+    try {
       await updateAdminTicketStatus(ticket.rawId, pendingStatus, assignedTo);
+      setStatus(pendingStatus);
+      setToast(`Ticket marked ${pendingStatus.toLowerCase()} in Supabase.`);
+    } catch {
+      setToast("Failed to update status in database.");
     }
-    setStatus(pendingStatus);
-    setToast(`Ticket marked ${pendingStatus.toLowerCase()} in Supabase.`);
     setPendingStatus(null);
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-5xl p-8 text-center text-xs text-slate-500 font-sans font-sansation">
+        Loading support ticket from database...
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="mx-auto max-w-5xl space-y-4 p-8 text-center font-sans font-sansation">
+        <div className="rounded-[24px] border border-slate-100 bg-white p-8">
+          <p className="text-sm font-semibold text-slate-800">Support ticket not found in database</p>
+          <p className="mt-1 text-xs text-slate-500">The requested ticket ({ticketId}) does not exist in Supabase.</p>
+          <button
+            type="button"
+            onClick={() => navigate("/admin/support")}
+            className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brandRed px-4 py-2 text-xs font-semibold text-white"
+          >
+            <ArrowLeft size={14} /> Back to Support
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
       <div>
+        <button
+          type="button"
+          onClick={() => navigate("/admin/support")}
+          className="mb-2 inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-brandRed"
+        >
+          <ArrowLeft size={14} /> Back to Support
+        </button>
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Support Ticket {ticket.id}
         </h1>

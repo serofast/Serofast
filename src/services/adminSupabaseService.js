@@ -508,6 +508,30 @@ export async function updateAdminWithdrawalStatus(withdrawalId, status, rejectio
 }
 
 /* ── 6. Marketing (Coupons, Banners, Campaigns, CMS) ─────── */
+export async function fetchAdminCoupons() {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (!error && data) return data;
+  } catch {}
+  return [];
+}
+
+export async function fetchAdminBanners() {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from("banners")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (!error && data) return data;
+  } catch {}
+  return [];
+}
+
 export async function saveAdminCoupon(couponData) {
   if (!supabase) return null;
   try {

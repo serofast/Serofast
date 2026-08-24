@@ -1,7 +1,7 @@
 export const nav = [
   ['Overview', [['Dashboard','/admin','layout-dashboard']]],
   ['Marketplace', [['Shops','/admin/shops','store'],['Customers','/admin/customers','users'],['Products','/admin/products','package-search'],['Categories','/admin/categories','folders']]],
-  ['Commerce', [['Orders','/admin/orders','shopping-bag'],['Inventory','/admin/inventory','boxes'],['Returns','/admin/returns','rotate-ccw'],['Reviews','/admin/reviews','star'],['Delivery','/admin/delivery','truck']]],
+  ['Commerce', [['Orders','/admin/orders','shopping-bag'],['Returns','/admin/returns','rotate-ccw'],['Reviews','/admin/reviews','star'],['Delivery','/admin/delivery','truck']]],
   ['Finance', [['Transactions','/admin/finance/transactions','credit-card'],['Commissions','/admin/finance/commissions','percent'],['Withdrawals','/admin/finance/withdrawals','wallet-cards'],['Refunds','/admin/finance/refunds','banknote']]],
   ['Marketing', [['Coupons','/admin/marketing/coupons','ticket-percent'],['Campaigns','/admin/marketing/campaigns','megaphone'],['Banners','/admin/marketing/banners','images'],['Homepage CMS','/admin/marketing/homepage','panel-top']]],
   ['Analytics', [['Analytics','/admin/analytics','chart-no-axes-combined'],['Search Analytics','/admin/analytics/search','search'],['Reports','/admin/reports','file-bar-chart']]],

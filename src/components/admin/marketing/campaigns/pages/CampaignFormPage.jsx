@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
-import { campaigns } from "../../../shared/adminData";
-import { saveAdminCampaign } from "../../../../../services/adminSupabaseService";
+import { fetchAdminCampaigns, saveAdminCampaign } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   name: "",
@@ -14,6 +13,7 @@ const initialForm = {
 };
 
 function toInputDate(value) {
+  if (!value) return "";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
 }
@@ -21,23 +21,30 @@ function toInputDate(value) {
 export default function CampaignFormPage() {
   const navigate = useNavigate();
   const { campaignId } = useParams();
-  const existingCampaign = campaigns.find((campaign) => campaign.id === campaignId);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    if (!existingCampaign) return;
-    setForm((current) => ({
-      ...current,
-      name: existingCampaign.name,
-      audience: existingCampaign.audience,
-      budget: String(existingCampaign.budget).replace(/[^0-9.]/g, ""),
-      start: toInputDate(existingCampaign.starts),
-      end: toInputDate(existingCampaign.ends),
-      status: existingCampaign.status,
-    }));
-  }, [existingCampaign]);
+    async function loadDbCampaign() {
+      if (!campaignId) return;
+      try {
+        const list = await fetchAdminCampaigns();
+        const found = (list || []).find((c) => String(c.id) === String(campaignId));
+        if (found) {
+          setForm({
+            name: found.name || "",
+            audience: found.audience || "All Customers",
+            budget: String(found.budget || ""),
+            start: toInputDate(found.starts_at),
+            end: toInputDate(found.ends_at),
+            status: found.status || "Active",
+          });
+        }
+      } catch {}
+    }
+    loadDbCampaign();
+  }, [campaignId]);
 
   function updateField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));

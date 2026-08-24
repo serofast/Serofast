@@ -7,7 +7,6 @@ import {
   StatusBadge,
   Toast,
 } from "../../../shared/ui";
-import { homepageSections as seed } from "../../../shared/adminData";
 import {
   fetchAdminHomepageSections,
   updateAdminHomepageSection,
@@ -15,16 +14,16 @@ import {
 } from "../../../../../services/adminSupabaseService";
 
 export default function HomepageCMSPage() {
-  const [sections, setSections] = useState(seed);
+  const [sections, setSections] = useState([]);
   const [editorOpen, setEditorOpen] = useState(false);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    async function loadCMS() {
+  async function loadCMS() {
+    try {
       const data = await fetchAdminHomepageSections();
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map((s) => ({
           id: s.id,
           name: s.name,
@@ -34,7 +33,10 @@ export default function HomepageCMSPage() {
         }));
         setSections(mapped);
       }
-    }
+    } catch {}
+  }
+
+  useEffect(() => {
     loadCMS();
     const unsub = subscribeAdminRealtime("homepage_sections", () => loadCMS());
     return () => unsub();

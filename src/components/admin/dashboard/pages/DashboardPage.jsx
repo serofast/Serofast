@@ -106,7 +106,7 @@ export default function DashboardPage() {
       {
         label: "Low stock",
         value: inventory.filter((item) => item.status === "Low Stock" || item.status === "Out of Stock").length,
-        href: "/admin/inventory?status=Low%20Stock",
+        href: "/admin/products",
         description: "Stock alert",
       },
       {

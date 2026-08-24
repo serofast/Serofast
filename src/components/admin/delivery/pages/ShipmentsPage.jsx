@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
 import ResourcePage from "../../shared/resource/ResourcePage";
-import { deliveryRows as seed } from "../../shared/adminData";
 import { fetchAdminOrders, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 const columns = [
-  { key: "id", label: "ID" },
+  { key: "id", label: "Shipment ID" },
   { key: "order", label: "Order" },
   { key: "shop", label: "Shop" },
   { key: "customer", label: "Customer" },
   { key: "courier", label: "Courier" },
-  { key: "tracking", label: "Tracking" },
+  { key: "tracking", label: "Tracking AWB" },
   { key: "status", label: "Status" },
 ];
 
 export default function ShipmentsPage() {
-  const [rows, setRows] = useState(seed);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadShipments() {
+  async function loadShipments() {
+    try {
       const orders = await fetchAdminOrders();
-      if (orders && orders.length > 0) {
+      if (Array.isArray(orders)) {
         const mapped = orders.map((o, index) => ({
           id: `DEL-${o.id ? o.id.slice(0, 6).toUpperCase() : index + 1}`,
           orderId: o.id,
@@ -32,10 +32,16 @@ export default function ShipmentsPage() {
         }));
         setRows(mapped);
       } else {
-        setRows(seed);
+        setRows([]);
       }
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadShipments();
     const unsub = subscribeToAdminTableChanges("orders", () => loadShipments());
     return () => unsub();
@@ -44,10 +50,12 @@ export default function ShipmentsPage() {
   return (
     <ResourcePage
       title="Delivery & Shipments"
-      description="Track marketplace shipments, hyperlocal dispatch, and live courier tracking."
+      description="Live marketplace shipments, courier assignment, and delivery dispatch from Supabase."
       seed={rows}
       columns={columns}
-      viewPath={(row) => `/admin/delivery/${encodeURIComponent(row.id)}`}
+      viewPath={(row) => `/admin/delivery/${encodeURIComponent(row.orderId || row.id)}`}
+      emptyTitle={loading ? "Loading shipments..." : "No shipments found in database"}
+      emptyDescription="Dispatched customer orders will appear here automatically."
     />
   );
 }

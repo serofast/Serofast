@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
-import { banners } from "../../../shared/adminData";
-import { saveAdminBanner } from "../../../../../services/adminSupabaseService";
+import { fetchAdminBanners, saveAdminBanner } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   title: "",
@@ -16,6 +15,7 @@ const initialForm = {
 };
 
 function toInputDate(value) {
+  if (!value) return "";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
 }
@@ -36,24 +36,36 @@ function isValidTarget(value) {
 export default function BannerFormPage() {
   const navigate = useNavigate();
   const { bannerId } = useParams();
-  const existingBanner = banners.find((banner) => banner.id === bannerId);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [previewUrl, setPreviewUrl] = useState("");
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    if (!existingBanner) return;
-    setForm((current) => ({
-      ...current,
-      title: existingBanner.title,
-      placement: existingBanner.placement,
-      priority: String(existingBanner.priority),
-      start: toInputDate(existingBanner.start),
-      end: toInputDate(existingBanner.end),
-      status: existingBanner.status,
-    }));
-  }, [existingBanner]);
+    async function loadDbBanner() {
+      if (!bannerId) return;
+      try {
+        const list = await fetchAdminBanners();
+        const found = (list || []).find((b) => String(b.id) === String(bannerId));
+        if (found) {
+          setForm({
+            title: found.title || "",
+            placement: found.placement || "Hero",
+            priority: String(found.sort_order || 1),
+            cta: found.cta_text || "Shop now",
+            targetUrl: found.action_route || "/",
+            start: toInputDate(found.starts_at),
+            end: toInputDate(found.ends_at),
+            status: found.is_active ? "Active" : "Scheduled",
+          });
+          if (found.image_url) {
+            setPreviewUrl(found.image_url);
+          }
+        }
+      } catch {}
+    }
+    loadDbBanner();
+  }, [bannerId]);
 
   useEffect(
     () => () => {

@@ -58,7 +58,12 @@ export default function CommissionsPage() {
     const nextError = validateRate(defaultRate);
     setError(nextError);
     if (!nextError) {
-      setToast(`Default commission updated to ${defaultRate}% in Supabase.`);
+      try {
+        await saveAdminCommissionRule("DEFAULT_RULE", Number(defaultRate));
+        setToast(`Default commission updated to ${defaultRate}% in Supabase.`);
+      } catch {
+        setToast("Failed to save default commission in Supabase.");
+      }
     }
   }
 

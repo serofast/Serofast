@@ -48,19 +48,19 @@ export default function AdminRoutes() {
       <Routes>
         <Route index element={<DashboardPage />} />
         <Route path="shops" element={<ShopsPage />} />
-        <Route path="shops/approvals" element={<ShopApprovalPage />} />
+        <Route path="shops/approvals" element={<Navigate to="/admin/shops" replace />} />
         <Route path="shops/:shopId" element={<ShopDetailsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="customers/:customerId" element={<CustomerDetailsPage />} />
         <Route path="products" element={<ProductsPage />} />
-        <Route path="products/approvals" element={<ProductApprovalPage />} />
+        <Route path="products/approvals" element={<Navigate to="/admin/products" replace />} />
         <Route path="products/new" element={<ProductFormPage />} />
         <Route path="products/:productId" element={<ProductDetailsPage />} />
         <Route path="products/:productId/edit" element={<ProductFormPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:orderId" element={<OrderDetailsPage />} />
-        <Route path="inventory" element={<InventoryPage />} />
+        <Route path="inventory" element={<Navigate to="/admin/products" replace />} />
         <Route path="returns" element={<ReturnsPage />} />
         <Route path="returns/:returnId" element={<ReturnDetailsPage />} />
         <Route path="reviews" element={<ReviewsPage />} />

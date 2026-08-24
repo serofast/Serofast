@@ -10,7 +10,6 @@ export const adminNavigation = [
   ] },
   { label: 'Commerce', items: [
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
-    { label: 'Inventory', path: '/admin/inventory', icon: Boxes },
     { label: 'Returns', path: '/admin/returns', icon: RotateCcw },
     { label: 'Reviews', path: '/admin/reviews', icon: Star },
     { label: 'Delivery', path: '/admin/delivery', icon: Truck },

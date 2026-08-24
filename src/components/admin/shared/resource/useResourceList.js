@@ -28,7 +28,12 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setRows([...seed]);
+    setRows((current) => {
+      if (current.length === seed.length && current.every((r, idx) => r === seed[idx])) {
+        return current;
+      }
+      return [...seed];
+    });
   }, [seed]);
 
   const statuses = useMemo(

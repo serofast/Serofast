@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import ResourcePage from "../../shared/resource/ResourcePage";
-import { refunds as seed } from "../../shared/adminData";
 import {
   fetchAdminRefundsList,
   subscribeAdminRealtime,
 } from "../../../../services/adminSupabaseService";
 
 const columns = [
-  { key: "id", label: "ID" },
+  { key: "id", label: "Refund ID" },
   { key: "order", label: "Order" },
   { key: "customer", label: "Customer" },
   { key: "shop", label: "Shop" },
@@ -17,27 +16,34 @@ const columns = [
 ];
 
 export default function RefundsPage() {
-  const [rows, setRows] = useState(seed);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadRefunds() {
+  async function loadRefunds() {
+    try {
       const data = await fetchAdminRefundsList();
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map((r) => ({
           id: r.refund_number || r.id,
-          order: r.orders?.order_number || r.order_id,
+          order: r.orders?.order_number || r.order_id || "Direct Order",
           customer: r.profiles?.full_name || r.user_id || "Customer",
           shop: r.shops?.name || "Marketplace Merchant",
           amount: `₹${r.amount || 0}`,
-          reason: r.reason,
-          status: r.status,
+          reason: r.reason || "Customer Refund",
+          status: r.status || "Pending",
         }));
         setRows(mapped);
       } else {
-        setRows(seed);
+        setRows([]);
       }
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadRefunds();
     const unsub = subscribeAdminRealtime("refunds", () => loadRefunds());
     return () => unsub();
@@ -45,13 +51,15 @@ export default function RefundsPage() {
 
   return (
     <ResourcePage
-      title="Refunds"
-      description="Review customer refund requests, resolution status and gateway settlements."
+      title="Refunds Ledger"
+      description="Live customer refund requests, settlement states, and gateway transactions from Supabase."
       seed={rows}
       columns={columns}
       viewPath={(row) => `/admin/finance/refunds/${encodeURIComponent(row.id)}`}
       routeParam="refundId"
       basePath="/admin/finance/refunds"
+      emptyTitle={loading ? "Loading refunds..." : "No refunds in database"}
+      emptyDescription="Processed return refunds and gateway reversals will appear here in real-time."
     />
   );
 }

@@ -1,32 +1,17 @@
 import { useEffect, useState } from "react";
 import {
   fetchAdminCategoriesList,
-  saveAdminCategory,
-  deleteAdminCategory,
   subscribeAdminRealtime,
 } from "../../../../services/adminSupabaseService";
-import { categories as seedCategories } from "../../shared/adminData";
 
 export function useCategories() {
-  const [categories, setCategories] = useState(() =>
-    seedCategories.map((cat, idx) => ({
-      id: cat.id || `CAT-${idx + 1}`,
-      name: cat.name,
-      slug: cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      parent: cat.parent || "—",
-      children: cat.children || 0,
-      shops: cat.shops || 0,
-      products: cat.products || 0,
-      status: cat.status || "Active",
-      position: idx,
-    }))
-  );
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
   async function loadData() {
     try {
       const dbCategories = await fetchAdminCategoriesList();
-      if (dbCategories && dbCategories.length > 0) {
+      if (Array.isArray(dbCategories)) {
         const mapped = dbCategories.map((c, idx) => ({
           id: c.id,
           name: c.name,
@@ -41,9 +26,11 @@ export function useCategories() {
           bg_color: c.bg_color,
         }));
         setCategories(mapped);
+      } else {
+        setCategories([]);
       }
     } catch (err) {
-      console.warn("Categories fetch fallback:", err);
+      setCategories([]);
     } finally {
       setLoading(false);
     }

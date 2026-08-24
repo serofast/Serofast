@@ -63,10 +63,24 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function loadSettings() {
-      const data = await fetchAdminSystemSettings();
-      if (data && data.length > 0) {
-        // Map database settings
-      }
+      try {
+        const data = await fetchAdminSystemSettings();
+        if (data && data.length > 0) {
+          const lookup = Object.fromEntries(data.map((item) => [item.key, item.value]));
+          setSettings((current) => {
+            const next = { ...current };
+            for (const grp of Object.keys(next)) {
+              next[grp] = next[grp].map((setting) => {
+                if (lookup[setting.id] !== undefined) {
+                  return { ...setting, value: lookup[setting.id] };
+                }
+                return setting;
+              });
+            }
+            return next;
+          });
+        }
+      } catch {}
     }
     loadSettings();
     const unsub = subscribeAdminRealtime("system_settings", () => loadSettings());

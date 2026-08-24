@@ -53,8 +53,8 @@ export default function OrdersPage() {
   }, []);
 
   const orders = useMemo(() => {
-    return [...dbOrders, ...localOrders];
-  }, [dbOrders, localOrders]);
+    return dbOrders;
+  }, [dbOrders]);
 
   const shops = [...new Set(orders.map((order) => order.shopName))];
   const payments = [...new Set(orders.map((order) => order.paymentStatus))];

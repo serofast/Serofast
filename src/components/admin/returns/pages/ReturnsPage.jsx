@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import ResourcePage from "../../shared/resource/ResourcePage";
-import { returns as seed } from "../../shared/adminData";
 import {
   fetchAdminReturnsList,
   subscribeAdminRealtime,
@@ -18,28 +17,35 @@ const columns = [
 ];
 
 export default function ReturnsPage() {
-  const [rows, setRows] = useState(seed);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadReturns() {
+  async function loadReturns() {
+    try {
       const data = await fetchAdminReturnsList();
-      if (data && data.length > 0) {
+      if (Array.isArray(data)) {
         const mapped = data.map((r) => ({
           id: r.id,
-          order: r.orders?.order_number || r.order_id,
+          order: r.orders?.order_number || r.order_id || "Direct Request",
           customer: r.profiles?.full_name || r.user_id || "Customer",
-          shop: r.shops?.name || "Shop",
-          product: r.product_name,
-          reason: r.reason,
+          shop: r.shops?.name || "Marketplace Merchant",
+          product: r.product_name || "Item",
+          reason: r.reason || "Return Requested",
           refund: `₹${r.refund_amount || 0}`,
-          status: r.status,
+          status: r.status || "Requested",
         }));
         setRows(mapped);
       } else {
-        setRows(seed);
+        setRows([]);
       }
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadReturns();
     const unsub = subscribeAdminRealtime("returns", () => loadReturns());
     return () => unsub();
@@ -47,11 +53,13 @@ export default function ReturnsPage() {
 
   return (
     <ResourcePage
-      title="Returns"
-      description="Review return requests, reasons, evidence and refund amounts."
+      title="Returns Management"
+      description="Live return disputes, evidence review, and customer refund resolutions from Supabase."
       seed={rows}
       columns={columns}
       viewPath={(row) => `/admin/returns/${encodeURIComponent(row.id)}`}
+      emptyTitle={loading ? "Loading return requests..." : "No return requests in database"}
+      emptyDescription="When customers submit return requests, they will appear here in real-time."
     />
   );
 }

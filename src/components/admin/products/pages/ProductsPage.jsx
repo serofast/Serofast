@@ -64,12 +64,8 @@ export default function ProductsPage() {
     return () => unsubscribe();
   }, []);
 
-  const allProductsList = useMemo(() => {
-    return [...dbProducts, ...products];
-  }, [dbProducts, products]);
-
   const rows = useMemo(
-    () => allProductsList
+    () => products
       .filter((product) => !categoryId || product.categoryId === categoryId)
       .map((product) => ({
         ...product,
@@ -77,12 +73,11 @@ export default function ProductsPage() {
         shop: product.shopName,
         category: product.categoryName,
         priceDisplay: product.discountPrice ? `${currency.format(product.discountPrice)} sale` : currency.format(product.price),
-        approval: product.approvalStatus,
         inventoryStatus: product.stock === 0 ? "Out of Stock" : product.stock <= product.lowStockThreshold ? "Low Stock" : "In Stock",
         created: new Date(product.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
         searchText: [product.name, product.sku, product.shopName, product.categoryName, ...(product.tags || []), ...((product.variants || []).map((variant) => variant.sku))].join(" "),
       })),
-    [categoryId, allProductsList],
+    [categoryId, products],
   );
   const resource = useResourceList(rows);
 
@@ -99,9 +94,8 @@ export default function ProductsPage() {
     { key: "category", label: "Category" },
     { key: "priceDisplay", label: "Price", render: (row) => <div><span className="font-medium text-slate-800">{row.discountPrice ? currency.format(row.discountPrice) : currency.format(row.price)}</span>{row.discountPrice && <><span className="ml-1 text-[10px] text-slate-400 line-through">{currency.format(row.price)}</span><span className="block text-[10px] text-brandRed">{discountPercentage(row.price, row.discountPrice)}% off</span></>}</div> },
     { key: "stock", label: "Stock" },
-    { key: "inventoryStatus", label: "Inventory", render: (row) => <StatusBadge value={row.inventoryStatus} /> },
+    { key: "inventoryStatus", label: "Stock Level", render: (row) => <StatusBadge value={row.inventoryStatus} /> },
     { key: "status", label: "Status" },
-    { key: "approval", label: "Approval", render: (row) => <StatusBadge value={row.approvalStatus} /> },
     { key: "featured", label: "Featured", render: (row) => row.featured ? <span className="inline-flex items-center gap-1 text-brandRed"><Star size={13} fill="currentColor" /> Featured</span> : "No" },
     { key: "createdAt", label: "Created", render: (row) => row.created },
   ];
@@ -111,7 +105,6 @@ export default function ProductsPage() {
       { label: "View Product", shortLabel: "View", icon: Eye, tone: "primary", onClick: () => navigate(`/admin/products/${row.id}`) },
       { label: "Edit Product", shortLabel: "Edit", icon: Pencil, onClick: () => navigate(`/admin/products/${row.id}/edit`) },
       { label: row.featured ? "Remove Featured" : "Mark Featured", shortLabel: row.featured ? "Unfeature" : "Feature", icon: Star, onClick: () => { productService.updateMany([row.id], { featured: !row.featured }); setToast(row.featured ? "Product removed from featured." : "Product marked featured."); } },
-      { label: "Submit for Approval", shortLabel: "Submit", icon: Send, hidden: !["Draft", "Rejected"].includes(row.approvalStatus), onClick: () => { productService.submitForApproval([row.id]); setToast("Product submitted for local approval review."); } },
       { label: "Archive Product", shortLabel: "Archive", icon: Archive, tone: "danger", hidden: row.status === "Archived", onClick: () => setPendingArchive([row.id]) },
     ];
   }
@@ -131,11 +124,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-w-0">
-      <PageHeader title="Products" description="Manage catalog identity, pricing, variants, inventory, media, and approval lifecycle." action="Create Product" onAction={() => navigate("/admin/products/new")} />
-
-      <div className="mb-4 flex justify-end">
-        <button type="button" onClick={() => navigate("/admin/products/approvals")} className="inline-flex h-10 items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700"><CheckCircle2 size={15} /> Approval Queue</button>
-      </div>
+      <PageHeader title="Products" description="Manage central catalog products, stock levels, pricing, variants, and media in Supabase." action="Create Product" onAction={() => navigate("/admin/products/new")} />
 
       <StatGrid className="mb-5">
         <StatusCard label="Total Products" value={products.length} tone="blue" description="All local catalog records" onClick={() => { resource.clearFilters(); setCategoryId(""); }} />

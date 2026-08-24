@@ -4,7 +4,6 @@ import {
   fetchAdminCategoriesList,
   subscribeAdminRealtime,
 } from "../../../../services/adminSupabaseService";
-import { products as seedProducts, categories as seedCategories } from "../../shared/adminData";
 
 export function useProducts(productId = null) {
   const [dbProducts, setDbProducts] = useState([]);
@@ -18,7 +17,7 @@ export function useProducts(productId = null) {
         fetchAdminCategoriesList(),
       ]);
 
-      if (prods && prods.length > 0) {
+      if (Array.isArray(prods)) {
         setDbProducts(
           prods.map((p) => ({
             id: p.id,
@@ -34,7 +33,7 @@ export function useProducts(productId = null) {
             stock: Number(p.warehouse_stock) || 0,
             warehouse_stock: Number(p.warehouse_stock) || 0,
             lowStockThreshold: 5,
-            sku: p.sku || `SF-${p.id.slice(0, 6)}`,
+            sku: p.sku || `SF-${p.id ? p.id.slice(0, 6) : "PROD"}`,
             status: "Active",
             approvalStatus: "Approved",
             description: p.description || "",
@@ -52,44 +51,17 @@ export function useProducts(productId = null) {
           }))
         );
       } else {
-        // Seed fallback
-        setDbProducts(
-          seedProducts.map((p, idx) => ({
-            id: p.id,
-            name: p.product,
-            slug: p.product.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-            categoryName: p.category,
-            categoryId: p.category,
-            shopName: p.shop,
-            price: Number(String(p.price).replace(/\D/g, "")) || 499,
-            stock: Number(p.stock) || 20,
-            lowStockThreshold: 5,
-            sku: `SF-${p.category.slice(0, 3).toUpperCase()}-${4011 + idx}`,
-            status: "Active",
-            approvalStatus: idx === 4 ? "Pending Approval" : "Approved",
-            description: `${p.product} supplied by ${p.shop}`,
-            images: [
-              {
-                id: `IMG-${p.id}`,
-                url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80",
-                isPrimary: true,
-              },
-            ],
-            variants: [],
-            tags: [p.category.toLowerCase()],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }))
-        );
+        setDbProducts([]);
       }
 
-      if (cats && cats.length > 0) {
+      if (Array.isArray(cats)) {
         setDbCategories(cats);
       } else {
-        setDbCategories(seedCategories);
+        setDbCategories([]);
       }
     } catch (e) {
-      console.warn("Products hook fallback:", e);
+      setDbProducts([]);
+      setDbCategories([]);
     } finally {
       setLoading(false);
     }
