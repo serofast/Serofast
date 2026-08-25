@@ -573,8 +573,8 @@ export async function fetchShopProducts(shopId) {
             originalPrice: cutPrice,
             cut_price: cutPrice,
             "Price(will be cutted)": cutPrice,
-            stock: sp.allocated_stock ?? wp.warehouse_stock ?? 1,
-            status: sp.is_active ? "In Stock" : "Out of Stock",
+            stock: Number(wp.warehouse_stock ?? 1),
+            status: (Number(wp.warehouse_stock ?? 1) > 0 && sp.is_active) ? "In Stock" : "Out of Stock",
             salesCount: 0,
             image: wp.image_url || wp.image || imagesList[0]?.url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
             images: imagesList,
@@ -612,7 +612,6 @@ export async function linkProductsToShop(shopId, productIds) {
     const payload = validPids.map((pid) => ({
       shop_id: shopId,
       warehouse_product_id: pid,
-      allocated_stock: 10,
       is_active: true,
     }));
 

@@ -94,15 +94,15 @@ CREATE TABLE IF NOT EXISTS public.warehouse_products (
 -- 5. SHOP PRODUCTS TABLE (Junction Mapping Table)
 CREATE TABLE IF NOT EXISTS public.shop_products (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  added_at timestamp with time zone DEFAULT now(),
-  shop_id uuid,
-  warehouse_product_id uuid,
-  selling_price numeric,
-  allocated_stock integer DEFAULT 10,
-  is_active boolean DEFAULT true,
+  shop_id uuid NOT NULL,
+  warehouse_product_id uuid NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  added_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT shop_products_pkey PRIMARY KEY (id),
-  CONSTRAINT shop_products_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id),
-  CONSTRAINT shop_products_warehouse_product_id_fkey FOREIGN KEY (warehouse_product_id) REFERENCES public.warehouse_products(id)
+  CONSTRAINT shop_products_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE,
+  CONSTRAINT shop_products_warehouse_product_id_fkey FOREIGN KEY (warehouse_product_id) REFERENCES public.warehouse_products(id) ON DELETE CASCADE,
+  CONSTRAINT shop_products_shop_warehouse_unique UNIQUE (shop_id, warehouse_product_id)
 );
 -- 7. PROFILES TABLE (Students / Customers)
 CREATE TABLE IF NOT EXISTS public.profiles (
