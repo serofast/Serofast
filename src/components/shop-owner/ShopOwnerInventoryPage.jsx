@@ -215,23 +215,34 @@ export default function ShopOwnerInventoryPage() {
     if (selectedWarehouseIds.length === 0) return;
 
     const selectedItems = warehouseProducts.filter((wp) => selectedWarehouseIds.includes(wp.id));
-    const newMappedProducts = selectedItems.map((item) => ({
-      id: item.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      warehouseId: item.id,
-      isWarehouse: true,
-      name: item.title || item.name || "Warehouse Product",
-      category: item.category || "General Catalog",
-      price: Number(item.retail_price || item.price || item.base_price || 499),
-      originalPrice: Number(item.base_price || item.original_price || 699),
-      stock: 10,
-      status: "In Stock",
-      salesCount: 0,
-      image:
-        item.image_url ||
-        item.image_urls?.[0] ||
-        item.image ||
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
-    }));
+    const newMappedProducts = selectedItems.map((item) => {
+      const storePrice = Number(item.store_price ?? item.retail_price ?? item.price ?? 499);
+      const cutPrice = Number(item["Price(will be cutted)"] ?? item.cut_price ?? item.base_price ?? storePrice);
+      const imagesList = Array.isArray(item.images) && item.images.length
+        ? item.images
+        : (item.image_url ? [{ url: item.image_url, isPrimary: true }] : []);
+
+      return {
+        id: item.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        warehouseId: item.id,
+        isWarehouse: true,
+        name: item.title || item.name || "Warehouse Product",
+        category: item.category || "General Catalog",
+        price: storePrice,
+        store_price: storePrice,
+        originalPrice: cutPrice,
+        cut_price: cutPrice,
+        stock: Number(item.warehouse_stock ?? item.stock ?? 1),
+        status: "In Stock",
+        salesCount: 0,
+        image: item.image_url || imagesList[0]?.url || item.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+        images: imagesList,
+        material: item.material,
+        fit: item.fit,
+        care: item.care,
+        sizes: item.sizes,
+      };
+    });
 
     if (activeShopId) {
       await linkProductsToShop(activeShopId, selectedWarehouseIds);
@@ -638,11 +649,11 @@ export default function ShopOwnerInventoryPage() {
                           </h4>
                           <div className="flex items-baseline gap-1">
                             <span className="text-xs font-bold text-brandRed">
-                              ₹{p.retail_price || p.price || p.base_price}
+                              ₹{p.store_price ?? p.retail_price ?? p.price}
                             </span>
-                            {p.base_price && p.base_price > p.price && (
+                            {(p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price) > (p.store_price ?? p.price) && (
                               <span className="text-[10px] text-slate-400 line-through font-normal">
-                                ₹{p.base_price}
+                                ₹{p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price}
                               </span>
                             )}
                           </div>
