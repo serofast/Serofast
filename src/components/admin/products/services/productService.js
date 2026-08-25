@@ -50,11 +50,11 @@ function normalizeProduct(values, current, categories) {
     fit: values.fit || "",
     care: values.care || "",
     sizes: values.sizes || [],
-    price: Number(values.price),
+    base_price: Number(values.base_price || values.retail_price || values.price) || 0,
+    retail_price: Number(values.retail_price ?? values.price) || 0,
+    price: Number(values.retail_price ?? values.price) || 0,
     discountPrice:
-      values.discountPrice === "" || values.discountPrice == null
-        ? null
-        : Number(values.discountPrice),
+      values.base_price > values.retail_price ? Number(values.retail_price) : null,
     stock: Number.isFinite(stock) ? stock : 1,
     status: values.status || "Active",
     approvalStatus: "Approved",

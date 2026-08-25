@@ -172,6 +172,12 @@ export async function saveAdminWarehouseProduct(productData) {
       base_price: Number(productData.base_price || productData.price) || 0,
       retail_price: Number(productData.retail_price || productData.price) || 0,
       image_url: productData.image_url || (productData.images && productData.images[0]?.url) || "",
+      images: Array.isArray(productData.images) ? productData.images : [],
+      sections: Array.isArray(productData.sections) ? productData.sections : ["Explore Products"],
+      material: productData.material || "",
+      fit: productData.fit || "",
+      care: productData.care || "",
+      sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
       description: productData.description || "",
       warehouse_stock: Number(productData.warehouse_stock ?? productData.stock) || 0,
       sku: productData.sku || `SF-${Date.now().toString(36).toUpperCase()}`,
@@ -187,6 +193,10 @@ export async function saveAdminWarehouseProduct(productData) {
         .single();
     } else {
       response = await supabase.from("warehouse_products").insert([payload]).select().single();
+    }
+
+    if (response.error) {
+      console.error("Supabase warehouse_products save error:", response.error);
     }
 
     if (response.data) {
@@ -208,7 +218,7 @@ export async function saveAdminWarehouseProduct(productData) {
       };
     }
   } catch (e) {
-    console.error("Error saving product:", e);
+    console.error("Error saving warehouse product:", e);
   }
   return null;
 }

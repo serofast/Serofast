@@ -10,6 +10,7 @@ export default function ProductFormPage() {
   const navigate = useNavigate();
   const { product, products, categories, reload } = useProducts(productId);
   const [toast, setToast] = useState("");
+  const [formKey, setFormKey] = useState(1);
   const editing = Boolean(productId);
 
   if (editing && !product) {
@@ -20,12 +21,15 @@ export default function ProductFormPage() {
     );
   }
 
-  async function save(values) {
+  async function save(values, addAnother = false) {
     try {
       const matchedCategory = categories.find((c) => c.id === values.categoryId);
       const categoryName = matchedCategory?.name || values.categoryId || "General";
       const primaryImage =
         values.images?.find((img) => img.isPrimary)?.url || values.images?.[0]?.url || "";
+
+      const basePrice = Number(values.base_price || values.retail_price || values.price) || 0;
+      const retailPrice = Number(values.retail_price ?? values.price) || 0;
 
       const saved = await saveAdminWarehouseProduct({
         id: productId,
@@ -37,8 +41,8 @@ export default function ProductFormPage() {
         fit: values.fit || "",
         care: values.care || "",
         sizes: values.sizes || [],
-        base_price: Number(values.price) || 0,
-        retail_price: Number(values.discountPrice || values.price) || 0,
+        base_price: basePrice,
+        retail_price: retailPrice,
         warehouse_stock: Number(values.stock) >= 0 ? Number(values.stock) : 1,
         sku: `SF-${Date.now().toString(36).toUpperCase()}`,
         description: values.description || "",
@@ -47,17 +51,29 @@ export default function ProductFormPage() {
         sections: values.sections || ["Explore Products"],
       });
 
-      setToast(
-        editing
-          ? "Product successfully updated."
-          : "Product successfully created."
-      );
+      if (!saved) {
+        setToast("Failed to save product in Supabase. Please verify your table schema.");
+        return;
+      }
+
       if (reload) await reload();
-      window.setTimeout(() => {
-        navigate(saved?.id ? `/admin/products/${saved.id}` : "/admin/products");
-      }, 350);
+
+      if (addAnother && !editing) {
+        setToast("Product created successfully! Ready to add next product.");
+        setFormKey((prev) => prev + 1);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        setToast(
+          editing
+            ? "Product successfully updated in warehouse catalog."
+            : "Product successfully created in warehouse catalog."
+        );
+        window.setTimeout(() => {
+          navigate(saved?.id ? `/admin/products/${saved.id}` : "/admin/products");
+        }, 400);
+      }
     } catch (e) {
-      setToast("Error saving product.");
+      setToast(e?.message || "Error saving product to Supabase.");
     }
   }
 
@@ -65,10 +81,11 @@ export default function ProductFormPage() {
     <div className="mx-auto max-w-5xl pb-10">
       <PageHeader
         title={editing ? `Edit ${product.name}` : "Add New Product"}
-        description="Add product images, details, store placement, and inventory."
+        description="Add product carousel images, specifications, placement, base MRP and retail selling price."
       />
       <ProductForm
-        product={product}
+        key={formKey}
+        product={editing ? product : null}
         categories={categories}
         products={products}
         onSave={save}

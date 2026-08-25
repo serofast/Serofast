@@ -10,6 +10,7 @@ import {
   Layers,
   Loader2,
   Package,
+  Plus,
   Scissors,
   Shirt,
   Sparkles,
@@ -144,14 +145,14 @@ function createDraft(product, categories) {
     return {
       name: product.name || product.title || "",
       description: product.description || "",
-      categoryId: product.categoryId || product.category || categories[0]?.id || "Fashion",
+      categoryId: product.categoryId || product.category || categories[0]?.name || categories[0]?.id || "Fashion",
       sections: rawSections.length ? rawSections : ["Explore Products"],
       material: product.material || "",
       fit: product.fit || "",
       care: product.care || "",
       sizes: rawSizes,
-      price: product.price || product.base_price || "",
-      discountPrice: product.discountPrice || product.retail_price || "",
+      base_price: product.base_price !== undefined && product.base_price !== null ? product.base_price : (product.price || ""),
+      retail_price: product.retail_price !== undefined && product.retail_price !== null ? product.retail_price : (product.discountPrice || product.price || ""),
       stock: product.stock ?? product.warehouse_stock ?? 1,
       images: Array.isArray(product.images) ? product.images : [],
     };
@@ -166,8 +167,8 @@ function createDraft(product, categories) {
     fit: "",
     care: "",
     sizes: [],
-    price: "",
-    discountPrice: "",
+    base_price: "",
+    retail_price: "",
     stock: 1,
     images: [],
   };
@@ -338,21 +339,21 @@ export default function ProductForm({ product, categories = [], products = [], o
     );
   }
 
-  function submit(event) {
-    event.preventDefault();
+  function handleFormSubmit(event, addAnother = false) {
+    if (event) event.preventDefault();
     const nextErrors = validateProduct(draft, products, product?.id ?? null);
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    onSave(draft);
+    onSave(draft, addAnother);
   }
 
-  const calcDiscount = discountPercentage(draft.price, draft.discountPrice);
+  const calcDiscount = discountPercentage(draft.base_price, draft.retail_price);
 
   return (
-    <form onSubmit={submit} className="space-y-6" noValidate>
+    <form onSubmit={(e) => handleFormSubmit(e, false)} className="space-y-6" noValidate>
       {Object.keys(errors).length > 0 && (
         <div
           role="alert"
@@ -365,7 +366,7 @@ export default function ProductForm({ product, categories = [], products = [], o
         </div>
       )}
 
-      {/* 1. PRODUCT IMAGES (FIRST AT THE TOP - STORED IN STORAGE BUCKET) */}
+      {/* 1. PRODUCT IMAGES (FIRST AT THE TOP) */}
       <Section
         title="1. Product Carousel Images"
         description="Add 3 to 4 side-angle photos (Front / Cover, Side Angle, Back Perspective, Close-up). Files are stored directly in the cloud storage bucket and mapped to the product carousel."
@@ -669,40 +670,52 @@ export default function ProductForm({ product, categories = [], products = [], o
         </div>
       </Section>
 
-      {/* 5. PRICING & SINGLE STOCK */}
+      {/* 5. PRICING & WAREHOUSE INVENTORY */}
       <Section
         title="5. Pricing & Warehouse Inventory"
-        description="Set the selling price and warehouse stock count."
+        description="Set the base MRP (cut price), retail selling price (what the customer pays), and stock count."
       >
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormField label="Regular Price (₹)" required error={errors.price}>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              value={draft.price}
-              onChange={(event) => update("price", event.target.value)}
-              placeholder="e.g. 999"
-              className={fieldClass}
-            />
-          </FormField>
-
+          {/* Base Price (MRP - Cut Price) */}
           <FormField
-            label="Discount / Sale Price (₹)"
-            helper={calcDiscount > 0 ? `${calcDiscount}% OFF` : "Optional"}
-            error={errors.discountPrice}
+            label="Base Price (MRP - ₹)"
+            helper="Original price that gets crossed out"
+            error={errors.base_price}
           >
             <input
               type="number"
               min="0"
               step="1"
-              value={draft.discountPrice ?? ""}
-              onChange={(event) => update("discountPrice", event.target.value)}
-              placeholder="e.g. 799"
+              value={draft.base_price}
+              onChange={(event) => update("base_price", event.target.value)}
+              placeholder="e.g. 999 (MRP)"
               className={fieldClass}
             />
           </FormField>
 
+          {/* Retail Price (Customer Buying Price) */}
+          <FormField
+            label="Retail Price (Selling Price - ₹)"
+            required
+            helper={
+              calcDiscount > 0
+                ? `${calcDiscount}% OFF (Save ₹${Number(draft.base_price) - Number(draft.retail_price)})`
+                : "Final price customer pays to buy"
+            }
+            error={errors.retail_price}
+          >
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={draft.retail_price}
+              onChange={(event) => update("retail_price", event.target.value)}
+              placeholder="e.g. 499 (Final Price)"
+              className={fieldClass}
+            />
+          </FormField>
+
+          {/* Single Stock */}
           <FormField
             label="Stock Quantity"
             helper="1 unit default (unlisted when sold)"
@@ -736,6 +749,15 @@ export default function ProductForm({ product, categories = [], products = [], o
         >
           Cancel
         </button>
+        {!product && (
+          <button
+            type="button"
+            onClick={(e) => handleFormSubmit(e, true)}
+            className="h-11 rounded-[30px] border border-brandRed bg-rose-50/60 px-6 text-xs font-semibold text-brandRed transition-all hover:bg-rose-100 cursor-pointer"
+          >
+            Save & Add Another
+          </button>
+        )}
         <button
           type="submit"
           className="h-11 rounded-[30px] bg-brandRed px-8 text-xs font-semibold text-white shadow-[0_6px_20px_rgba(211,47,47,0.35)] transition-all hover:bg-brandRedDark active:scale-98 cursor-pointer"
