@@ -121,6 +121,47 @@ export async function fetchAdminWarehouseCatalog() {
   return [];
 }
 
+export async function uploadProductImageToStorage(file, angle = "main", category = "general") {
+  if (!file) return null;
+  if (typeof file === "string" && (file.startsWith("http://") || file.startsWith("https://"))) {
+    return file;
+  }
+
+  const categoryFolder = String(category || "general")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "") || "general";
+
+  const ext = file.name?.split(".").pop() || "jpg";
+  const filename = `${angle}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+  const filePath = `warehouse-products/${categoryFolder}/${filename}`;
+
+  if (supabase) {
+    const bucketsToTry = ["shop-assets", "products", "warehouse"];
+    for (const bucket of bucketsToTry) {
+      try {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file, { cacheControl: "3600", upsert: true });
+
+        if (!error && data) {
+          const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath);
+          if (urlData?.publicUrl) return urlData.publicUrl;
+        }
+      } catch {}
+    }
+  }
+
+  // Persistent fallback for preview & storage
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = () => resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+
 export async function saveAdminWarehouseProduct(productData) {
   if (!supabase) return null;
   try {
@@ -156,7 +197,15 @@ export async function saveAdminWarehouseProduct(productData) {
         targetLabel: response.data.title,
         module: "Catalog",
       });
-      return response.data;
+      return {
+        ...response.data,
+        material: productData.material || "",
+        fit: productData.fit || "",
+        care: productData.care || "",
+        sizes: productData.sizes || [],
+        sections: productData.sections || [],
+        images: productData.images || [],
+      };
     }
   } catch (e) {
     console.error("Error saving product:", e);

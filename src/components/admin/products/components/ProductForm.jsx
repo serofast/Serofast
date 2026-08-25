@@ -8,6 +8,10 @@ import {
   HelpCircle,
   ImagePlus,
   Layers,
+  Loader2,
+  Package,
+  Scissors,
+  Shirt,
   Sparkles,
   Star,
   Tag,
@@ -15,19 +19,110 @@ import {
   Upload,
   Zap,
 } from "lucide-react";
-import { AdminSelect, Card } from "../../shared/ui";
+import CreatableDropdown from "./CreatableDropdown";
+import { Card } from "../../shared/ui";
 import { validateProduct, discountPercentage } from "../validation/productValidation";
+import { uploadProductImageToStorage } from "../../../../services/adminSupabaseService";
 
 const fieldClass =
   "h-11 w-full rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs text-slate-800 outline-none transition-all focus:border-brandRed focus:ring-2 focus:ring-brandRed/10";
 const textAreaClass =
   "min-h-28 w-full rounded-[24px] border border-[#E5E7EB] bg-white px-4 py-3 text-xs text-slate-800 outline-none transition-all focus:border-brandRed focus:ring-2 focus:ring-brandRed/10 resize-y";
 
-const PLACEMENT_SECTIONS = [
-  { id: "Flash Deals", label: "Flash Deals", icon: Zap, color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { id: "Explore Products", label: "Explore Products", icon: Layers, color: "text-blue-500 bg-blue-50 border-blue-200" },
-  { id: "Recommended", label: "Recommended", icon: Sparkles, color: "text-purple-500 bg-purple-50 border-purple-200" },
-  { id: "More Sections", label: "More Products", icon: Tag, color: "text-emerald-500 bg-emerald-50 border-emerald-200" },
+const DEFAULT_CATEGORIES = [
+  "Fashion",
+  "Men's Clothing",
+  "Women's Clothing",
+  "Electronics",
+  "Mobiles & Gadgets",
+  "Footwear",
+  "Beauty & Wellness",
+  "Home & Kitchen",
+  "Furniture",
+  "Accessories & Jewellery",
+  "Sports & Fitness",
+  "Books & Stationery",
+  "Grocery",
+];
+
+const DEFAULT_SECTIONS = [
+  "Flash Deals",
+  "Explore Products",
+  "Recommended",
+  "Trending Now",
+  "New Arrivals",
+  "Best Sellers",
+  "Campus Specials",
+  "More Products",
+];
+
+const DEFAULT_MATERIALS = [
+  "100% Organic Cotton",
+  "Cotton Blend",
+  "Denim / Cotton Twill",
+  "Pure Linen",
+  "Silk / Satin",
+  "Polyester / Spandex",
+  "Wool / Wool Blend",
+  "Rayon / Viscose",
+  "Corduroy",
+  "Genuine Leather",
+  "Vegan Faux Leather",
+  "Canvas / Duck Cloth",
+  "Fleece / Terry Cotton",
+  "Ribbed Knit",
+  "Stainless Steel / Alloy",
+  "Ceramic / Glass",
+];
+
+const DEFAULT_FITS = [
+  "Regular Fit",
+  "Slim Fit",
+  "Oversized Fit",
+  "Relaxed Fit",
+  "Boxy Fit",
+  "Classic Fit",
+  "Loose Fit",
+  "Tailored Fit",
+  "Athletic / Tapered",
+  "Skinny Fit",
+  "Standard Fit",
+];
+
+const DEFAULT_CARE = [
+  "Machine wash cold with like colors",
+  "Hand wash only in cold water",
+  "Dry clean only",
+  "Do not bleach / Warm iron",
+  "Tumble dry low",
+  "Line dry in shade",
+  "Wipe clean with a damp cloth",
+  "Avoid direct heat / moisture",
+];
+
+const DEFAULT_SIZES = [
+  "Free Size",
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "3XL",
+  "28",
+  "30",
+  "32",
+  "34",
+  "36",
+  "38",
+  "40",
+  "UK 6",
+  "UK 7",
+  "UK 8",
+  "UK 9",
+  "UK 10",
+  "UK 11",
+  "One Size",
 ];
 
 const ANGLE_LABELS = [
@@ -35,23 +130,29 @@ const ANGLE_LABELS = [
   "Angle 2 (Side Angle)",
   "Angle 3 (Back / Perspective)",
   "Angle 4 (Close-up / Detail)",
-  "Additional Angle",
-  "Additional Angle",
+  "Angle 5 (Additional)",
+  "Angle 6 (Additional)",
 ];
 
 function createDraft(product, categories) {
   if (product) {
     const rawSections = product.sections || [];
+    const rawSizes = Array.isArray(product.sizes)
+      ? product.sizes
+      : product.size ? [product.size] : [];
+
     return {
-      name: product.name || "",
-      description: product.description || product.shortDescription || "",
-      categoryId: product.categoryId || product.category || categories[0]?.id || "",
+      name: product.name || product.title || "",
+      description: product.description || "",
+      categoryId: product.categoryId || product.category || categories[0]?.id || "Fashion",
       sections: rawSections.length ? rawSections : ["Explore Products"],
+      material: product.material || "",
+      fit: product.fit || "",
+      care: product.care || "",
+      sizes: rawSizes,
       price: product.price || product.base_price || "",
-      discountPrice: product.discountPrice || "",
+      discountPrice: product.discountPrice || product.retail_price || "",
       stock: product.stock ?? product.warehouse_stock ?? 1,
-      status: product.status === "Draft" ? "Draft" : "Active",
-      featured: Boolean(product.featured),
       images: Array.isArray(product.images) ? product.images : [],
     };
   }
@@ -59,36 +160,38 @@ function createDraft(product, categories) {
   return {
     name: "",
     description: "",
-    categoryId: categories[0]?.id ?? "",
+    categoryId: categories[0]?.name || categories[0]?.id || "Fashion",
     sections: ["Explore Products"],
+    material: "",
+    fit: "",
+    care: "",
+    sizes: [],
     price: "",
     discountPrice: "",
     stock: 1,
-    status: "Active",
-    featured: false,
     images: [],
   };
 }
 
 function FormField({ label, error, helper, required, children, className = "" }) {
   return (
-    <label className={`block ${className}`}>
-      <span className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700">
+    <div className={`block ${className}`}>
+      <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700">
         <span>
           {label}
           {required && <span className="ml-1 text-brandRed">*</span>}
         </span>
         {helper && <span className="text-[10px] font-normal text-slate-400">{helper}</span>}
-      </span>
+      </div>
       {children}
       {error && <span className="mt-1.5 block text-[11px] font-medium text-brandRed">{error}</span>}
-    </label>
+    </div>
   );
 }
 
 function Section({ title, description, badge, children }) {
   return (
-    <Card className="overflow-hidden border border-[#F3E5E5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] sm:p-6">
+    <Card className="overflow-visible relative border border-[#F3E5E5] bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.02)] sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3.5">
         <div>
           <h2 className="text-base font-semibold text-slate-900">{title}</h2>
@@ -105,23 +208,23 @@ function Section({ title, description, badge, children }) {
   );
 }
 
-export default function ProductForm({ product, categories, products, onSave, onCancel }) {
+export default function ProductForm({ product, categories = [], products = [], onSave, onCancel }) {
   const [draft, setDraft] = useState(() => createDraft(product, categories));
   const [errors, setErrors] = useState({});
   const [imageUrl, setImageUrl] = useState("");
-  const activeCategories = categories.filter((category) => category.status !== "Inactive");
+  const [uploading, setUploading] = useState(false);
+
+  // Merge categories list
+  const categoryOptions = Array.from(
+    new Set([
+      ...categories.map((c) => c.name || c.id),
+      ...DEFAULT_CATEGORIES,
+    ])
+  ).filter(Boolean);
 
   function update(key, value) {
     setDraft((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: undefined }));
-  }
-
-  function toggleSection(sectionId) {
-    const current = draft.sections || [];
-    const updated = current.includes(sectionId)
-      ? current.filter((s) => s !== sectionId)
-      : [...current, sectionId];
-    update("sections", updated.length > 0 ? updated : [sectionId]);
   }
 
   function addImage(url) {
@@ -137,53 +240,76 @@ export default function ProductForm({ product, categories, products, onSave, onC
       setErrors((current) => ({ ...current, images: "Please enter a valid image URL." }));
       return;
     }
+    const angleIndex = draft.images.length;
+    const angleTag = ANGLE_LABELS[angleIndex] || `Angle ${angleIndex + 1}`;
     update("images", [
       ...draft.images,
       {
         id: `IMG-${Date.now()}`,
         url: trimmed,
-        alt: `${draft.name || "Product"} - Angle ${draft.images.length + 1}`,
-        position: draft.images.length,
-        isPrimary: draft.images.length === 0,
+        alt: `${draft.name || "Product"} - ${angleTag}`,
+        angle: angleIndex === 0 ? "main" : `angle-${angleIndex + 1}`,
+        position: angleIndex,
+        isPrimary: angleIndex === 0,
       },
     ]);
     setImageUrl("");
   }
 
-  function uploadImages(files) {
-    const selected = [...files];
+  async function uploadImages(files) {
+    const selected = Array.from(files);
+    if (!selected.length) return;
+
     if (draft.images.length + selected.length > 6) {
-      setErrors((current) => ({ ...current, images: "You can add up to 6 angle images for the carousel." }));
-      return;
-    }
-    const invalid = selected.find((file) => !file.type.startsWith("image/") || file.size > 2 * 1024 * 1024);
-    if (invalid) {
       setErrors((current) => ({
         ...current,
-        images: "Use PNG, JPG, or WebP images no larger than 2 MB each.",
+        images: "You can add up to 6 angle images for the product carousel.",
       }));
       return;
     }
-    selected.forEach((file, i) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setDraft((current) => ({
-          ...current,
-          images: [
-            ...current.images,
-            {
-              id: `IMG-${Date.now()}-${i}-${file.name}`,
-              url: reader.result,
-              alt: file.name.replace(/\.[^.]+$/, ""),
-              position: current.images.length,
-              isPrimary: current.images.length === 0,
-            },
-          ],
-        }));
-      };
-      reader.readAsDataURL(file);
-    });
+
+    const invalid = selected.find((f) => !f.type.startsWith("image/") || f.size > 5 * 1024 * 1024);
+    if (invalid) {
+      setErrors((current) => ({
+        ...current,
+        images: "Please upload valid image files (PNG, JPG, WebP) under 5 MB each.",
+      }));
+      return;
+    }
+
+    setUploading(true);
     setErrors((current) => ({ ...current, images: undefined }));
+
+    try {
+      const uploadedList = [];
+      for (let i = 0; i < selected.length; i++) {
+        const file = selected[i];
+        const nextPos = draft.images.length + i;
+        const angleSlug = nextPos === 0 ? "main" : `angle-${nextPos + 1}`;
+        const storedUrl = await uploadProductImageToStorage(
+          file,
+          angleSlug,
+          draft.categoryId || "general"
+        );
+
+        if (storedUrl) {
+          uploadedList.push({
+            id: `IMG-${Date.now()}-${i}`,
+            url: storedUrl,
+            alt: `${draft.name || "Product"} - ${ANGLE_LABELS[nextPos] || `Angle ${nextPos + 1}`}`,
+            angle: angleSlug,
+            position: nextPos,
+            isPrimary: nextPos === 0 && draft.images.length === 0,
+          });
+        }
+      }
+
+      update("images", [...draft.images, ...uploadedList]);
+    } catch (err) {
+      setErrors((current) => ({ ...current, images: "Image upload failed. Please try again." }));
+    } finally {
+      setUploading(false);
+    }
   }
 
   function moveImage(index, direction) {
@@ -235,14 +361,14 @@ export default function ProductForm({ product, categories, products, onSave, onC
           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brandRed text-white font-bold text-[10px]">
             !
           </div>
-          <span>Please fill in the required fields highlighted below before saving.</span>
+          <span>Please review the required fields highlighted below before saving.</span>
         </div>
       )}
 
-      {/* 1. PRODUCT IMAGES (FIRST AT THE TOP) */}
+      {/* 1. PRODUCT IMAGES (FIRST AT THE TOP - STORED IN STORAGE BUCKET) */}
       <Section
         title="1. Product Carousel Images"
-        description="Add 3 to 4 angle photos (front, side, perspective, detail). Customers swipe through these in a multi-image carousel on the product page."
+        description="Add 3 to 4 side-angle photos (Front / Cover, Side Angle, Back Perspective, Close-up). Files are stored directly in the cloud storage bucket and mapped to the product carousel."
         badge={
           draft.images.length >= 3 ? (
             <span className="text-emerald-700 font-medium">✓ {draft.images.length} Images Added</span>
@@ -264,24 +390,34 @@ export default function ProductForm({ product, categories, products, onSave, onC
                     addImage(imageUrl);
                   }
                 }}
-                placeholder="Paste image link (https://...)"
+                placeholder="Paste external image URL (https://...)"
                 className={fieldClass}
               />
             </div>
             <button
               type="button"
               onClick={() => addImage(imageUrl)}
-              className="h-11 shrink-0 rounded-[30px] border border-[#E5E7EB] bg-white px-5 text-xs font-medium text-slate-700 transition-colors hover:border-brandRed hover:text-brandRed"
+              className="h-11 shrink-0 rounded-[30px] border border-[#E5E7EB] bg-white px-5 text-xs font-medium text-slate-700 transition-colors hover:border-brandRed hover:text-brandRed cursor-pointer"
             >
               Add URL
             </button>
             <label className="flex h-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_4px_12px_rgba(211,47,47,0.25)] transition-transform active:scale-95 hover:bg-brandRedDark">
-              <ImagePlus size={15} />
-              <span>Upload Photos</span>
+              {uploading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" />
+                  <span>Uploading to Storage...</span>
+                </>
+              ) : (
+                <>
+                  <ImagePlus size={15} />
+                  <span>Upload Side Angles</span>
+                </>
+              )}
               <input
                 type="file"
                 accept="image/*"
                 multiple
+                disabled={uploading}
                 className="sr-only"
                 onChange={(event) => uploadImages(event.target.files)}
               />
@@ -293,7 +429,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
           {/* Angle Images Grid */}
           {draft.images.length === 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {["1. Front / Main View", "2. Side Angle", "3. Back Angle", "4. Detail / Texture"].map(
+              {["1. Front / Cover View", "2. Side Angle", "3. Back Angle", "4. Detail / Texture"].map(
                 (placeholder, idx) => (
                   <label
                     key={placeholder}
@@ -301,7 +437,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
                   >
                     <Camera size={20} className="text-slate-400" />
                     <span className="mt-2 text-[11px] font-semibold text-slate-600">{placeholder}</span>
-                    <span className="mt-0.5 text-[9px] text-slate-400">Click or upload</span>
+                    <span className="mt-0.5 text-[9px] text-slate-400">Click to upload</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -329,13 +465,13 @@ export default function ProductForm({ product, categories, products, onSave, onC
                     {/* Angle Tag Header */}
                     <div className="flex items-center justify-between border-b border-slate-100 bg-white/90 px-3 py-1.5 backdrop-blur-xs">
                       <span className="truncate text-[10px] font-bold text-slate-700">
-                        {image.isPrimary ? "★ Primary Cover" : label}
+                        {image.isPrimary ? "Primary Cover" : label}
                       </span>
                       <button
                         type="button"
                         onClick={() => removeImage(image.id)}
                         title="Remove image"
-                        className="text-slate-400 transition-colors hover:text-brandRed"
+                        className="text-slate-400 transition-colors hover:text-brandRed cursor-pointer"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -355,7 +491,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
                       <button
                         type="button"
                         onClick={() => setPrimary(image.id)}
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
                           image.isPrimary
                             ? "bg-brandRed text-white"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -370,7 +506,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
                           disabled={index === 0}
                           onClick={() => moveImage(index, -1)}
                           title="Move earlier in carousel"
-                          className="rounded-full bg-slate-100 p-1.5 text-slate-600 transition-colors disabled:opacity-20 hover:bg-slate-200"
+                          className="rounded-full bg-slate-100 p-1.5 text-slate-600 transition-colors disabled:opacity-20 hover:bg-slate-200 cursor-pointer"
                         >
                           <ArrowUp size={12} />
                         </button>
@@ -379,7 +515,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
                           disabled={index === draft.images.length - 1}
                           onClick={() => moveImage(index, 1)}
                           title="Move later in carousel"
-                          className="rounded-full bg-slate-100 p-1.5 text-slate-600 transition-colors disabled:opacity-20 hover:bg-slate-200"
+                          className="rounded-full bg-slate-100 p-1.5 text-slate-600 transition-colors disabled:opacity-20 hover:bg-slate-200 cursor-pointer"
                         >
                           <ArrowDown size={12} />
                         </button>
@@ -401,6 +537,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
                     type="file"
                     accept="image/*"
                     multiple
+                    disabled={uploading}
                     className="sr-only"
                     onChange={(event) => uploadImages(event.target.files)}
                   />
@@ -414,7 +551,7 @@ export default function ProductForm({ product, categories, products, onSave, onC
       {/* 2. PRODUCT DETAILS */}
       <Section
         title="2. Product Details"
-        description="Name and clear description for shoppers."
+        description="Core name and single description for shoppers."
       >
         <div className="space-y-4">
           <FormField label="Product Name" required error={errors.name}>
@@ -428,84 +565,114 @@ export default function ProductForm({ product, categories, products, onSave, onC
 
           <FormField
             label="Product Description"
-            helper="One comprehensive description for the item"
+            helper="One single description for the item"
           >
             <textarea
               value={draft.description}
               onChange={(event) => update("description", event.target.value)}
-              placeholder="Describe the product material, size fit, condition, styling tips, or any unique specifications..."
+              placeholder="Describe the product details, size fit, condition, styling tips, or any unique specifications..."
               className={textAreaClass}
             />
           </FormField>
         </div>
       </Section>
 
-      {/* 3. CATEGORY & DISPLAY PLACEMENT */}
+      {/* 3. CATEGORY & STORE PLACEMENT */}
       <Section
-        title="3. Category & Display Placement"
-        description="Select category and which storefront sections this product should appear in."
+        title="3. Category & Store Section Placement"
+        description="Select or type custom categories and storefront display sections."
       >
-        <div className="space-y-5">
-          <FormField label="Product Category" required error={errors.categoryId}>
-            <AdminSelect
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            label="Product Category"
+            required
+            helper="Select or type new category"
+            error={errors.categoryId}
+          >
+            <CreatableDropdown
               value={draft.categoryId}
-              onChange={(value) => update("categoryId", value)}
-              options={activeCategories.map((category) => ({
-                value: category.id,
-                label: category.name,
-              }))}
-              ariaLabel="Product category"
-              buttonClassName="h-11"
+              onChange={(val) => update("categoryId", val)}
+              options={categoryOptions}
+              placeholder="Select or type category..."
+              allowCustom={true}
+              ariaLabel="Product Category"
             />
           </FormField>
 
-          <div>
-            <span className="mb-2 block text-xs font-semibold text-slate-700">
-              Display Placement / Store Sections
-            </span>
-            <p className="mb-3 text-[11px] text-slate-500">
-              Choose one or more sections where users can discover and purchase this item:
-            </p>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              {PLACEMENT_SECTIONS.map((sec) => {
-                const Icon = sec.icon;
-                const isSelected = (draft.sections || []).includes(sec.id);
-                return (
-                  <button
-                    key={sec.id}
-                    type="button"
-                    onClick={() => toggleSection(sec.id)}
-                    className={`flex items-center justify-between rounded-[20px] border p-3 text-left transition-all ${
-                      isSelected
-                        ? "border-brandRed bg-rose-50/70 text-slate-900 shadow-xs ring-1 ring-brandRed"
-                        : "border-[#E5E7EB] bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`flex h-7 w-7 items-center justify-center rounded-full ${sec.color}`}
-                      >
-                        <Icon size={14} />
-                      </div>
-                      <span className="text-xs font-semibold">{sec.label}</span>
-                    </div>
-                    {isSelected && (
-                      <div className="flex h-4 w-4 items-center justify-center rounded-full bg-brandRed text-white">
-                        <Check size={10} strokeWidth={3} />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <FormField
+            label="Display Placement / Store Sections"
+            helper="Select or type new store sections"
+          >
+            <CreatableDropdown
+              value={draft.sections}
+              onChange={(val) => update("sections", val)}
+              options={DEFAULT_SECTIONS}
+              placeholder="Select or type sections..."
+              multiple={true}
+              allowCustom={true}
+              ariaLabel="Store Sections"
+            />
+          </FormField>
         </div>
       </Section>
 
-      {/* 4. PRICING & SINGLE STOCK */}
+      {/* 4. PRODUCT SPECIFICATIONS (MATERIAL, FIT, CARE, SIZES) */}
       <Section
-        title="4. Pricing & Inventory"
-        description="Set the price and single-item stock availability."
+        title="4. Specifications & Sizing"
+        description="Specify fabric material, fit cut, care instructions, and available sizes. Admin can select from standard options or type custom values."
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Material / Fabric" helper="Select or type custom material">
+            <CreatableDropdown
+              value={draft.material}
+              onChange={(val) => update("material", val)}
+              options={DEFAULT_MATERIALS}
+              placeholder="e.g. 100% Cotton, Denim..."
+              allowCustom={true}
+              ariaLabel="Material"
+            />
+          </FormField>
+
+          <FormField label="Fit" helper="Select or type custom fit">
+            <CreatableDropdown
+              value={draft.fit}
+              onChange={(val) => update("fit", val)}
+              options={DEFAULT_FITS}
+              placeholder="e.g. Regular Fit, Oversized..."
+              allowCustom={true}
+              ariaLabel="Fit"
+            />
+          </FormField>
+
+          <FormField label="Care Instructions" helper="Select or type wash care">
+            <CreatableDropdown
+              value={draft.care}
+              onChange={(val) => update("care", val)}
+              options={DEFAULT_CARE}
+              placeholder="e.g. Machine wash cold, Dry clean..."
+              allowCustom={true}
+              ariaLabel="Care Instructions"
+            />
+          </FormField>
+
+          <FormField label="Available Sizes" helper="Select or type custom sizes">
+            <CreatableDropdown
+              value={draft.sizes}
+              onChange={(val) => update("sizes", val)}
+              options={DEFAULT_SIZES}
+              placeholder="Select or type sizes (e.g. M, L, XL, Free Size)..."
+              multiple={true}
+              allowCustom={true}
+              ariaLabel="Available Sizes"
+            />
+          </FormField>
+        </div>
+      </Section>
+
+      {/* 5. PRICING & SINGLE STOCK */}
+      <Section
+        title="5. Pricing & Warehouse Inventory"
+        description="Set the selling price and warehouse stock count."
       >
         <div className="grid gap-4 sm:grid-cols-3">
           <FormField label="Regular Price (₹)" required error={errors.price}>
@@ -555,41 +722,8 @@ export default function ProductForm({ product, categories, products, onSave, onC
         <div className="mt-3 flex items-center gap-2 rounded-[16px] bg-slate-50 px-3.5 py-2 text-[11px] text-slate-500">
           <HelpCircle size={13} className="shrink-0 text-slate-400" />
           <span>
-            Single-stock model: Once this item is sold (stock reaches 0), it will be automatically hidden from shoppers on the mobile app and website.
+            Single-stock model: Once this item is sold (stock reaches 0), it will automatically be unlisted and hidden from customer views.
           </span>
-        </div>
-      </Section>
-
-      {/* 5. PUBLISHING STATUS */}
-      <Section title="5. Visibility & Publishing">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Product Status">
-            <AdminSelect
-              value={draft.status}
-              onChange={(value) => update("status", value)}
-              options={[
-                { value: "Active", label: "Active (Published live)" },
-                { value: "Draft", label: "Draft (Hidden from store)" },
-              ]}
-              ariaLabel="Product status"
-              buttonClassName="h-11"
-            />
-          </FormField>
-
-          <div className="flex items-center">
-            <label className="flex h-11 w-full cursor-pointer items-center gap-3 rounded-[30px] border border-[#E5E7EB] bg-white px-4 text-xs font-medium text-slate-700 transition-colors hover:border-slate-300">
-              <input
-                type="checkbox"
-                checked={draft.featured}
-                onChange={(event) => update("featured", event.target.checked)}
-                className="h-4 w-4 accent-brandRed"
-              />
-              <span className="flex items-center gap-1.5">
-                <Star size={13} className="text-amber-500" fill={draft.featured ? "currentColor" : "none"} />
-                Mark as Featured Product
-              </span>
-            </label>
-          </div>
         </div>
       </Section>
 
@@ -598,15 +732,15 @@ export default function ProductForm({ product, categories, products, onSave, onC
         <button
           type="button"
           onClick={onCancel}
-          className="h-11 rounded-[30px] border border-[#E5E7EB] bg-white px-6 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          className="h-11 rounded-[30px] border border-[#E5E7EB] bg-white px-6 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 cursor-pointer"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="h-11 rounded-[30px] bg-brandRed px-8 text-xs font-semibold text-white shadow-[0_6px_20px_rgba(211,47,47,0.35)] transition-all hover:bg-brandRedDark active:scale-98"
+          className="h-11 rounded-[30px] bg-brandRed px-8 text-xs font-semibold text-white shadow-[0_6px_20px_rgba(211,47,47,0.35)] transition-all hover:bg-brandRedDark active:scale-98 cursor-pointer"
         >
-          {product ? "Save Changes" : "Create Product"}
+          {product ? "Save Warehouse Product" : "Create Warehouse Product"}
         </button>
       </div>
     </form>

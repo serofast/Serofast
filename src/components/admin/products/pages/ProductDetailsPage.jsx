@@ -87,7 +87,7 @@ export default function ProductDetailsPage() {
               <StatusBadge value={product.status || "Active"} />
               {product.featured && (
                 <span className="rounded-full bg-rose-50 px-3 py-0.5 text-[11px] font-semibold text-brandRed">
-                  ★ Featured
+                  Featured
                 </span>
               )}
               {sections.map((sec) => (
@@ -150,6 +150,10 @@ function Overview({ product, sections }) {
   const fields = [
     ["Category", product.categoryName || product.category || "General"],
     ["Placement Sections", sections.join(", ")],
+    ["Material", product.material || "—"],
+    ["Fit", product.fit || "—"],
+    ["Care Instructions", product.care || "—"],
+    ["Available Sizes", Array.isArray(product.sizes) && product.sizes.length ? product.sizes.join(", ") : "—"],
     ["Regular Price", currency.format(product.price || 0)],
     [
       "Discount Price",
@@ -194,7 +198,7 @@ function Images({ product }) {
             </div>
             <figcaption className="border-t border-slate-100 bg-white p-3 text-[11px]">
               <span className="font-semibold text-slate-800">
-                {image.isPrimary ? "★ Primary Cover" : label}
+                {image.isPrimary ? "Primary Cover" : label}
               </span>
             </figcaption>
           </figure>

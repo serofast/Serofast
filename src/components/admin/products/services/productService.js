@@ -46,6 +46,10 @@ function normalizeProduct(values, current, categories) {
     categoryName: category.name,
     categoryId: values.categoryId,
     sections: values.sections || ["Explore Products"],
+    material: values.material || "",
+    fit: values.fit || "",
+    care: values.care || "",
+    sizes: values.sizes || [],
     price: Number(values.price),
     discountPrice:
       values.discountPrice === "" || values.discountPrice == null
