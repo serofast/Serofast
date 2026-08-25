@@ -22,37 +22,46 @@ export default function ProductFormPage() {
 
   async function save(values) {
     try {
+      const matchedCategory = categories.find((c) => c.id === values.categoryId);
+      const categoryName = matchedCategory?.name || values.categoryId || "General";
+      const primaryImage =
+        values.images?.find((img) => img.isPrimary)?.url || values.images?.[0]?.url || "";
+
       const saved = await saveAdminWarehouseProduct({
         id: productId,
         title: values.name,
-        category: values.categoryName || values.categoryId || "General",
+        name: values.name,
+        category: categoryName,
+        categoryName,
         base_price: Number(values.price) || 0,
         retail_price: Number(values.discountPrice || values.price) || 0,
-        warehouse_stock: Number(values.stock) || 0,
-        sku: values.sku,
-        description: values.description,
-        image_url: values.images && values.images[0]?.url,
+        warehouse_stock: Number(values.stock) >= 0 ? Number(values.stock) : 1,
+        sku: `SF-${Date.now().toString(36).toUpperCase()}`,
+        description: values.description || "",
+        image_url: primaryImage,
+        images: values.images || [],
+        sections: values.sections || ["Explore Products"],
       });
 
       setToast(
         editing
-          ? "Product successfully updated in Supabase."
-          : "Product successfully created in Supabase."
+          ? "Product successfully updated."
+          : "Product successfully created."
       );
       if (reload) await reload();
       window.setTimeout(() => {
         navigate(saved?.id ? `/admin/products/${saved.id}` : "/admin/products");
       }, 350);
     } catch (e) {
-      setToast("Error saving product to Supabase.");
+      setToast("Error saving product.");
     }
   }
 
   return (
-    <div className="mx-auto max-w-6xl pb-8">
+    <div className="mx-auto max-w-5xl pb-10">
       <PageHeader
-        title={editing ? `Edit ${product.name}` : "Create Product"}
-        description="Marketplace catalog records are persisted directly to Supabase warehouse products."
+        title={editing ? `Edit ${product.name}` : "Add New Product"}
+        description="Add product images, details, store placement, and inventory."
       />
       <ProductForm
         product={product}

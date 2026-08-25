@@ -6,44 +6,15 @@ export function validateProduct(values, products = [], currentId = null) {
   const discountPrice = values.discountPrice === "" || values.discountPrice == null
     ? null
     : asNumber(values.discountPrice);
-  const stock = asNumber(values.stock);
-  const threshold = asNumber(values.lowStockThreshold);
-  const sku = values.sku?.trim().toLowerCase();
+  const stock = values.stock === "" || values.stock == null ? 1 : asNumber(values.stock);
 
   if (!values.name?.trim()) errors.name = "Product name is required.";
-  if (!values.categoryId) errors.categoryId = "Select an existing category.";
+  if (!values.categoryId) errors.categoryId = "Select a product category.";
   if (!Number.isFinite(price) || price <= 0) errors.price = "Price must be greater than zero.";
   if (discountPrice !== null && (!Number.isFinite(discountPrice) || discountPrice < 0 || discountPrice >= price)) {
-    errors.discountPrice = "Discount price must be zero or greater and lower than the regular price.";
-  }
-  if (!sku) errors.sku = "SKU is required.";
-  if (sku && products.some((product) => product.id !== currentId && product.sku?.trim().toLowerCase() === sku)) {
-    errors.sku = "This SKU is already used by another product.";
+    errors.discountPrice = "Discount price must be lower than the regular price.";
   }
   if (!Number.isInteger(stock) || stock < 0) errors.stock = "Stock must be a whole number of zero or greater.";
-  if (!Number.isInteger(threshold) || threshold < 0) errors.lowStockThreshold = "Low-stock threshold must be zero or greater.";
-
-  const variantSkus = new Set();
-  for (const variant of values.variants ?? []) {
-    const variantSku = variant.sku?.trim().toLowerCase();
-    if (!variantSku) {
-      errors.variants = "Every variant needs a SKU.";
-      break;
-    }
-    const usedByProduct = products.some((product) =>
-      product.id !== currentId &&
-      (product.sku?.toLowerCase() === variantSku || product.variants?.some((item) => item.sku?.toLowerCase() === variantSku)),
-    );
-    if (variantSkus.has(variantSku) || usedByProduct) {
-      errors.variants = `Variant SKU ${variant.sku} is already in use.`;
-      break;
-    }
-    if (Number(variant.stock) < 0 || !Number.isInteger(Number(variant.stock))) {
-      errors.variants = "Variant stock must be a whole number of zero or greater.";
-      break;
-    }
-    variantSkus.add(variantSku);
-  }
 
   return errors;
 }

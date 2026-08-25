@@ -26,24 +26,25 @@ export function useProducts(productId = null) {
             categoryName: p.category || "General",
             categoryId: p.category,
             shopName: "Central Warehouse",
+            sections: p.sections || (p.tags?.length ? p.tags : ["Explore Products"]),
             price: Number(p.retail_price || p.base_price) || 0,
             base_price: Number(p.base_price) || 0,
             retail_price: Number(p.retail_price) || 0,
-            discountPrice: null,
-            stock: Number(p.warehouse_stock) || 0,
-            warehouse_stock: Number(p.warehouse_stock) || 0,
-            lowStockThreshold: 5,
-            sku: p.sku || `SF-${p.id ? p.id.slice(0, 6) : "PROD"}`,
-            status: "Active",
+            discountPrice: p.discount_price ? Number(p.discount_price) : null,
+            stock: Number(p.warehouse_stock ?? p.stock) >= 0 ? Number(p.warehouse_stock ?? p.stock) : 1,
+            warehouse_stock: Number(p.warehouse_stock ?? p.stock) >= 0 ? Number(p.warehouse_stock ?? p.stock) : 1,
+            status: p.status || (Number(p.warehouse_stock) === 0 ? "Out of Stock" : "Active"),
             approvalStatus: "Approved",
             description: p.description || "",
-            images: [
-              {
-                id: `IMG-${p.id}`,
-                url: p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80",
-                isPrimary: true,
-              },
-            ],
+            images: Array.isArray(p.images) && p.images.length
+              ? p.images
+              : [
+                  {
+                    id: `IMG-${p.id}`,
+                    url: p.image_url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80",
+                    isPrimary: true,
+                  },
+                ],
             variants: [],
             tags: [p.category?.toLowerCase() || "general"],
             createdAt: p.created_at || new Date().toISOString(),
