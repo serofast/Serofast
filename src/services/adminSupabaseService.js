@@ -166,13 +166,26 @@ export async function saveAdminWarehouseProduct(productData) {
   if (!supabase) return null;
   try {
     const isEdit = Boolean(productData.id && isValidUuid(productData.id));
+
+    // Store price: price user will buy
+    const storePrice = Number(productData.store_price ?? productData.retail_price ?? productData.price) || 0;
+    // Price(will be cutted): original MRP slashed for discount
+    const cutPrice = Number(productData["Price(will be cutted)"] ?? productData.cut_price ?? productData.base_price ?? storePrice) || storePrice;
+
+    const primaryImage = productData.image_url || (productData.images && productData.images[0]?.url) || "";
+    const imagesList = Array.isArray(productData.images) && productData.images.length
+      ? productData.images
+      : (primaryImage ? [{ id: "IMG-1", url: primaryImage, isPrimary: true }] : []);
+
     const payload = {
       title: productData.title || productData.name,
       category: productData.category || productData.categoryName || "General",
-      base_price: Number(productData.base_price || productData.price) || 0,
-      retail_price: Number(productData.retail_price || productData.price) || 0,
-      image_url: productData.image_url || (productData.images && productData.images[0]?.url) || "",
-      images: Array.isArray(productData.images) ? productData.images : [],
+      store_price: storePrice,
+      "Price(will be cutted)": cutPrice,
+      base_price: storePrice,
+      retail_price: cutPrice,
+      image_url: primaryImage,
+      images: imagesList,
       sections: Array.isArray(productData.sections) ? productData.sections : ["Explore Products"],
       material: productData.material || "",
       fit: productData.fit || "",
@@ -181,6 +194,8 @@ export async function saveAdminWarehouseProduct(productData) {
       description: productData.description || "",
       warehouse_stock: Number(productData.warehouse_stock ?? productData.stock) || 0,
       sku: productData.sku || `SF-${Date.now().toString(36).toUpperCase()}`,
+      status: productData.status || "active",
+      updated_at: new Date().toISOString(),
     };
 
     let response;
@@ -196,7 +211,35 @@ export async function saveAdminWarehouseProduct(productData) {
     }
 
     if (response.error) {
-      console.error("Supabase warehouse_products save error:", response.error);
+      console.warn("Retrying warehouse_products save with flexible column schema...", response.error.message);
+      
+      const fallbackPayload = {
+        title: productData.title || productData.name,
+        category: productData.category || productData.categoryName || "General",
+        store_price: storePrice,
+        image_url: primaryImage,
+        images: imagesList,
+        sections: Array.isArray(productData.sections) ? productData.sections : ["Explore Products"],
+        material: productData.material || "",
+        fit: productData.fit || "",
+        care: productData.care || "",
+        sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
+        description: productData.description || "",
+        warehouse_stock: Number(productData.warehouse_stock ?? productData.stock) || 0,
+        sku: productData.sku || `SF-${Date.now().toString(36).toUpperCase()}`,
+      };
+
+      if (!response.error.message?.includes("Price(will be cutted)")) {
+        fallbackPayload["Price(will be cutted)"] = cutPrice;
+      } else {
+        fallbackPayload.retail_price = cutPrice;
+      }
+
+      if (isEdit) {
+        response = await supabase.from("warehouse_products").update(fallbackPayload).eq("id", productData.id).select().single();
+      } else {
+        response = await supabase.from("warehouse_products").insert([fallbackPayload]).select().single();
+      }
     }
 
     if (response.data) {
@@ -209,12 +252,15 @@ export async function saveAdminWarehouseProduct(productData) {
       });
       return {
         ...response.data,
+        store_price: storePrice,
+        "Price(will be cutted)": cutPrice,
+        cut_price: cutPrice,
         material: productData.material || "",
         fit: productData.fit || "",
         care: productData.care || "",
         sizes: productData.sizes || [],
         sections: productData.sections || [],
-        images: productData.images || [],
+        images: imagesList,
       };
     }
   } catch (e) {

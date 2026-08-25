@@ -28,8 +28,8 @@ export default function ProductFormPage() {
       const primaryImage =
         values.images?.find((img) => img.isPrimary)?.url || values.images?.[0]?.url || "";
 
-      const basePrice = Number(values.base_price || values.retail_price || values.price) || 0;
-      const retailPrice = Number(values.retail_price ?? values.price) || 0;
+      const storePrice = Number(values.store_price ?? values.retail_price ?? values.price) || 0;
+      const cutPrice = Number(values.cut_price ?? values["Price(will be cutted)"] ?? values.base_price ?? storePrice) || storePrice;
 
       const saved = await saveAdminWarehouseProduct({
         id: productId,
@@ -41,8 +41,11 @@ export default function ProductFormPage() {
         fit: values.fit || "",
         care: values.care || "",
         sizes: values.sizes || [],
-        base_price: basePrice,
-        retail_price: retailPrice,
+        store_price: storePrice,
+        "Price(will be cutted)": cutPrice,
+        cut_price: cutPrice,
+        base_price: storePrice,
+        retail_price: cutPrice,
         warehouse_stock: Number(values.stock) >= 0 ? Number(values.stock) : 1,
         sku: `SF-${Date.now().toString(36).toUpperCase()}`,
         description: values.description || "",

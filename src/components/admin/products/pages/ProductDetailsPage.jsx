@@ -53,9 +53,16 @@ export default function ProductDetailsPage() {
     product.images?.find((image) => image.isPrimary)?.url ?? product.images?.[0]?.url;
 
   const sections = product.sections || ["Explore Products"];
-  const basePrice = Number(product.base_price || product.price) || 0;
-  const retailPrice = Number(product.retail_price ?? product.price) || 0;
-  const discountOff = discountPercentage(basePrice, retailPrice);
+  const storePrice = Number(product.store_price ?? product.retail_price ?? product.price) || 0;
+  const cutPrice =
+    Number(
+      product["Price(will be cutted)"] ??
+        product.cut_price ??
+        product.base_price ??
+        storePrice
+    ) || storePrice;
+  const hasDiscount = cutPrice > storePrice && storePrice > 0;
+  const discountOff = hasDiscount ? discountPercentage(cutPrice, storePrice) : 0;
 
   return (
     <div className="mx-auto max-w-5xl space-y-5 pb-8">
@@ -79,7 +86,7 @@ export default function ProductDetailsPage() {
 
       <PageHeader
         title={product.name}
-        description="Warehouse catalog record, side-angle images, specifications, and pricing."
+        description="Warehouse catalog record, carousel angle photos, specifications, store price and discount cut price."
       />
 
       <div className="flex flex-wrap gap-2">
@@ -140,12 +147,12 @@ export default function ProductDetailsPage() {
 
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-base font-bold text-brandRed">
-                {currency.format(retailPrice)}
+                {currency.format(storePrice)}
               </span>
-              {basePrice > retailPrice && (
+              {hasDiscount && (
                 <>
                   <span className="text-xs text-slate-400 line-through">
-                    {currency.format(basePrice)}
+                    {currency.format(cutPrice)}
                   </span>
                   <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-brandRed">
                     {discountOff}% OFF
@@ -167,8 +174,9 @@ export default function ProductDetailsPage() {
             <Overview
               product={product}
               sections={sections}
-              basePrice={basePrice}
-              retailPrice={retailPrice}
+              storePrice={storePrice}
+              cutPrice={cutPrice}
+              hasDiscount={hasDiscount}
               discountOff={discountOff}
             />
           )}
@@ -219,7 +227,7 @@ export default function ProductDetailsPage() {
   );
 }
 
-function Overview({ product, sections, basePrice, retailPrice, discountOff }) {
+function Overview({ product, sections, storePrice, cutPrice, hasDiscount, discountOff }) {
   const fields = [
     ["Category", product.categoryName || product.category || "General"],
     ["Placement Sections", sections.join(", ")],
@@ -230,17 +238,17 @@ function Overview({ product, sections, basePrice, retailPrice, discountOff }) {
       "Available Sizes",
       Array.isArray(product.sizes) && product.sizes.length ? product.sizes.join(", ") : "—",
     ],
-    ["Retail Price (Selling Price)", currency.format(retailPrice)],
+    ["Store Price (User Will Buy)", currency.format(storePrice)],
     [
-      "Base Price (MRP / Cut Price)",
-      basePrice > retailPrice
-        ? `${currency.format(basePrice)} (Strikethrough MRP)`
-        : currency.format(basePrice || retailPrice),
+      "Price (will be cutted)",
+      hasDiscount
+        ? `${currency.format(cutPrice)} (Slashed MRP)`
+        : currency.format(cutPrice || storePrice),
     ],
     [
-      "Discount / Savings",
+      "Discount Savings",
       discountOff > 0
-        ? `${discountOff}% OFF (Customer saves ${currency.format(basePrice - retailPrice)})`
+        ? `${discountOff}% OFF (User Saves ${currency.format(cutPrice - storePrice)})`
         : "No discount applied",
     ],
     ["Stock Status", product.stock > 0 ? `${product.stock} in stock` : "Sold Out (Hidden)"],

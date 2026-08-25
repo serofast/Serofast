@@ -556,18 +556,32 @@ export async function fetchShopProducts(shopId) {
       if (!spError && spData?.length) {
         list = spData.map((sp) => {
           const wp = sp.warehouse_products || {};
+          const storePrice = Number(sp.selling_price || wp.store_price || wp.retail_price || wp.base_price || 499);
+          const cutPrice = Number(wp["Price(will be cutted)"] || wp.cut_price || wp.base_price || wp.retail_price || storePrice);
+          const imagesList = Array.isArray(wp.images) && wp.images.length
+            ? wp.images
+            : (wp.image_url ? [{ url: wp.image_url, isPrimary: true }] : []);
+
           return {
             id: sp.id || wp.id,
             warehouseId: sp.warehouse_product_id,
             isWarehouse: true,
             name: wp.title || wp.name || "Warehouse Product",
             category: wp.category || "General Catalog",
-            price: Number(sp.selling_price || wp.retail_price || wp.base_price || 499),
-            originalPrice: Number(wp.base_price || wp.original_price || 699),
-            stock: sp.allocated_stock ?? 10,
+            price: storePrice,
+            store_price: storePrice,
+            originalPrice: cutPrice,
+            cut_price: cutPrice,
+            "Price(will be cutted)": cutPrice,
+            stock: sp.allocated_stock ?? wp.warehouse_stock ?? 1,
             status: sp.is_active ? "In Stock" : "Out of Stock",
             salesCount: 0,
-            image: wp.image_url || wp.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+            image: wp.image_url || wp.image || imagesList[0]?.url || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+            images: imagesList,
+            material: wp.material,
+            fit: wp.fit,
+            care: wp.care,
+            sizes: wp.sizes,
           };
         });
       }

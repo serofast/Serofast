@@ -93,21 +93,21 @@ export default function ProductsPage() {
     { key: "category", label: "Category" },
     {
       key: "priceDisplay",
-      label: "Selling Price (Retail / MRP)",
+      label: "Store Price / Cut Price",
       render: (row) => {
-        const retail = Number(row.retail_price ?? row.price) || 0;
-        const base = Number(row.base_price) || 0;
-        const hasDiscount = base > retail && retail > 0;
-        const pct = hasDiscount ? discountPercentage(base, retail) : 0;
+        const store = Number(row.store_price ?? row.retail_price ?? row.price) || 0;
+        const cut = Number(row["Price(will be cutted)"] ?? row.cut_price ?? row.base_price ?? store) || 0;
+        const hasDiscount = cut > store && store > 0;
+        const pct = hasDiscount ? discountPercentage(cut, store) : 0;
         return (
           <div>
             <span className="font-semibold text-slate-800">
-              {currency.format(retail)}
+              {currency.format(store)}
             </span>
             {hasDiscount && (
               <div className="flex items-center gap-1 mt-0.5">
                 <span className="text-[10px] text-slate-400 line-through">
-                  {currency.format(base)}
+                  {currency.format(cut)}
                 </span>
                 <span className="rounded bg-rose-50 px-1 py-0.2 text-[9px] font-bold text-brandRed">
                   {pct}% off

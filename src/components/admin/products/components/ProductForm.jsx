@@ -142,6 +142,17 @@ function createDraft(product, categories) {
       ? product.sizes
       : product.size ? [product.size] : [];
 
+    const rawCutPrice =
+      product["Price(will be cutted)"] ??
+      product.cut_price ??
+      product.base_price ??
+      "";
+    const rawStorePrice =
+      product.store_price ??
+      product.retail_price ??
+      product.price ??
+      "";
+
     return {
       name: product.name || product.title || "",
       description: product.description || "",
@@ -151,8 +162,8 @@ function createDraft(product, categories) {
       fit: product.fit || "",
       care: product.care || "",
       sizes: rawSizes,
-      base_price: product.base_price !== undefined && product.base_price !== null ? product.base_price : (product.price || ""),
-      retail_price: product.retail_price !== undefined && product.retail_price !== null ? product.retail_price : (product.discountPrice || product.price || ""),
+      cut_price: rawCutPrice,
+      store_price: rawStorePrice,
       stock: product.stock ?? product.warehouse_stock ?? 1,
       images: Array.isArray(product.images) ? product.images : [],
     };
@@ -167,8 +178,8 @@ function createDraft(product, categories) {
     fit: "",
     care: "",
     sizes: [],
-    base_price: "",
-    retail_price: "",
+    cut_price: "",
+    store_price: "",
     stock: 1,
     images: [],
   };
@@ -350,7 +361,7 @@ export default function ProductForm({ product, categories = [], products = [], o
     onSave(draft, addAnother);
   }
 
-  const calcDiscount = discountPercentage(draft.base_price, draft.retail_price);
+  const calcDiscount = discountPercentage(draft.cut_price, draft.store_price);
 
   return (
     <form onSubmit={(e) => handleFormSubmit(e, false)} className="space-y-6" noValidate>
@@ -673,44 +684,44 @@ export default function ProductForm({ product, categories = [], products = [], o
       {/* 5. PRICING & WAREHOUSE INVENTORY */}
       <Section
         title="5. Pricing & Warehouse Inventory"
-        description="Set the base MRP (cut price), retail selling price (what the customer pays), and stock count."
+        description="Set the store price (the price the user will buy) and the price that will be cutted (slashed MRP for discount display)."
       >
         <div className="grid gap-4 sm:grid-cols-3">
-          {/* Base Price (MRP - Cut Price) */}
+          {/* Price (will be cutted) */}
           <FormField
-            label="Base Price (MRP - ₹)"
-            helper="Original price that gets crossed out"
-            error={errors.base_price}
+            label="Price (will be cutted - ₹)"
+            helper="Original price that will be slashed / crossed out"
+            error={errors.cut_price}
           >
             <input
               type="number"
               min="0"
               step="1"
-              value={draft.base_price}
-              onChange={(event) => update("base_price", event.target.value)}
-              placeholder="e.g. 999 (MRP)"
+              value={draft.cut_price}
+              onChange={(event) => update("cut_price", event.target.value)}
+              placeholder="e.g. 999 (Slashed MRP)"
               className={fieldClass}
             />
           </FormField>
 
-          {/* Retail Price (Customer Buying Price) */}
+          {/* Store Price (User will buy) */}
           <FormField
-            label="Retail Price (Selling Price - ₹)"
+            label="Store Price (User Will Buy - ₹)"
             required
             helper={
               calcDiscount > 0
-                ? `${calcDiscount}% OFF (Save ₹${Number(draft.base_price) - Number(draft.retail_price)})`
-                : "Final price customer pays to buy"
+                ? `${calcDiscount}% OFF (User Saves ₹${Number(draft.cut_price) - Number(draft.store_price)})`
+                : "Final price user pays to buy"
             }
-            error={errors.retail_price}
+            error={errors.store_price}
           >
             <input
               type="number"
               min="0"
               step="1"
-              value={draft.retail_price}
-              onChange={(event) => update("retail_price", event.target.value)}
-              placeholder="e.g. 499 (Final Price)"
+              value={draft.store_price}
+              onChange={(event) => update("store_price", event.target.value)}
+              placeholder="e.g. 499 (Selling Price)"
               className={fieldClass}
             />
           </FormField>
