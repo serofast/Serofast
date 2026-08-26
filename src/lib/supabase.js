@@ -146,10 +146,16 @@ export async function registerShopOwner(ownerData) {
 
         if (!updateError && updated) {
           localStorage.setItem("serofast_current_owner", JSON.stringify(updated));
+          if (shopObj) {
+            localStorage.setItem("serofast_active_shop", JSON.stringify(shopObj));
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+          }
           return updated;
         }
       } else {
-        // If creating new owner, check if an existing shop has owner_phone
+        // If creating new owner, check if an existing shop has owner_phone or belongs to this email
+        let matchedShop = null;
         try {
           const { data: shop } = await supabase
             .from("shops")
@@ -158,6 +164,7 @@ export async function registerShopOwner(ownerData) {
             .maybeSingle();
 
           if (shop) {
+            matchedShop = shop;
             payload.is_shop_created = true;
             if (shop.owner_phone?.trim() && !payload.phone) {
               payload.phone = shop.owner_phone.trim();
@@ -173,6 +180,11 @@ export async function registerShopOwner(ownerData) {
 
         if (!createError && created) {
           localStorage.setItem("serofast_current_owner", JSON.stringify(created));
+          if (matchedShop) {
+            localStorage.setItem("serofast_active_shop", JSON.stringify(matchedShop));
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+          }
           return created;
         }
       }
@@ -183,6 +195,7 @@ export async function registerShopOwner(ownerData) {
 
   const fallback = { id: ownerData.id || `owner-${Date.now()}`, ...payload };
   localStorage.setItem("serofast_current_owner", JSON.stringify(fallback));
+  localStorage.removeItem("serofast_active_shop");
   return fallback;
 }
 
@@ -288,6 +301,7 @@ export async function loginShopOwner(credentials) {
           localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
           return { owner: ownerWithStatus, shop };
         }
+        localStorage.removeItem("serofast_active_shop");
         return { owner: ownerWithStatus, shop: null };
       }
     } catch {
@@ -302,7 +316,19 @@ export async function loginShopOwner(credentials) {
     const storedOwner = localStorage.getItem("serofast_current_owner");
     if (storedOwner) owner = JSON.parse(storedOwner);
     const storedShop = localStorage.getItem("serofast_active_shop");
-    if (storedShop) shop = JSON.parse(storedShop);
+    if (storedShop && owner) {
+      const parsed = JSON.parse(storedShop);
+      const isMatch =
+        (parsed.owner_id && owner.id && String(parsed.owner_id) === String(owner.id)) ||
+        (parsed.owner_email && owner.email && parsed.owner_email.toLowerCase() === owner.email.toLowerCase());
+      if (isMatch) {
+        shop = parsed;
+      } else {
+        localStorage.removeItem("serofast_active_shop");
+      }
+    } else {
+      localStorage.removeItem("serofast_active_shop");
+    }
 
     if (owner && shop) {
       const effectivePhone = owner.phone?.trim() || shop.owner_phone?.trim() || "";
@@ -358,6 +384,183 @@ export async function fetchOwnerProfile() {
     // Graceful fallback
   }
   return null;
+}
+
+/* ── Save Onboarding Progress / Draft to Supabase & Storage ─ */
+
+export async function saveOnboardingDraft(stepNumber, formData) {
+  if (!formData) return;
+
+  // 1. Persist in local storage under specific user key
+  let currentOwnerObj = null;
+  try {
+    const stored = localStorage.getItem("serofast_current_owner");
+    if (stored) currentOwnerObj = JSON.parse(stored);
+  } catch {}
+
+  const userKey = currentOwnerObj?.email || currentOwnerObj?.id || "default";
+  try {
+    localStorage.setItem(`serofast_create_shop_draft_${userKey}`, JSON.stringify(formData));
+  } catch {}
+
+  // 2. Persist in Supabase public.shop_owners and public.shops
+  if (supabase && currentOwnerObj) {
+    try {
+      const ownerUpdates = {};
+      if (formData.ownerName) ownerUpdates.full_name = formData.ownerName;
+      if (formData.phone) ownerUpdates.phone = formData.phone;
+      if (formData.email) ownerUpdates.email = formData.email;
+      if (formData.category) ownerUpdates.category = formData.category;
+      if (formData.is_paid) {
+        ownerUpdates.is_paid = true;
+        if (formData.payment_id) ownerUpdates.payment_id = formData.payment_id;
+      }
+      ownerUpdates.updated_at = new Date().toISOString();
+
+      if (currentOwnerObj.id && isValidUuid(currentOwnerObj.id)) {
+        await supabase.from("shop_owners").update(ownerUpdates).eq("id", currentOwnerObj.id);
+      } else if (currentOwnerObj.email) {
+        await supabase.from("shop_owners").update(ownerUpdates).eq("email", currentOwnerObj.email);
+      }
+
+      // Update currentOwnerObj in localStorage
+      const mergedOwner = { ...currentOwnerObj, ...ownerUpdates };
+      localStorage.setItem("serofast_current_owner", JSON.stringify(mergedOwner));
+
+      // Also upsert/update draft in public.shops if shopName or payment is present
+      const ownerEmail = formData.email || currentOwnerObj.email;
+      const ownerId = currentOwnerObj.id;
+
+      if (ownerEmail || (ownerId && isValidUuid(ownerId))) {
+        let shopQuery = supabase.from("shops").select("*");
+        if (ownerEmail && ownerId && isValidUuid(ownerId)) {
+          shopQuery = shopQuery.or(`owner_email.eq.${ownerEmail},owner_id.eq.${ownerId}`);
+        } else if (ownerEmail) {
+          shopQuery = shopQuery.eq("owner_email", ownerEmail);
+        } else {
+          shopQuery = shopQuery.eq("owner_id", ownerId);
+        }
+        const { data: existingShop } = await shopQuery.maybeSingle();
+
+        const fullAddress = [formData.address, formData.city, formData.pincode]
+          .filter(Boolean)
+          .map((s) => String(s).trim())
+          .join(", ");
+
+        const shopFields = {
+          name: formData.shopName || existingShop?.name || "Draft Shop",
+          tagline: formData.tagline || existingShop?.tagline || "",
+          description: formData.description || existingShop?.description || "",
+          address: fullAddress || existingShop?.address || "",
+          category_id: (formData.category || existingShop?.category_id || "fashion").toLowerCase(),
+          owner_name: formData.ownerName || currentOwnerObj.full_name || "",
+          owner_email: ownerEmail,
+          owner_phone: formData.phone || currentOwnerObj.phone || "",
+          updated_at: new Date().toISOString(),
+        };
+
+        if (formData.is_paid) {
+          shopFields.is_paid = true;
+          shopFields.payment_id = formData.payment_id;
+          shopFields.payment_status = "paid";
+          shopFields.onboarding_amount = 50.00;
+        }
+
+        if (existingShop) {
+          await supabase.from("shops").update(shopFields).eq("id", existingShop.id);
+        }
+      }
+    } catch {}
+  }
+}
+
+/* ── Load Onboarding Progress / Draft from Supabase & Storage ─ */
+
+export async function loadOnboardingDraft() {
+  let ownerObj = null;
+  try {
+    const stored = localStorage.getItem("serofast_current_owner");
+    if (stored) ownerObj = JSON.parse(stored);
+  } catch {}
+
+  const userKey = ownerObj?.email || ownerObj?.id || "default";
+  let localDraft = null;
+  try {
+    const dStr = localStorage.getItem(`serofast_create_shop_draft_${userKey}`);
+    if (dStr) localDraft = JSON.parse(dStr);
+  } catch {}
+
+  const draft = { ...(localDraft || {}) };
+
+  // Rehydrate directly from Supabase public.shop_owners and public.shops
+  if (supabase && ownerObj) {
+    try {
+      // 1. Fetch live owner profile
+      let ownerQuery = supabase.from("shop_owners").select("*");
+      if (ownerObj.id && isValidUuid(ownerObj.id)) {
+        ownerQuery = ownerQuery.eq("id", ownerObj.id);
+      } else if (ownerObj.email) {
+        ownerQuery = ownerQuery.eq("email", ownerObj.email);
+      }
+      const { data: dbOwner } = await ownerQuery.maybeSingle();
+
+      if (dbOwner) {
+        if (dbOwner.full_name && !draft.ownerName) draft.ownerName = dbOwner.full_name;
+        if (dbOwner.phone && !draft.phone) draft.phone = dbOwner.phone;
+        if (dbOwner.email && !draft.email) draft.email = dbOwner.email;
+        if (dbOwner.category && !draft.category) draft.category = dbOwner.category;
+        if (dbOwner.is_paid) {
+          draft.is_paid = true;
+          if (dbOwner.payment_id) draft.payment_id = dbOwner.payment_id;
+        }
+        localStorage.setItem("serofast_current_owner", JSON.stringify({ ...ownerObj, ...dbOwner }));
+      }
+
+      // 2. Fetch live shop profile
+      const email = dbOwner?.email || ownerObj.email;
+      const ownerId = dbOwner?.id || ownerObj.id;
+      let shopQuery = supabase.from("shops").select("*");
+      if (email && ownerId && isValidUuid(ownerId)) {
+        shopQuery = shopQuery.or(`owner_email.eq.${email},owner_id.eq.${ownerId}`);
+      } else if (email) {
+        shopQuery = shopQuery.eq("owner_email", email);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        shopQuery = shopQuery.eq("owner_id", ownerId);
+      }
+      const { data: dbShop } = await shopQuery.maybeSingle();
+
+      if (dbShop) {
+        if (dbShop.name && !draft.shopName) draft.shopName = dbShop.name;
+        if (dbShop.tagline && !draft.tagline) draft.tagline = dbShop.tagline;
+        if (dbShop.description && !draft.description) draft.description = dbShop.description;
+        if (dbShop.address && !draft.address) draft.address = dbShop.address;
+        if (dbShop.cover_url && !draft.cover) draft.cover = dbShop.cover_url;
+        if (dbShop.avatar_url && !draft.logo) draft.logo = dbShop.avatar_url;
+        if (dbShop.owner_phone && !draft.phone) draft.phone = dbShop.owner_phone;
+        if (dbShop.owner_name && !draft.ownerName) draft.ownerName = dbShop.owner_name;
+        if (dbShop.owner_email && !draft.email) draft.email = dbShop.owner_email;
+        if (dbShop.is_paid) {
+          draft.is_paid = true;
+          draft.payment_id = dbShop.payment_id || draft.payment_id;
+          draft.payment_status = "paid";
+        }
+      }
+    } catch {}
+  }
+
+  // Ensure ownerName, email, and phone are populated from ownerObj if still empty
+  if (ownerObj) {
+    if (!draft.ownerName && ownerObj.full_name) draft.ownerName = ownerObj.full_name;
+    if (!draft.email && ownerObj.email) draft.email = ownerObj.email;
+    if (!draft.phone && ownerObj.phone) draft.phone = ownerObj.phone;
+    if (!draft.category && ownerObj.category) draft.category = ownerObj.category;
+    if (ownerObj.is_paid) {
+      draft.is_paid = true;
+      if (ownerObj.payment_id) draft.payment_id = ownerObj.payment_id;
+    }
+  }
+
+  return draft;
 }
 
 /* ── Fetch Warehouse Products (Admin Catalog) ───────────── */
@@ -419,6 +622,11 @@ export async function createShopInSupabase(shopData) {
   const ownerEmail = shopData.email || currentOwnerObj?.email || "";
   const ownerPhone = shopData.phone || currentOwnerObj?.phone || "";
 
+  // 1. Strict Payment Security Check: Store cannot be created without verified ₹50 payment
+  if (!shopData.is_paid || !shopData.payment_id) {
+    throw new Error("Store activation requires completing the ₹50 onboarding payment.");
+  }
+
   // Format shop address (location, city, pincode separated by commas)
   const fullAddress = [shopData.address, shopData.city, shopData.pincode]
     .filter(Boolean)
@@ -426,7 +634,6 @@ export async function createShopInSupabase(shopData) {
     .join(", ");
 
   const payload = {
-    id,
     shop_id: shopIdSlug,
     name: shopName,
     tagline: shopData.tagline || "",
@@ -439,18 +646,28 @@ export async function createShopInSupabase(shopData) {
     owner_name: ownerName,
     owner_email: ownerEmail,
     owner_phone: ownerPhone,
+    is_paid: true,
+    payment_id: shopData.payment_id,
+    payment_status: "paid",
+    onboarding_amount: 50.00,
     created_at: new Date().toISOString(),
   };
+
+  if (shopData.id && isValidUuid(shopData.id)) {
+    payload.id = shopData.id;
+  }
 
   if (ownerId && isValidUuid(ownerId)) {
     payload.owner_id = ownerId;
   }
 
-  // Update phone, full_name, email & set is_shop_created = true in public.shop_owners table
+  // Update phone, full_name, email, is_paid & set is_shop_created = true in public.shop_owners table
   if (supabase) {
     try {
       const ownerUpdate = {
         is_shop_created: true,
+        is_paid: true,
+        payment_id: shopData.payment_id,
         updated_at: new Date().toISOString(),
       };
       if (ownerPhone) ownerUpdate.phone = ownerPhone;
@@ -468,16 +685,36 @@ export async function createShopInSupabase(shopData) {
           .update(ownerUpdate)
           .eq("email", ownerEmail);
       }
+
+      // Record transaction
+      try {
+        const txNumber = `TXN-ONBOARD-${Date.now()}`;
+        await supabase.from("transactions").insert([
+          {
+            transaction_number: txNumber,
+            type: "Seller Onboarding",
+            gross_amount: 50.00,
+            platform_fee: 0.00,
+            net_amount: 50.00,
+            payment_method: "Razorpay Online",
+            status: "Success",
+            gateway_ref_id: shopData.payment_id,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      } catch {}
     } catch {
       // Graceful fallback
     }
   }
 
-  // Update local current owner state with is_shop_created: true and updated phone number
+  // Update local current owner state with is_shop_created: true, is_paid: true and updated phone number
   if (currentOwnerObj) {
     const updatedOwner = {
       ...currentOwnerObj,
       is_shop_created: true,
+      is_paid: true,
+      payment_id: shopData.payment_id,
       phone: ownerPhone || currentOwnerObj.phone,
       full_name: ownerName || currentOwnerObj.full_name,
     };
@@ -581,6 +818,7 @@ export async function fetchShopProducts(shopId) {
             material: wp.material,
             fit: wp.fit,
             care: wp.care,
+            occation: wp.occation || wp.occasion || "",
             sizes: wp.sizes,
           };
         });
@@ -655,7 +893,20 @@ export async function fetchShopDetails(shopId, ownerId) {
   if (!shopData) {
     try {
       const storedShop = localStorage.getItem("serofast_active_shop");
-      if (storedShop) shopData = JSON.parse(storedShop);
+      if (storedShop) {
+        const parsed = JSON.parse(storedShop);
+        const ownerEmail = ownerData?.email?.toLowerCase();
+        const ownerUid = ownerId || ownerData?.id;
+        const isMatch =
+          (ownerUid && parsed.owner_id && String(parsed.owner_id) === String(ownerUid)) ||
+          (ownerEmail && parsed.owner_email && parsed.owner_email.toLowerCase() === ownerEmail);
+
+        if (isMatch) {
+          shopData = parsed;
+        } else {
+          localStorage.removeItem("serofast_active_shop");
+        }
+      }
     } catch {}
   }
   if (!ownerData) {

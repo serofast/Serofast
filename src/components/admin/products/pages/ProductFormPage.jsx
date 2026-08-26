@@ -40,6 +40,7 @@ export default function ProductFormPage() {
         material: values.material || "",
         fit: values.fit || "",
         care: values.care || "",
+        occation: values.occation || values.occasion || "",
         sizes: values.sizes || [],
         store_price: storePrice,
         "Price(will be cutted)": cutPrice,

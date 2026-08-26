@@ -20,11 +20,28 @@ export default function ShopOwnerDashboardPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("serofast_active_shop");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setActiveShop(parsed);
-        setOrders(parsed.orders || []);
+      const storedOwner = localStorage.getItem("serofast_current_owner");
+      const ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
+      const storedShop = localStorage.getItem("serofast_active_shop");
+
+      if (storedShop && ownerObj) {
+        const parsed = JSON.parse(storedShop);
+        const isMatch =
+          (parsed.owner_id && ownerObj.id && String(parsed.owner_id) === String(ownerObj.id)) ||
+          (parsed.owner_email && ownerObj.email && parsed.owner_email.toLowerCase() === ownerObj.email.toLowerCase());
+
+        if (isMatch) {
+          setActiveShop(parsed);
+          setOrders(parsed.orders || []);
+        } else {
+          localStorage.removeItem("serofast_active_shop");
+          setActiveShop(null);
+          setOrders([]);
+        }
+      } else {
+        localStorage.removeItem("serofast_active_shop");
+        setActiveShop(null);
+        setOrders([]);
       }
     } catch (e) {
       console.warn("Storage read error", e);
