@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminSelect, Card, Kpi, StatGrid, DonutChart, ProgressCircle } from "../../shared/ui";
 import { salesSeries, shops } from "../../shared/adminData";
+import { fetchAdminOverviewStats, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 const customerMetrics = [
   ["New Customers", "1,284"],
@@ -31,7 +32,18 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState("30 Days");
   const [shop, setShop] = useState("");
   const [category, setCategory] = useState("");
+  const [liveStats, setLiveStats] = useState(null);
   const maximum = Math.max(...salesSeries, 1);
+
+  useEffect(() => {
+    async function loadStats() {
+      const data = await fetchAdminOverviewStats();
+      if (data) setLiveStats(data);
+    }
+    loadStats();
+    const unsub = subscribeToAdminTableChanges("orders", () => loadStats());
+    return () => unsub();
+  }, []);
 
   return (
     <div className="min-w-0 space-y-6 pb-6 font-sans font-sansation animate-fade-in">
@@ -40,7 +52,7 @@ export default function AnalyticsPage() {
           Marketplace Analytics
         </h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Track revenue, orders, customer retention, and shop performance.
+          Track live revenue, orders, customer retention, and shop performance from Supabase.
         </p>
       </div>
 
@@ -68,10 +80,25 @@ export default function AnalyticsPage() {
       </Card>
 
       <StatGrid>
-        <Kpi label="Revenue" value="₹12.48L" change={`For ${range}`} tone="red" />
-        <Kpi label="Orders" value="428" change="+8.2%" tone="green" />
-        <Kpi label="Customers" value="18,492" change="+9.8%" tone="blue" />
-        <Kpi label="AOV" value="₹2,916" change="+3.4%" tone="amber" />
+        <Kpi
+          label="Revenue"
+          value={liveStats ? `₹${(liveStats.totalGMV || 0).toLocaleString("en-IN")}` : "₹12.48L"}
+          change={`For ${range}`}
+          tone="red"
+        />
+        <Kpi
+          label="Orders"
+          value={liveStats ? String(liveStats.totalOrders) : "428"}
+          change="+8.2%"
+          tone="green"
+        />
+        <Kpi
+          label="Customers"
+          value={liveStats ? String(liveStats.totalCustomers) : "18,492"}
+          change="+9.8%"
+          tone="blue"
+        />
+        <Kpi label="Active Shops" value={liveStats ? String(liveStats.activeShops) : "42"} change="+3.4%" tone="amber" />
         <Kpi label="Conversion" value="4.82%" change="+0.6%" tone="green" />
         <Kpi label="Refund Rate" value="1.46%" change="-0.2%" tone="amber" />
       </StatGrid>

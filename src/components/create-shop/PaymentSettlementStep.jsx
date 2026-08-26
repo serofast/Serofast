@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, ShieldCheck, Zap, Wallet, CheckCircle2 } from "l
 
 export default function PaymentSettlementStep({ onNext, onBack }) {
   return (
-    <div className="space-y-7 font-sans max-w-2xl mx-auto">
+    <div className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-100 text-emerald-600">

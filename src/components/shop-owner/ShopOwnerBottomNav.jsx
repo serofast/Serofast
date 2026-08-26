@@ -7,11 +7,16 @@ import {
   Settings,
 } from "lucide-react";
 
-export default function ShopOwnerBottomNav() {
+export default function ShopOwnerBottomNav({ pendingOrdersCount = 0 }) {
   const navItems = [
     { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
     { label: "Products", path: "/shop-owner/inventory", icon: Package },
-    { label: "Orders", path: "/shop-owner/orders", icon: ShoppingBag },
+    {
+      label: "Orders",
+      path: "/shop-owner/orders",
+      icon: ShoppingBag,
+      badge: pendingOrdersCount > 0 ? String(pendingOrdersCount) : null,
+    },
     { label: "Payouts", path: "/shop-owner/payouts", icon: CreditCard },
     { label: "Settings", path: "/shop-owner/settings", icon: Settings },
   ];

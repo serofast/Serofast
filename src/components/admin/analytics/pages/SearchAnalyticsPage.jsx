@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, PageHeader, SearchBar } from "../../shared/ui";
 import { topSearches, zeroSearches } from "../../shared/adminData";
@@ -7,6 +7,10 @@ export default function SearchAnalyticsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
+
+  useEffect(() => {
+    setQuery(searchParams.get("q") ?? "");
+  }, [searchParams]);
   const filteredTopSearches = useMemo(
     () =>
       topSearches.filter(([term]) =>

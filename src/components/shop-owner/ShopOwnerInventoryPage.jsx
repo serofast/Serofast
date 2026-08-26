@@ -1,19 +1,30 @@
 import { useState, useEffect, useRef } from "react";
-import { Plus, Search, Edit3, CheckCircle2, XCircle, X, Package, Loader2, ShoppingCart, Eye, Trash2 } from "lucide-react";
-import { initialSellerProducts } from "../../data/sellerData";
-import { fetchWarehouseProducts } from "../../lib/supabase";
+import {
+  Plus,
+  Search,
+  CheckCircle2,
+  XCircle,
+  X,
+  Package,
+  Loader2,
+  ShoppingCart,
+  Eye,
+  Trash2,
+  ShieldAlert,
+} from "lucide-react";
+import { fetchWarehouseProducts, linkProductsToShop, fetchShopProducts } from "../../lib/supabase";
 import { AppFormField } from "../reusable/form";
-import { AppMetricCard } from "../reusable";
+import { AppMetricCard, AppSuccessModal, AppErrorModal } from "../reusable";
 
 export default function ShopOwnerInventoryPage() {
-  const [products, setProducts] = useState(initialSellerProducts);
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // View, Edit, and Delete modal states
+  // View and Delete modal states
   const [productToView, setProductToView] = useState(null);
-  const [productToEdit, setProductToEdit] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // Warehouse selection state
@@ -21,15 +32,45 @@ export default function ShopOwnerInventoryPage() {
   const [loadingWarehouse, setLoadingWarehouse] = useState(false);
   const [selectedWarehouseIds, setSelectedWarehouseIds] = useState([]);
   const [warehouseSearchQuery, setWarehouseSearchQuery] = useState("");
-  const [sheetHeight, setSheetHeight] = useState(120);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  // Active shop context
+  const [activeShopId, setActiveShopId] = useState(null);
+
+  useEffect(() => {
+    let sId = null;
+    try {
+      const active = localStorage.getItem("serofast_active_shop");
+      if (active) sId = JSON.parse(active).id;
+    } catch (e) {
+      console.warn(e);
+    }
+    setActiveShopId(sId);
+
+    (async () => {
+      setLoadingProducts(true);
+      try {
+        if (sId) {
+          const dbProducts = await fetchShopProducts(sId);
+          setProducts(dbProducts || []);
+        } else {
+          setProducts([]);
+        }
+      } finally {
+        setLoadingProducts(false);
+      }
+    })();
+  }, []);
+
+  // Bottom Sheet drag state for mobile view
+  const [sheetHeight, setSheetHeight] = useState(500);
   const [isSheetDragging, setIsSheetDragging] = useState(false);
   const dragState = useRef(null);
-  const sheetHeightRef = useRef(120);
+  const sheetHeightRef = useRef(500);
   const suppressClickRef = useRef(false);
 
-  // A readable peek with the handle and complete selector header visible.
-  const peekHeight = 120;
-  const getExpandedHeight = () => Math.round(window.innerHeight * 0.92);
+  const peekHeight = 150;
+  const getExpandedHeight = () => Math.round(window.innerHeight * 0.88);
   const updateSheetHeight = (height) => {
     sheetHeightRef.current = height;
     setSheetHeight(height);
@@ -56,11 +97,22 @@ export default function ShopOwnerInventoryPage() {
     }
   }, [isModalOpen]);
 
+  const moveRafId = useRef(null);
+
   useEffect(() => {
     if (!isModalOpen) return undefined;
 
     const previousOverflow = document.body.style.overflow;
-    const handleResize = () => updateSheetHeight(Math.min(sheetHeightRef.current, getExpandedHeight()));
+    let ticking = false;
+    const handleResize = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          updateSheetHeight(Math.min(sheetHeightRef.current, getExpandedHeight()));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
     document.body.style.overflow = "hidden";
     window.addEventListener("resize", handleResize);
 
@@ -71,6 +123,7 @@ export default function ShopOwnerInventoryPage() {
   }, [isModalOpen]);
 
   const handleSheetPointerDown = (event) => {
+    if (window.innerWidth >= 640) return;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dragState.current = {
       pointerId: event.pointerId,
@@ -89,12 +142,23 @@ export default function ShopOwnerInventoryPage() {
     const movedBy = drag.startY - event.clientY;
     if (Math.abs(movedBy) > 3) drag.hasMoved = true;
     const nextHeight = Math.max(peekHeight, Math.min(getExpandedHeight(), drag.startHeight + movedBy));
-    updateSheetHeight(nextHeight);
+
+    if (!moveRafId.current) {
+      moveRafId.current = window.requestAnimationFrame(() => {
+        updateSheetHeight(nextHeight);
+        moveRafId.current = null;
+      });
+    }
   };
 
   const handleSheetPointerEnd = (event) => {
     const drag = dragState.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+
+    if (moveRafId.current) {
+      window.cancelAnimationFrame(moveRafId.current);
+      moveRafId.current = null;
+    }
 
     const elapsed = Math.max(performance.now() - drag.startTime, 1);
     const velocity = ((event.clientY - drag.startY) / elapsed) * 1000;
@@ -112,7 +176,6 @@ export default function ShopOwnerInventoryPage() {
         suppressClickRef.current = false;
       }, 0);
     }
-
   };
 
   const toggleStockStatus = (id) => {
@@ -129,37 +192,15 @@ export default function ShopOwnerInventoryPage() {
     );
   };
 
-  const handleOpenEdit = (product) => {
-    setProductToEdit({ ...product });
-    setProductToView(null);
-  };
-
-  const handleSaveEdit = (e) => {
-    if (e) e.preventDefault();
-    if (!productToEdit) return;
-
-    const updatedPrice = Number(productToEdit.price) || 0;
-    const updatedOriginalPrice = Number(productToEdit.originalPrice) || 0;
-    const updatedStock = Number(productToEdit.stock) || 0;
-
-    const updatedProduct = {
-      ...productToEdit,
-      price: updatedPrice,
-      originalPrice: updatedOriginalPrice,
-      stock: updatedStock,
-      status: updatedStock > 0 ? productToEdit.status : "Out of Stock",
-    };
-
-    setProducts((prev) =>
-      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-    );
-    setProductToEdit(null);
-  };
-
   const handleDeleteProduct = (id) => {
+    const target = products.find((p) => p.id === id);
+    if (target?.isWarehouse) {
+      alert("Warehouse Managed Product: Shop owners cannot delete catalog-managed warehouse items.");
+      setDeleteConfirmId(null);
+      return;
+    }
     setProducts((prev) => prev.filter((p) => p.id !== id));
     setDeleteConfirmId(null);
-    if (productToEdit?.id === id) setProductToEdit(null);
     if (productToView?.id === id) setProductToView(null);
   };
 
@@ -167,6 +208,51 @@ export default function ShopOwnerInventoryPage() {
     setSelectedWarehouseIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  // Minimal Product Addition
+  const handleAddSelectedWarehouseProducts = async () => {
+    if (selectedWarehouseIds.length === 0) return;
+
+    const selectedItems = warehouseProducts.filter((wp) => selectedWarehouseIds.includes(wp.id));
+    const newMappedProducts = selectedItems.map((item) => {
+      const storePrice = Number(item.store_price ?? item.retail_price ?? item.price ?? 499);
+      const cutPrice = Number(item["Price(will be cutted)"] ?? item.cut_price ?? item.base_price ?? storePrice);
+      const imagesList = Array.isArray(item.images) && item.images.length
+        ? item.images
+        : (item.image_url ? [{ url: item.image_url, isPrimary: true }] : []);
+
+      return {
+        id: item.id || `prod-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        warehouseId: item.id,
+        isWarehouse: true,
+        name: item.title || item.name || "Warehouse Product",
+        category: item.category || "General Catalog",
+        price: storePrice,
+        store_price: storePrice,
+        originalPrice: cutPrice,
+        cut_price: cutPrice,
+        stock: Number(item.warehouse_stock ?? item.stock ?? 1),
+        status: "In Stock",
+        salesCount: 0,
+        image: item.image_url || imagesList[0]?.url || item.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80",
+        images: imagesList,
+        material: item.material,
+        fit: item.fit,
+        care: item.care,
+        sizes: item.sizes,
+      };
+    });
+
+    if (activeShopId) {
+      await linkProductsToShop(activeShopId, selectedWarehouseIds);
+    }
+
+    setProducts((prev) => [...newMappedProducts, ...prev]);
+    const addedCount = selectedWarehouseIds.length;
+    closeSheet();
+
+    setSuccessMessage(`${addedCount} product${addedCount > 1 ? "s" : ""} added to shop inventory.`);
   };
 
   // KPI Metrics Calculation
@@ -188,13 +274,12 @@ export default function ShopOwnerInventoryPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="space-y-6 animate-fade-in font-sans font-sansation w-full pb-6">
       {/* Title */}
       <div>
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
           Products &amp; Inventory
         </h1>
-       
       </div>
 
       {/* Quick Status KPI Summary Bar using Reusable AppMetricCard */}
@@ -238,10 +323,10 @@ export default function ShopOwnerInventoryPage() {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="flex h-11 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer w-full"
+        className="flex h-11 items-center justify-center gap-2 rounded-[30px] bg-brandRed px-5 text-xs font-semibold text-white shadow-sm hover:bg-brandRedDark transition cursor-pointer w-full"
       >
         <Plus size={16} />
-        <span>Add Product from Warehouse</span>
+        <span>Add Products from Warehouse Catalog</span>
       </button>
 
       {/* Quick Filter Pill Tabs */}
@@ -291,160 +376,171 @@ export default function ShopOwnerInventoryPage() {
         placeholder="Search store products by name..."
       />
 
-      {/* Mobile Card Stack */}
-      <div className="space-y-3 sm:hidden">
-        {filteredProducts.length === 0 ? (
-          <div className="p-8 text-center bg-white rounded-[28px] border border-[#F3E5E5] text-slate-400">
-            <Package size={32} className="mx-auto mb-2" />
-            <span className="text-xs font-normal">No products matching current filter.</span>
+      {/* Loading state */}
+      {loadingProducts ? (
+        <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="animate-spin text-brandRed" size={24} />
+          <span className="text-xs">Loading shop inventory from database...</span>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="w-full rounded-[35px] bg-white border border-[#F3E5E5] p-10 text-center shadow-[-4px_5px_10px_rgba(211,47,47,0.24)] space-y-3">
+          <Package className="mx-auto text-slate-300" size={42} />
+          <div>
+            <h4 className="text-base font-semibold text-slate-800">No Products Added Yet</h4>
+            <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">
+              Add products from the warehouse catalog to display inventory for your campus store.
+            </p>
           </div>
-        ) : (
-          filteredProducts.map((prod) => (
-            <div key={prod.id} className="rounded-[28px] bg-white border border-[#F3E5E5] p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] space-y-3">
-              <div className="flex items-center gap-3">
-                <img
-                  src={prod.image}
-                  alt={prod.name}
-                  className="h-14 w-14 rounded-[18px] object-cover border border-slate-100 shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <span className="font-normal text-slate-900 block text-xs truncate">{prod.name}</span>
-                  <span className="text-[10px] text-slate-400 block font-normal">Category: {prod.category}</span>
-                  <span className="text-sm font-normal text-brandRed mt-0.5 block">₹{prod.price}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
-                <button
-                  type="button"
-                  onClick={() => toggleStockStatus(prod.id)}
-                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
-                    prod.status === "In Stock"
-                      ? "bg-rose-50 text-brandRed border border-rose-100"
-                      : "bg-slate-100 text-slate-600 border border-slate-200"
-                  }`}
-                >
-                  {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                  <span>{prod.status} ({prod.stock})</span>
-                </button>
-
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setProductToView(prod)}
-                    className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                    title="View Details"
-                  >
-                    <Eye size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenEdit(prod)}
-                    className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                    title="Edit Product"
-                  >
-                    <Edit3 size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteConfirmId(prod.id)}
-                    className="p-1.5 rounded-full text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                    title="Delete Product"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Desktop Product Table */}
-      <div className="hidden sm:block overflow-hidden rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-100 bg-[#FAF8F5] font-normal text-slate-600">
-              <tr>
-                <th className="px-5 py-3.5 font-normal">Product</th>
-                <th className="px-5 py-3.5 font-normal">Category</th>
-                <th className="px-5 py-3.5 font-normal">Price</th>
-                <th className="px-5 py-3.5 font-normal">Stock Status</th>
-                <th className="px-5 py-3.5 font-normal">Sales</th>
-                <th className="px-5 py-3.5 text-right font-normal">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-normal">
-              {filteredProducts.map((prod) => (
-                <tr key={prod.id} className="hover:bg-slate-50/50 transition">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={prod.image}
-                        alt={prod.name}
-                        className="h-10 w-10 rounded-[14px] object-cover border border-slate-100 shrink-0"
-                      />
-                      <div>
-                        <span className="font-normal text-slate-900 block text-xs">{prod.name}</span>
-                        <span className="text-[10px] text-slate-400 font-normal">ID: {prod.id}</span>
-                      </div>
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-brandRed px-4 py-2 text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer"
+          >
+            <Plus size={15} />
+            <span>Browse Warehouse Catalog</span>
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Mobile Card Stack */}
+          <div className="space-y-3 sm:hidden">
+            {filteredProducts.map((prod) => (
+              <div key={prod.id} className="rounded-[28px] bg-white border border-[#F3E5E5] p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.18)] space-y-3">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={prod.image}
+                    alt={prod.name}
+                    className="h-14 w-14 rounded-[18px] object-cover border border-slate-100 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-normal text-slate-900 block text-xs truncate">{prod.name}</span>
+                      {prod.isWarehouse && (
+                        <span className="shrink-0 text-[9px] font-medium bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded-md">
+                          Warehouse
+                        </span>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.category}</td>
-                  <td className="px-5 py-3.5 font-normal text-brandRed text-sm">₹{prod.price}</td>
-                  <td className="px-5 py-3.5">
+                    <span className="text-[10px] text-slate-400 block font-normal">Category: {prod.category}</span>
+                    <span className="text-sm font-normal text-brandRed mt-0.5 block">₹{prod.price}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 pt-2.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleStockStatus(prod.id)}
+                    className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
+                      prod.status === "In Stock"
+                        ? "bg-rose-50 text-brandRed border border-rose-100"
+                        : "bg-slate-100 text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                    <span>{prod.status} ({prod.stock})</span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => toggleStockStatus(prod.id)}
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
-                        prod.status === "In Stock"
-                          ? "bg-rose-50 text-brandRed border border-rose-100"
-                          : "bg-slate-100 text-slate-600 border border-slate-200"
-                      }`}
+                      onClick={() => setProductToView(prod)}
+                      className="p-1.5 rounded-full text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer flex items-center gap-1 text-xs"
+                      title="View Details"
                     >
-                      {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
-                      <span>{prod.status} ({prod.stock})</span>
+                      <Eye size={16} />
+                      <span className="text-[10px] font-medium text-slate-400">View</span>
                     </button>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.salesCount} sold</td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        onClick={() => setProductToView(prod)}
-                        className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                        title="View Details"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(prod)}
-                        className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer"
-                        title="Edit Product"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteConfirmId(prod.id)}
-                        className="rounded-full p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-                        title="Delete Product"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* Warehouse Product Selector Mobile App Bottom Sheet Modal */}
+          {/* Desktop Product Table */}
+          <div className="hidden sm:block overflow-hidden rounded-[35px] bg-white border border-[#F3E5E5] shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-slate-100 bg-[#FAF8F5] font-normal text-slate-600">
+                  <tr>
+                    <th className="px-5 py-3.5 font-normal">Product</th>
+                    <th className="px-5 py-3.5 font-normal">Category</th>
+                    <th className="px-5 py-3.5 font-normal">Price</th>
+                    <th className="px-5 py-3.5 font-normal">Stock Status</th>
+                    <th className="px-5 py-3.5 font-normal">Catalog Source</th>
+                    <th className="px-5 py-3.5 text-right font-normal">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-normal">
+                  {filteredProducts.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-slate-50/50 transition">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={prod.image}
+                            alt={prod.name}
+                            className="h-10 w-10 rounded-[14px] object-cover border border-slate-100 shrink-0"
+                          />
+                          <div>
+                            <span className="font-normal text-slate-900 block text-xs">{prod.name}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">ID: {prod.id}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 font-normal">{prod.category}</td>
+                      <td className="px-5 py-3.5 font-normal text-brandRed text-sm">₹{prod.price}</td>
+                      <td className="px-5 py-3.5">
+                        <button
+                          type="button"
+                          onClick={() => toggleStockStatus(prod.id)}
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-normal cursor-pointer transition ${
+                            prod.status === "In Stock"
+                              ? "bg-rose-50 text-brandRed border border-rose-100"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}
+                        >
+                          {prod.status === "In Stock" ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                          <span>{prod.status} ({prod.stock})</span>
+                        </button>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 font-normal">
+                        {prod.isWarehouse ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                            Warehouse Catalog
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 font-normal">Direct Product</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            onClick={() => setProductToView(prod)}
+                            className="rounded-full p-2 text-slate-500 hover:text-brandRed hover:bg-rose-50 transition cursor-pointer flex items-center gap-1 text-xs"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                            <span className="text-[11px]">View</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Warehouse Product Selector Modal / Bottom Sheet */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs animate-fade-in font-sans font-sansation">
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeSheet();
+          }}
+          className="fixed inset-0 z-[60] bg-slate-900/50 backdrop-blur-xs font-sans font-sansation flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in cursor-pointer"
+        >
           <div
             role="dialog"
             aria-modal="true"
@@ -459,27 +555,29 @@ export default function ShopOwnerInventoryPage() {
               event.stopPropagation();
             }}
             style={{
-              height: `${sheetHeight}px`,
-              // Keep touch input with the sheet so every downward drag reaches snap logic.
-              touchAction: "none",
+              height: window.innerWidth < 640 ? `${sheetHeight}px` : "auto",
             }}
-            className={`absolute inset-x-0 bottom-0 mx-auto w-full max-w-2xl overflow-hidden rounded-t-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] flex flex-col space-y-3 select-none cursor-grab active:cursor-grabbing ${
-              isSheetDragging ? "" : "transition-[height] duration-[350ms] ease-[cubic-bezier(0.32,0.72,0,1)]"
+            className={`w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-t-[32px] sm:rounded-[32px] bg-white border border-[#F3E5E5] p-4 sm:p-6 shadow-2xl flex flex-col space-y-3 cursor-default ${
+              isSheetDragging ? "" : "transition-all duration-200 ease-out"
             }`}
           >
-            {/* Mobile Bottom Sheet Drag Handle */}
-            <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto shrink-0" />
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+            {/* Drag Handle for Mobile */}
+            <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto shrink-0 sm:hidden" />
+            
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
               <div>
-                <h3 className="text-lg font-normal text-brandRed tracking-tight">Select Warehouse Products</h3>
+                <h3 className="text-base sm:text-lg font-normal text-brandRed tracking-tight">
+                  Select Warehouse Products
+                </h3>
+                <p className="text-xs text-slate-500 font-normal">Browse catalog items to link to your shop</p>
               </div>
               <button
                 type="button"
                 onClick={closeSheet}
                 aria-label="Close"
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
+                className="grid h-9 w-9 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0 no-btn-anim"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
@@ -488,39 +586,36 @@ export default function ShopOwnerInventoryPage() {
                 icon={Search}
                 value={warehouseSearchQuery}
                 onChange={setWarehouseSearchQuery}
-                placeholder="Search warehouse products..."
+                placeholder="Search warehouse catalog..."
                 className="flex-1"
               />
               {selectedWarehouseIds.length > 0 && (
-                <span
-                  aria-label={`${selectedWarehouseIds.length} products selected`}
-                  title={`${selectedWarehouseIds.length} products selected`}
-                  className="grid h-8 min-w-8 place-items-center rounded-full bg-brandRed px-2 text-xs font-semibold text-white shadow-[0_3px_8px_rgba(211,47,47,0.28)]"
-                >
+                <span className="grid h-8 min-w-8 place-items-center rounded-full bg-brandRed px-2 text-xs font-semibold text-white">
                   {selectedWarehouseIds.length}
                 </span>
               )}
             </div>
 
             {/* Warehouse Products Grid View */}
-            <div data-sheet-scroll className="flex-1 overflow-y-auto pr-1 pt-1 pb-24 scrollbar-none">
+            <div data-sheet-scroll className="flex-1 overflow-y-auto pr-1 pt-1 scrollbar-none max-h-[55vh]">
               {loadingWarehouse ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
-                  <Loader2 size={32} className="animate-spin text-brandRed" />
-                  <span className="text-xs font-normal">Loading warehouse products...</span>
+                <div className="flex flex-col items-center justify-center py-12 gap-2 text-slate-400">
+                  <Loader2 size={24} className="animate-spin text-brandRed" />
+                  <span className="text-xs font-normal">Loading warehouse catalog...</span>
                 </div>
               ) : filteredWarehouseProducts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 gap-2 text-slate-400">
-                  <Package size={36} />
+                <div className="flex flex-col items-center justify-center py-12 gap-2 text-slate-400">
+                  <Package size={32} />
                   <span className="text-xs font-normal">
-                    {warehouseProducts.length === 0 ? "No warehouse products found." : "No products match your search."}
+                    {warehouseProducts.length === 0 ? "No warehouse products found." : "No products match search."}
                   </span>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {filteredWarehouseProducts.map((p) => {
                     const isChecked = selectedWarehouseIds.includes(p.id);
                     const imgUrl =
+                      p.image_url ||
                       p.image_urls?.[0] ||
                       p.image ||
                       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";
@@ -530,33 +625,35 @@ export default function ShopOwnerInventoryPage() {
                         key={p.id}
                         type="button"
                         onClick={() => toggleWarehouseSelection(p.id)}
-                        className={`relative overflow-hidden rounded-[26px] border-2 bg-white text-left shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-all active:scale-[0.97] cursor-pointer ${
+                        className={`relative overflow-hidden rounded-[20px] border text-left transition-all duration-150 active:scale-[0.98] cursor-pointer ${
                           isChecked
-                            ? "border-brandRed ring-2 ring-rose-100"
-                            : "border-transparent hover:border-slate-200"
+                            ? "border-brandRed bg-rose-50/20"
+                            : "border-slate-200 bg-white hover:border-slate-300"
                         }`}
                       >
                         {isChecked && (
-                          <div className="absolute top-3 right-3 z-10 grid h-7 w-7 place-items-center rounded-full bg-white shadow-sm">
-                            <CheckCircle2 size={18} className="text-brandRed" fill="white" />
+                          <div className="absolute top-2 right-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-brandRed shadow-xs">
+                            <CheckCircle2 size={15} className="text-white" />
                           </div>
                         )}
 
                         <img
                           src={imgUrl}
                           alt={p.title || p.name}
-                          className="w-full aspect-square object-cover bg-slate-100"
+                          className="w-full aspect-square object-cover bg-slate-50"
                         />
 
-                        <div className="space-y-3 p-4">
-                          <h4 className="min-h-10 text-base font-semibold text-slate-900 leading-snug line-clamp-2">
+                        <div className="space-y-1 p-2.5">
+                          <h4 className="text-xs font-medium text-slate-900 leading-snug line-clamp-2">
                             {p.title || p.name}
                           </h4>
-                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                            <span className="text-2xl font-semibold tracking-tight text-slate-900">₹{p.price}</span>
-                            {p.original_price && p.original_price > p.price && (
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-xs font-bold text-brandRed">
+                              ₹{p.store_price ?? p.retail_price ?? p.price}
+                            </span>
+                            {(p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price) > (p.store_price ?? p.price) && (
                               <span className="text-[10px] text-slate-400 line-through font-normal">
-                                ₹{p.original_price}
+                                ₹{p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price}
                               </span>
                             )}
                           </div>
@@ -568,6 +665,33 @@ export default function ShopOwnerInventoryPage() {
               )}
             </div>
 
+            {/* Dedicated Action Button Footer */}
+            <div className="pt-3 pb-16 sm:pb-0 border-t border-slate-100 shrink-0 bg-white flex gap-2">
+              <button
+                type="button"
+                onClick={closeSheet}
+                className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={selectedWarehouseIds.length === 0}
+                onClick={handleAddSelectedWarehouseProducts}
+                className={`flex-1 h-11 rounded-[30px] text-xs font-semibold text-white transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  selectedWarehouseIds.length > 0
+                    ? "bg-brandRed hover:bg-brandRedDark shadow-md active:scale-95"
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                }`}
+              >
+                <Plus size={15} />
+                <span>
+                  {selectedWarehouseIds.length > 0
+                    ? `Add ${selectedWarehouseIds.length} Product${selectedWarehouseIds.length > 1 ? "s" : ""}`
+                    : "Select Products"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -591,6 +715,13 @@ export default function ShopOwnerInventoryPage() {
             </div>
 
             <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+              {productToView.isWarehouse && (
+                <div className="flex items-center gap-2 p-3 rounded-[16px] bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
+                  <ShieldAlert size={16} className="text-amber-600 shrink-0" />
+                  <span>Warehouse Catalog Managed: Read-only product for shop owners.</span>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start bg-[#FAF8F5] p-4 rounded-[24px] border border-[#F3E5E5]">
                 <img
                   src={productToView.image}
@@ -630,200 +761,25 @@ export default function ShopOwnerInventoryPage() {
             <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => setDeleteConfirmId(productToView.id)}
-                className="px-4 h-11 rounded-[30px] border border-rose-200 bg-rose-50 text-xs font-medium text-red-600 hover:bg-rose-100 transition cursor-pointer flex items-center gap-1.5"
-              >
-                <Trash2 size={15} />
-                <span>Delete</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOpenEdit(productToView)}
-                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
-              >
-                <Edit3 size={15} />
-                <span>Edit Product</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Product Dialog Modal */}
-      {productToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
-          <form
-            onSubmit={handleSaveEdit}
-            className="w-full max-w-lg max-h-[88vh] rounded-[32px] sm:rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-7 shadow-[0_20px_50px_rgba(211,47,47,0.25)] flex flex-col space-y-4 relative animate-scale-up"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
-              <div>
-                <h3 className="text-lg font-normal text-brandRed tracking-tight">Edit Product</h3>
-                <p className="text-xs text-slate-500 font-normal mt-0.5">Modify inventory details for ID: {productToEdit.id}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setProductToEdit(null)}
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition cursor-pointer shrink-0"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3.5 pr-1">
-              {/* Product Name */}
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1">Product Name</label>
-                <input
-                  type="text"
-                  required
-                  value={productToEdit.name}
-                  onChange={(e) => setProductToEdit({ ...productToEdit, name: e.target.value })}
-                  className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                />
-              </div>
-
-              {/* Category & Stock Status */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Category</label>
-                  <input
-                    type="text"
-                    required
-                    value={productToEdit.category}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, category: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Status</label>
-                  <select
-                    value={productToEdit.status}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, status: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none bg-white"
-                  >
-                    <option value="In Stock">In Stock</option>
-                    <option value="Out of Stock">Out of Stock</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Price, MRP Price, Stock Qty */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Price (₹)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    required
-                    value={productToEdit.price}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, price: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">MRP Price (₹)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={productToEdit.originalPrice || ""}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, originalPrice: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-normal text-slate-700 mb-1">Stock Qty</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={productToEdit.stock}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, stock: e.target.value })}
-                    className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Image URL & Thumbnail Preview */}
-              <div>
-                <label className="block text-xs font-normal text-slate-700 mb-1">Image URL</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={productToEdit.image || ""}
-                    onChange={(e) => setProductToEdit({ ...productToEdit, image: e.target.value })}
-                    className="flex-1 h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                  />
-                  {productToEdit.image && (
-                    <img
-                      src={productToEdit.image}
-                      alt="Preview"
-                      className="w-10 h-10 rounded-[12px] object-cover border border-slate-200 shrink-0"
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="pt-3 border-t border-slate-100 flex gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(productToEdit.id)}
-                className="px-3 h-11 rounded-[30px] border border-rose-200 bg-rose-50 text-xs font-medium text-red-600 hover:bg-rose-100 transition cursor-pointer flex items-center gap-1"
-              >
-                <Trash2 size={14} />
-                <span>Delete</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setProductToEdit(null)}
+                onClick={() => setProductToView(null)}
                 className="flex-1 h-11 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer shadow-[0_4px_12px_rgba(211,47,47,0.3)]"
-              >
-                Save
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in font-sans font-sansation">
-          <div className="w-full max-w-sm rounded-[30px] bg-white border border-[#F3E5E5] p-5 sm:p-6 shadow-[0_20px_50px_rgba(211,47,47,0.25)] text-center space-y-4 animate-scale-up">
-            <div className="w-12 h-12 rounded-full bg-rose-100 text-brandRed flex items-center justify-center mx-auto">
-              <Trash2 size={24} />
-            </div>
-            <div>
-              <h4 className="text-base font-semibold text-slate-900">Delete Product?</h4>
-              <p className="text-xs text-slate-500 font-normal mt-1">
-                Are you sure you want to remove this product from your inventory? This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setDeleteConfirmId(null)}
-                className="flex-1 h-10 rounded-[25px] border border-[#E5E7EB] text-xs font-normal text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDeleteProduct(deleteConfirmId)}
-                className="flex-1 h-10 rounded-[25px] bg-red-600 text-xs font-semibold text-white hover:bg-red-700 transition cursor-pointer shadow-sm"
-              >
-                Yes, Delete
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Brand Red Success Status Modal Dialog */}
+      <AppSuccessModal
+        isOpen={!!successMessage}
+        onClose={() => setSuccessMessage(null)}
+        title="Inventory Updated"
+        message={successMessage || "Items successfully updated in your store catalog."}
+        primaryActionLabel="Continue"
+        onPrimaryAction={() => setSuccessMessage(null)}
+      />
     </div>
   );
 }

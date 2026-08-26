@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, SearchCheck, ShieldBan, ShieldX } from "lucide-react";
 import {
   BulkActionBar,
@@ -13,7 +13,11 @@ import {
 } from "../../shared/ui";
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
-import { riskAlerts as seed } from "../../shared/adminData";
+import {
+  fetchAdminRiskAlerts,
+  updateAdminRiskAlertStatus,
+  subscribeAdminRealtime,
+} from "../../../../services/adminSupabaseService";
 
 const columns = [
   { key: "id", label: "Alert ID" },
@@ -29,17 +33,45 @@ const columns = [
 ];
 
 export default function RiskDashboardPage() {
-  const resource = useResourceList(seed);
+  const [rows, setRows] = useState([]);
+  const resource = useResourceList(rows);
   const [selected, setSelected] = useState(null);
   const [pendingAction, setPendingAction] = useState(null);
   const [toast, setToast] = useState("");
 
-  function updateAlert(row, status) {
+  async function loadAlerts() {
+    try {
+      const data = await fetchAdminRiskAlerts();
+      if (Array.isArray(data)) {
+        const mapped = data.map((a) => ({
+          id: a.id,
+          type: a.type || "Risk Alert",
+          entity: `${a.entity_type || "System"}: ${a.entity_name || "Target"}`,
+          score: a.score || "LOW",
+          status: a.status || "Open",
+          time: new Date(a.created_at || Date.now()).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
+        }));
+        setRows(mapped);
+        resource.setRows(mapped);
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    loadAlerts();
+    const unsub = subscribeAdminRealtime("risk_alerts", () => loadAlerts());
+    return () => unsub();
+  }, []);
+
+  async function updateAlert(row, status) {
+    try {
+      await updateAdminRiskAlertStatus(row.id, status);
+    } catch {}
     resource.updateRow(row.id, { status });
     if (selected?.id === row.id) {
       setSelected((current) => ({ ...current, status }));
     }
-    setToast(`Risk alert marked ${status.toLowerCase()}.`);
+    setToast(`Risk alert marked ${status.toLowerCase()} in Supabase.`);
   }
 
   function confirmAction() {

@@ -462,7 +462,7 @@ export default function ShopDetailsStep({ form, updateForm, onNext, onBack }) {
               <strong className="block text-base font-bold lg:text-lg">{previewName}</strong>
               <span className="mt-0.5 block text-sm text-textSecondary">{previewCategory}</span>
               <div className="mt-2 text-xs text-amber-600">★★★★★ 4.8 (128 reviews)</div>
-              <p className="mt-2 text-xs text-textSecondary">🚚 Fast Delivery &nbsp; ↩ Easy Returns</p>
+              <p className="mt-2 text-xs text-textSecondary">Fast Delivery &nbsp; Easy Returns</p>
               <p className="mt-0.5 text-xs text-textSecondary">▣ Secure Payment</p>
               <div className="mt-3 flex gap-3 border-t border-lightBorder pt-3 text-xs font-semibold text-textSecondary">
                 <span className="text-brandRed">Home</span>

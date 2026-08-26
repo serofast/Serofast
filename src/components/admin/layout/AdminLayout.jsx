@@ -138,6 +138,11 @@ export default function AdminLayout({ children }) {
               <Menu size={18} className="text-slate-700" />
             </button>
 
+            <Link to="/admin" className="flex min-w-0 items-center gap-2 text-brandRed md:hidden" aria-label="SeroFast Admin dashboard">
+              <Logo size="sm" />
+              <span className="truncate text-sm font-semibold tracking-tight">SEROFAST</span>
+            </Link>
+
             <form
               onSubmit={handleGlobalSearch}
               className="hidden h-10 w-full max-w-[380px] items-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white px-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.1)] focus-within:border-brandRed focus-within:shadow-[-4px_5px_10px_rgba(211,47,47,0.2)] transition-all md:flex"
@@ -152,12 +157,6 @@ export default function AdminLayout({ children }) {
               />
             </form>
 
-            <div className="hidden lg:block">
-              <p className="text-sm font-semibold">SeroFast Admin</p>
-              <p className="text-xs text-slate-400">
-                Marketplace control center
-              </p>
-            </div>
           </div>
 
           <div className="flex items-center gap-2">

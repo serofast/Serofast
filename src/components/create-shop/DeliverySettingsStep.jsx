@@ -2,7 +2,7 @@ import { ArrowLeft, ArrowRight, Truck, Clock, MapPin, CheckCircle2, Sparkles } f
 
 export default function DeliverySettingsStep({ onNext, onBack }) {
   return (
-    <div className="space-y-6 font-sans max-w-2xl mx-auto">
+    <div className="space-y-6 font-sans w-full max-w-full lg:max-w-5xl mx-auto">
       <div>
         <span className="text-xs font-bold uppercase tracking-wider text-brandRed">Step 4 of 5</span>
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">Campus Delivery &amp; Logistics</h2>

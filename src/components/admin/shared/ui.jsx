@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import Icon from "./legacyIcon";
 
 const statusStyles = {
@@ -635,33 +635,41 @@ export function FilterBar({
   onClear = () => {},
   showStatus = true,
 }) {
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   return (
-    <div className="mb-4 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-      <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
-      <div
-        className={`grid min-w-0 gap-2 ${
-          showStatus
-            ? "grid-cols-[minmax(0,1fr)_48px] sm:min-w-[260px]"
-            : "grid-cols-[48px] justify-end"
-        }`}
-      >
-        {showStatus && (
-          <AdminSelect
-            value={status}
-            onChange={setStatus}
-            options={[{ value: "", label: "All statuses" }, ...options]}
-            ariaLabel="Filter by status"
-            buttonClassName="h-12 text-sm"
-          />
+    <div className="mb-4 min-w-0">
+      <div className="lg:hidden">
+        <div className="grid grid-cols-[minmax(0,1fr)_48px] gap-2">
+          <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
+          <button
+            type="button"
+            aria-label={showStatus ? "Toggle filters" : "Clear filters"}
+            aria-expanded={showStatus ? mobileFiltersOpen : undefined}
+            onClick={() => showStatus ? setMobileFiltersOpen((current) => !current) : onClear()}
+            className={`grid h-12 w-12 place-items-center rounded-2xl border transition ${status ? "border-brandRed bg-rose-50 text-brandRed" : "border-[#E5E7EB] text-slate-600"}`}
+          >
+            <SlidersHorizontal size={18} />
+          </button>
+        </div>
+        {showStatus && mobileFiltersOpen && (
+          <div className="mt-2 grid grid-cols-[minmax(0,1fr)_48px] gap-2 rounded-[24px] border border-[#F3E5E5] bg-white p-2 shadow-[-4px_5px_10px_rgba(211,47,47,0.12)]">
+            <AdminSelect value={status} onChange={setStatus} options={[{ value: "", label: "All statuses" }, ...options]} ariaLabel="Filter by status" buttonClassName="h-11 text-sm" />
+            <button type="button" aria-label="Clear filters" onClick={onClear} className="grid h-11 w-11 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed">
+              <Icon name="refresh" size={16} />
+            </button>
+          </div>
         )}
-        <button
-          type="button"
-          aria-label="Clear filters"
-          onClick={onClear}
-          className="grid h-12 w-12 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer"
-        >
-          <Icon name="refresh" size={16} />
-        </button>
+      </div>
+
+      <div className="hidden min-w-0 gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <SearchBar value={value} setValue={setValue} placeholder={placeholder} />
+        <div className={`grid min-w-0 gap-2 ${showStatus ? "grid-cols-[minmax(0,1fr)_48px] min-w-[260px]" : "grid-cols-[48px] justify-end"}`}>
+          {showStatus && <AdminSelect value={status} onChange={setStatus} options={[{ value: "", label: "All statuses" }, ...options]} ariaLabel="Filter by status" buttonClassName="h-12 text-sm" />}
+          <button type="button" aria-label="Clear filters" onClick={onClear} className="grid h-12 w-12 place-items-center rounded-full border border-[#E5E7EB] hover:border-brandRed transition cursor-pointer">
+            <Icon name="refresh" size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -759,12 +767,34 @@ export function Pagination({
   const end = Math.min(page * pageSize, totalCount);
 
   return (
-    <div className="flex min-w-0 flex-col gap-3 border-t border-slate-100 px-4 py-3 text-sm lg:flex-row lg:items-center lg:justify-between">
-      <p className="text-slate-500 text-xs">
+    <div className="min-w-0 gap-3 border-t border-slate-100 px-3 py-3 text-sm md:flex md:items-center md:justify-between sm:px-4">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)_40px_40px] items-center gap-2 md:hidden">
+        <div className="flex items-center gap-1.5 text-slate-600">
+          <span className="text-[10px]">Rows</span>
+          <AdminSelect
+            value={pageSize}
+            onChange={onPageSizeChange}
+            options={[5, 10, 20]}
+            ariaLabel="Rows per page"
+            className="w-[68px]"
+            buttonClassName="h-9"
+            menuPlacement="top"
+          />
+        </div>
+        <p className="truncate text-center text-[10px] text-slate-500">{start}–{end} of {totalCount}</p>
+        <button type="button" disabled={page <= 1} onClick={() => onPageChange(page - 1)} aria-label="Previous page" className="grid h-10 w-10 place-items-center rounded-2xl border border-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40">
+          <ChevronLeft size={17} />
+        </button>
+        <button type="button" disabled={page >= pageCount} onClick={() => onPageChange(page + 1)} aria-label="Next page" className="grid h-10 w-10 place-items-center rounded-2xl border border-[#E5E7EB] disabled:cursor-not-allowed disabled:opacity-40">
+          <ChevronRight size={17} />
+        </button>
+      </div>
+
+      <p className="hidden text-xs text-slate-500 md:block">
         Showing {start}–{end} of {totalCount}
       </p>
 
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 sm:justify-start">
+      <div className="hidden min-w-0 flex-wrap items-center justify-between gap-2 md:flex md:justify-start">
         <div className="flex items-center gap-2 text-slate-600">
           <span className="sr-only sm:not-sr-only text-xs">Rows</span>
           <AdminSelect

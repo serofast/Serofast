@@ -27,7 +27,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           <CheckCircle2 size={44} />
         </div>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Your shop is live! 🎉</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Your shop is live!</h1>
           <p className="mt-2 text-xs sm:text-sm text-slate-500 font-normal max-w-xs mx-auto">
             <strong className="text-slate-900">{form.shopName || "Your Shop"}</strong> is now registered on SeroFast and saved to the database.
           </p>
@@ -64,7 +64,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
   }
 
   return (
-    <div className="space-y-7 font-sans max-w-2xl mx-auto">
+    <div className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-amber-600">
@@ -94,7 +94,11 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           <p className="text-xs text-slate-500 font-normal leading-relaxed">{form.description || "Your store description will appear here."}</p>
 
           <div className="flex items-center gap-3 pt-2 border-t border-slate-100 text-[11px]">
-            <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.city || "Chennai"}</span>
+            {form.city ? (
+              <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.city}</span>
+            ) : form.address ? (
+              <span className="flex items-center gap-1 text-slate-500"><MapPin size={12} className="text-brandRed" /> {form.address}</span>
+            ) : null}
             <span className="flex items-center gap-1 text-emerald-600 font-semibold"><CheckCircle2 size={12} /> Verified Seller</span>
           </div>
         </div>

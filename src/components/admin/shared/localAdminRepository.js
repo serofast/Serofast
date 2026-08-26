@@ -179,18 +179,14 @@ function initialOrders() {
 }
 
 function buildInitialState() {
-  const categories = initialCategories();
-  const products = initialProducts(categories);
   return {
     version: 1,
-    categories,
-    products,
-    inventory: initialInventory(products),
+    categories: initialCategories(),
+    products: [],
+    inventory: [],
     inventoryMovements: [],
-    orders: initialOrders(),
-    approvalHistory: products
-      .filter((product) => product.approvalStatus !== "Approved")
-      .map((product) => ({ id: createId("APH"), productId: product.id, action: "Submitted", previousStatus: "Draft", newStatus: "Pending Approval", reason: "", reviewedBy: product.shopName, reviewedAt: product.updatedAt })),
+    orders: [],
+    approvalHistory: [],
   };
 }
 
@@ -200,7 +196,7 @@ function loadState() {
     const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY));
     if (parsed?.version === 1 && Array.isArray(parsed.products) && Array.isArray(parsed.orders)) return parsed;
   } catch {
-    // Invalid local data is replaced with the known compatible seed.
+    // Fallback to clean state
   }
   return buildInitialState();
 }

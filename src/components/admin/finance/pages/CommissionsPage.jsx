@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, Kpi, PageHeader, Toast } from "../../shared/ui";
+import {
+  fetchAdminCommissionRules,
+  saveAdminCommissionRule,
+  subscribeAdminRealtime,
+} from "../../../../services/adminSupabaseService";
 
 const initialRules = [
   { id: "COM-01", scope: "Category", name: "Fashion", rate: 8 },
@@ -14,43 +19,73 @@ export default function CommissionsPage() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
 
+  useEffect(() => {
+    async function loadRules() {
+      const data = await fetchAdminCommissionRules();
+      if (data && data.length > 0) {
+        const defaultRule = data.find((r) => r.scope === "Default");
+        if (defaultRule) {
+          setDefaultRate(String(defaultRule.rate_percentage));
+        }
+        const overrides = data
+          .filter((r) => r.scope !== "Default")
+          .map((r) => ({
+            id: r.id,
+            scope: r.scope,
+            name: r.scope_name,
+            rate: Number(r.rate_percentage),
+          }));
+        if (overrides.length > 0) {
+          setRules(overrides);
+        }
+      }
+    }
+
+    loadRules();
+    const unsub = subscribeAdminRealtime("commission_rules", () => loadRules());
+    return () => unsub();
+  }, []);
+
   function validateRate(value) {
     const number = Number(value);
-
     if (!Number.isFinite(number) || number < 0 || number > 100) {
       return "Commission must be between 0 and 100%.";
     }
-
     return "";
   }
 
-  function saveDefaultRate() {
+  async function saveDefaultRate() {
     const nextError = validateRate(defaultRate);
     setError(nextError);
-
     if (!nextError) {
-      setToast(`Default commission updated to ${defaultRate}%.`);
+      try {
+        await saveAdminCommissionRule("DEFAULT_RULE", Number(defaultRate));
+        setToast(`Default commission updated to ${defaultRate}% in Supabase.`);
+      } catch {
+        setToast("Failed to save default commission in Supabase.");
+      }
     }
   }
 
-  function updateRule(id, value) {
+  async function updateRule(id, value) {
     if (validateRate(value)) {
       return;
     }
 
+    await saveAdminCommissionRule(id, value);
     setRules((current) =>
       current.map((rule) =>
-        rule.id === id ? { ...rule, rate: Number(value) } : rule,
-      ),
+        rule.id === id ? { ...rule, rate: Number(value) } : rule
+      )
     );
-    setToast("Commission override updated.");
+    setToast("Commission override updated in Supabase.");
   }
 
   return (
-    <div>
+    <div className="space-y-6 font-sans font-sansation">
       <PageHeader
-        title="Commissions"
-        description="Manage marketplace defaults and category, shop, or promotional overrides."
+        title="Commissions & Platform Fees"
+        description="Manage marketplace default commission rate and category, shop, or promotional overrides."
       />
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -61,12 +96,12 @@ export default function CommissionsPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(280px,.7fr)_1fr]">
         <Card className="p-5 sm:p-6">
-          <h2 className="text-lg font-semibold">Default commission</h2>
-          <p className="mt-1 text-sm text-textSecondary">
+          <h2 className="text-base font-semibold text-slate-900">Default commission</h2>
+          <p className="mt-1 text-xs text-slate-500">
             Applied when no category, shop, or promotional override exists.
           </p>
           <label className="mt-5 block">
-            <span className="mb-1.5 block text-sm font-semibold">Rate (%)</span>
+            <span className="mb-1.5 block text-xs font-semibold">Rate (%)</span>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -79,45 +114,44 @@ export default function CommissionsPage() {
                   setError("");
                 }}
                 aria-invalid={Boolean(error)}
-                aria-describedby="commission-error commission-impact"
-                className="h-11 min-w-0 flex-1 rounded-lg border border-lightBorder px-3 text-sm outline-none focus:border-brandRed"
+                className="h-11 min-w-0 flex-1 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-brandRed"
               />
               <button
                 type="button"
                 onClick={saveDefaultRate}
-                className="rounded-lg bg-brandRed px-4 text-sm font-semibold text-white hover:bg-brandRedDark"
+                className="rounded-xl bg-brandRed px-4 text-xs font-semibold text-white hover:bg-brandRed/90"
               >
                 Save
               </button>
             </div>
           </label>
           {error && (
-            <p id="commission-error" className="mt-2 text-xs font-semibold text-brandRed">
+            <p className="mt-2 text-xs font-semibold text-brandRed">
               {error}
             </p>
           )}
-          <p id="commission-impact" className="mt-4 rounded-xl bg-promoHighlight p-3 text-sm text-textSecondary">
+          <p className="mt-4 rounded-xl bg-[#FAF8F5] border p-3 text-xs text-slate-600">
             At {defaultRate || 0}%, a ₹1,000 net order yields ₹
             {(1000 * (1 - (Number(defaultRate) || 0) / 100)).toFixed(0)} to the seller.
           </p>
         </Card>
 
         <Card className="overflow-hidden">
-          <div className="border-b border-lightBorder p-5">
-            <h2 className="text-lg font-semibold">Commission overrides</h2>
-            <p className="mt-1 text-sm text-textSecondary">
+          <div className="border-b border-slate-100 p-5">
+            <h2 className="text-base font-semibold text-slate-900">Commission overrides</h2>
+            <p className="mt-1 text-xs text-slate-500">
               More specific rules take precedence over the marketplace default.
             </p>
           </div>
-          <div className="divide-y divide-lightBorder">
+          <div className="divide-y divide-slate-100">
             {rules.map((rule) => (
               <div
                 key={rule.id}
                 className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
-                  <p className="font-semibold">{rule.name}</p>
-                  <p className="text-xs text-textMuted">{rule.scope} override</p>
+                  <p className="font-semibold text-slate-900 text-sm">{rule.name}</p>
+                  <p className="text-xs text-slate-400">{rule.scope} override</p>
                 </div>
                 <label className="flex items-center gap-2">
                   <span className="sr-only">Commission for {rule.name}</span>
@@ -127,9 +161,9 @@ export default function CommissionsPage() {
                     max="100"
                     defaultValue={rule.rate}
                     onBlur={(event) => updateRule(rule.id, event.target.value)}
-                    className="h-10 w-24 rounded-lg border border-lightBorder px-3 text-sm"
+                    className="h-9 w-20 rounded-xl border border-slate-200 px-3 text-xs outline-none focus:border-brandRed"
                   />
-                  <span className="font-semibold">%</span>
+                  <span className="font-semibold text-xs text-slate-700">%</span>
                 </label>
               </div>
             ))}

@@ -16,8 +16,12 @@ import {
 import ShopOwnerBottomNav from "./ShopOwnerBottomNav";
 import { Logo } from "../reusable";
 
+import { fetchShopDetails, fetchShopOrders, fetchNotifications } from "../../lib/supabase";
+
 export default function ShopOwnerLayout() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState(0);
   const navigate = useNavigate();
 
   const [activeShop, setActiveShop] = useState(() => {
@@ -39,15 +43,52 @@ export default function ShopOwnerLayout() {
   });
 
   useEffect(() => {
-    try {
-      const storedShop = localStorage.getItem("serofast_active_shop");
-      if (storedShop) setActiveShop(JSON.parse(storedShop));
+    const syncShopState = async () => {
+      try {
+        const storedShop = localStorage.getItem("serofast_active_shop");
+        let shopObj = storedShop ? JSON.parse(storedShop) : null;
+        if (shopObj) {
+          setActiveShop(shopObj);
+        }
 
-      const storedOwner = localStorage.getItem("serofast_current_owner");
-      if (storedOwner) setCurrentOwner(JSON.parse(storedOwner));
-    } catch (e) {
-      console.warn("Storage read error", e);
-    }
+        const storedOwner = localStorage.getItem("serofast_current_owner");
+        let ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
+        if (ownerObj) setCurrentOwner(ownerObj);
+
+        // If owner is present but activeShop is not loaded, attempt to re-hydrate from Supabase
+        if (ownerObj?.id && (!shopObj || !activeShop)) {
+          const { shop } = await fetchShopDetails(null, ownerObj.id);
+          if (shop) {
+            shopObj = shop;
+            setActiveShop(shop);
+            localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
+          }
+        }
+
+        // Fetch live pending orders count (only show badge when action is needed)
+        if (shopObj?.id) {
+          const orders = await fetchShopOrders(shopObj.id);
+          const pending = orders.filter((o) => {
+            const st = String(o.status || "").toLowerCase();
+            return st === "pending" || st === "needs shipping" || st === "awaiting shipping";
+          }).length;
+          setPendingOrdersCount(pending);
+        }
+
+        // Fetch live unread notifications count
+        const notifs = await fetchNotifications({
+          role: "shop_owner",
+          recipientId: ownerObj?.id,
+          shopId: shopObj?.id,
+        });
+        const unread = notifs.filter((n) => n.unread).length;
+        setUnreadNotifsCount(unread);
+      } catch (e) {
+        console.warn("Storage/Shop sync error", e);
+      }
+    };
+
+    syncShopState();
   }, []);
 
   const handleLogout = () => {
@@ -56,12 +97,17 @@ export default function ShopOwnerLayout() {
     navigate("/login");
   };
 
-  const hasShop = Boolean(activeShop);
+  const hasShop = Boolean(activeShop || currentOwner?.is_shop_created);
 
   const navItems = [
     { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
     { label: "Products", path: "/shop-owner/inventory", icon: Package },
-    { label: "Orders", path: "/shop-owner/orders", icon: ShoppingBag, badge: hasShop ? "3" : null },
+    {
+      label: "Orders",
+      path: "/shop-owner/orders",
+      icon: ShoppingBag,
+      badge: pendingOrdersCount > 0 ? String(pendingOrdersCount) : null,
+    },
     { label: "Payouts", path: "/shop-owner/payouts", icon: CreditCard },
     { label: "Settings", path: "/shop-owner/settings", icon: Settings },
   ];
@@ -77,7 +123,7 @@ export default function ShopOwnerLayout() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-900 flex flex-col font-sans font-sansation">
       {/* Top Nav Header */}
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-[#E5E7EB] bg-white/95 backdrop-blur-md px-4 sm:px-6 gap-3 shadow-2xs">
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-[#E5E7EB] bg-white/95 backdrop-blur-md px-4 sm:px-6 lg:px-8 gap-3 shadow-2xs">
         {/* Left: Brand Logo Stack */}
         <Link to="/shop-owner/dashboard" className="group inline-flex items-center gap-2 text-[17px] sm:text-[19px] font-semibold tracking-tight text-brandRed">
           <Logo size="sm" />
@@ -93,9 +139,9 @@ export default function ShopOwnerLayout() {
             title="Notifications"
           >
             <Bell size={18} className="text-slate-700" />
-            {hasShop && (
-              <span className="absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white">
-                2
+            {unreadNotifsCount > 0 && (
+              <span className="absolute top-1.5 right-1.5 grid h-4 min-w-4 px-1 place-items-center rounded-full bg-brandRed text-[8px] font-bold text-white shadow-xs">
+                {unreadNotifsCount}
               </span>
             )}
           </Link>
@@ -153,7 +199,7 @@ export default function ShopOwnerLayout() {
       </header>
 
       {/* Main Layout Body */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 w-full">
         {/* Desktop Sidebar — Expanded Buttons for Great UI/UX */}
         <aside className="hidden md:block w-64 border-r border-[#E5E7EB] bg-white min-h-[calc(100vh-56px)] shrink-0">
           <div className="flex h-full flex-col justify-between p-4 sticky top-14">
@@ -204,13 +250,41 @@ export default function ShopOwnerLayout() {
           </div>
         </aside>
 
-        {/* Main Content Viewport */}
-        <main className="flex-1 p-4 sm:p-6 max-w-5xl mx-auto pb-20 md:pb-6">
-          <Outlet />
+        {/* Main Content Viewport — Expanded Width for Widescreen Desktop View */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-[1440px] mx-auto pb-24 md:pb-8 min-w-0 overflow-x-hidden">
+          {!hasShop ? (
+            <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-6 px-4 font-sans font-sansation">
+              {/* Flutter-styled Create Your Shop First Card */}
+              <div className="w-full max-w-[440px] rounded-[35px] bg-white border border-[#F3E5E5] px-6 py-8 sm:px-8 sm:py-9 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] text-center transition-all duration-300">
+                <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-rose-50 text-brandRed mb-5 border border-rose-100/80 shadow-2xs">
+                  <Store size={30} />
+                </div>
+
+                <h2 className="text-2xl sm:text-[28px] font-extrabold text-brandRed tracking-tight">
+                  Create Your Shop First
+                </h2>
+
+                <p className="mt-2.5 text-xs sm:text-sm text-slate-500 font-normal leading-relaxed px-1">
+                  Welcome to SeroFast! You haven't set up your campus store yet. Please complete the quick shop creation form to unlock your inventory, orders, payouts, and settings.
+                </p>
+
+                <div className="mt-7 flex flex-col gap-3">
+                  <Link
+                    to="/create-shop/basic"
+                    className="inline-flex min-h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-brandRed px-6 text-sm sm:text-base font-bold text-white shadow-md shadow-brandRed/25 hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer"
+                  >
+                    <Store size={20} /> Create My Shop Now
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </main>
       </div>
 
-      <ShopOwnerBottomNav />
+      <ShopOwnerBottomNav pendingOrdersCount={pendingOrdersCount} />
     </div>
   );
 }

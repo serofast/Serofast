@@ -1,0 +1,223 @@
+import { initializeApp, getApps, getApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
+
+// Environment-driven Firebase initialization
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+
+let authInstance = null;
+let googleProviderInstance = null;
+
+// Initialize Firebase SDK only if an environment API key is supplied
+if (apiKey && apiKey.trim() !== "") {
+  try {
+    const firebaseConfig = {
+      apiKey: apiKey.trim(),
+      authDomain: (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "").trim(),
+      projectId: (import.meta.env.VITE_FIREBASE_PROJECT_ID || "").trim(),
+      storageBucket: (import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "").trim(),
+      messagingSenderId: (import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "").trim(),
+      appId: (import.meta.env.VITE_FIREBASE_APP_ID || "").trim(),
+    };
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    authInstance = getAuth(app);
+    googleProviderInstance = new GoogleAuthProvider();
+  } catch (e) {
+    console.error("Firebase init error:", e);
+  }
+}
+
+export const auth = authInstance;
+export const googleProvider = googleProviderInstance;
+
+// ============================================================================
+// SECURITY PROTECTION LAYERS: BRUTE-FORCE & PASSWORD STRENGTH
+// ============================================================================
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 Minutes lockout
+
+/**
+ * Checks if account email is locked out due to brute force attempts.
+ */
+export function checkBruteForceLockout(email) {
+  if (!email) return { isLocked: false };
+  try {
+    const key = `serofast_lockout_${email.trim().toLowerCase()}`;
+    const recordStr = localStorage.getItem(key);
+    if (!recordStr) return { isLocked: false };
+
+    const record = JSON.parse(recordStr);
+    const now = Date.now();
+
+    if (record.lockUntil && now < record.lockUntil) {
+      const remainingSec = Math.ceil((record.lockUntil - now) / 1000);
+      const remainingMin = Math.ceil(remainingSec / 60);
+      return {
+        isLocked: true,
+        message: `Too many failed login attempts! Account locked for safety. Please try again in ${remainingMin} minute${remainingMin > 1 ? "s" : ""}.`,
+        remainingSec,
+      };
+    }
+
+    if (record.lockUntil && now >= record.lockUntil) {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // Graceful fallback
+  }
+  return { isLocked: false };
+}
+
+/**
+ * Records failed login attempt for brute force protection.
+ */
+export function recordFailedAttempt(email) {
+  if (!email) return;
+  try {
+    const key = `serofast_lockout_${email.trim().toLowerCase()}`;
+    const recordStr = localStorage.getItem(key);
+    let attempts = 0;
+    if (recordStr) {
+      const parsed = JSON.parse(recordStr);
+      attempts = parsed.attempts || 0;
+    }
+
+    attempts += 1;
+    let lockUntil = null;
+    if (attempts >= MAX_FAILED_ATTEMPTS) {
+      lockUntil = Date.now() + LOCKOUT_DURATION_MS;
+    }
+
+    localStorage.setItem(key, JSON.stringify({ attempts, lockUntil, lastAttempt: Date.now() }));
+  } catch {
+    // Graceful fallback
+  }
+}
+
+/**
+ * Resets failed login attempts on clean login success.
+ */
+export function clearFailedAttempts(email) {
+  if (!email) return;
+  try {
+    const key = `serofast_lockout_${email.trim().toLowerCase()}`;
+    localStorage.removeItem(key);
+  } catch {
+    // Graceful fallback
+  }
+}
+
+/**
+ * Password Strength Validation Layer.
+ */
+export function validatePasswordStrength(password) {
+  if (!password || password.length < 8) {
+    return "Password must be at least 8 characters long.";
+  }
+  if (!/[A-Z]/.test(password)) {
+    return "Password must contain at least one uppercase letter (A-Z).";
+  }
+  if (!/[a-z]/.test(password)) {
+    return "Password must contain at least one lowercase letter (a-z).";
+  }
+  if (!/[0-9]/.test(password)) {
+    return "Password must contain at least one number (0-9).";
+  }
+  return null;
+}
+
+// ============================================================================
+// FIREBASE AUTH WRAPPER FUNCTIONS (STRICT REAL FIREBASE AUTH)
+// ============================================================================
+
+export async function firebaseSignIn(email, password) {
+  // 1. Check brute force lockout
+  const lockout = checkBruteForceLockout(email);
+  if (lockout.isLocked) {
+    throw new Error(lockout.message);
+  }
+
+  if (!authInstance) {
+    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(authInstance, email, password);
+    clearFailedAttempts(email);
+    const token = await userCredential.user.getIdToken();
+    return { user: userCredential.user, token };
+  } catch (error) {
+    recordFailedAttempt(email);
+
+    try {
+      const methods = await fetchSignInMethodsForEmail(authInstance, email);
+      if (methods.includes("google.com") && !methods.includes("password")) {
+        throw new Error("This account was registered using Google Sign-In. Please click 'Continue with Google' below to log in.");
+      }
+    } catch (e) {
+      if (e.message?.includes("Google Sign-In")) throw e;
+    }
+
+    let msg = "Incorrect login credentials. Please check your email and password.";
+    if (error.code === "auth/too-many-requests") {
+      msg = "Access temporarily disabled due to many failed attempts. Try again later.";
+    }
+    throw new Error(msg);
+  }
+}
+
+export async function firebaseSignUp(email, password) {
+  const pwdErr = validatePasswordStrength(password);
+  if (pwdErr) {
+    throw new Error(pwdErr);
+  }
+
+  if (!authInstance) {
+    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(authInstance, email, password);
+    const token = await userCredential.user.getIdToken();
+    return { user: userCredential.user, token };
+  } catch (error) {
+    let msg = error.message;
+    if (error.code === "auth/email-already-in-use") {
+      msg = "This email is already registered. Please login instead.";
+    } else if (error.code === "auth/weak-password") {
+      msg = "Password is too weak. Choose a stronger password.";
+    }
+    throw new Error(msg);
+  }
+}
+
+export async function firebaseGoogleSignIn() {
+  if (!authInstance || !googleProviderInstance) {
+    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+  }
+
+  try {
+    const result = await signInWithPopup(authInstance, googleProviderInstance);
+    const token = await result.user.getIdToken();
+    return { user: result.user, token };
+  } catch (error) {
+    throw new Error(error.message || "Google Sign-In failed.");
+  }
+}
+
+export async function firebaseSignOutUser() {
+  if (authInstance) {
+    await signOut(authInstance);
+  }
+}
+
+export { onAuthStateChanged };

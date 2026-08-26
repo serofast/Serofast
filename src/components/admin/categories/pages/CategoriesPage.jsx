@@ -44,7 +44,7 @@ export default function CategoriesPage() {
   const [pendingToggle, setPendingToggle] = useState(null);
   const [toast, setToast] = useState("");
 
-  function addCategory(event) {
+  async function addCategory(event) {
     event.preventDefault();
     const trimmedName = name.trim();
 
@@ -62,22 +62,22 @@ export default function CategoriesPage() {
     }
 
     try {
-      categoryService.create(trimmedName);
+      await categoryService.create(trimmedName);
       setName("");
-      setToast("Category created as Draft.");
+      setToast("Category created in Supabase.");
     } catch (error) {
       setNameError(error.message);
     }
   }
 
-  function saveCategory(event) {
+  async function saveCategory(event) {
     event.preventDefault();
     if (!editing?.name.trim()) return;
 
     try {
-      categoryService.update(editing.id, editing);
+      await categoryService.update(editing.id, editing);
       setEditing(null);
-      setToast("Category updated and product references synchronized.");
+      setToast("Category updated in Supabase.");
     } catch (error) {
       setNameError(error.message);
     }
@@ -88,18 +88,18 @@ export default function CategoriesPage() {
     setToast("Category order updated.");
   }
 
-  function confirmToggle() {
+  async function confirmToggle() {
     if (!pendingToggle) return;
     const nextStatus = pendingToggle.status === "Active" ? "Inactive" : "Active";
-    categoryService.update(pendingToggle.id, { status: nextStatus });
+    await categoryService.update(pendingToggle.id, { status: nextStatus });
     setToast(`${pendingToggle.name} marked ${nextStatus.toLowerCase()}.`);
     setPendingToggle(null);
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
     try {
-      categoryService.remove(pendingDelete.id);
+      await categoryService.remove(pendingDelete.id);
       setToast(`${pendingDelete.name} category deleted.`);
       setPendingDelete(null);
     } catch (error) {
@@ -108,8 +108,10 @@ export default function CategoriesPage() {
     }
   }
 
-  function updateSelected(status) {
-    resource.selectedIds.forEach((id) => categoryService.update(id, { status }));
+  async function updateSelected(status) {
+    for (const id of resource.selectedIds) {
+      await categoryService.update(id, { status });
+    }
     resource.setSelectedIds([]);
     setToast(`Selected categories marked ${status.toLowerCase()}.`);
   }

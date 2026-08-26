@@ -10,15 +10,23 @@ export default function Header({ onOpenAppTeaser }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight =
-        document.documentElement.scrollHeight - document.documentElement.clientHeight;
-      const currentScroll = window.scrollY;
+    let ticking = false;
 
-      if (totalHeight > 0) {
-        setScrollProgress((currentScroll / totalHeight) * 100);
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const totalHeight =
+            document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const currentScroll = window.scrollY;
+
+          if (totalHeight > 0) {
+            setScrollProgress((currentScroll / totalHeight) * 100);
+          }
+          setIsScrolled(currentScroll > 15);
+          ticking = false;
+        });
+        ticking = true;
       }
-      setIsScrolled(currentScroll > 15);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });

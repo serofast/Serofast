@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
+import { fetchAdminBanners, saveAdminBanner } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   title: "",
@@ -12,6 +13,12 @@ const initialForm = {
   end: "2026-08-31",
   status: "Scheduled",
 };
+
+function toInputDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10);
+}
 
 function isValidTarget(value) {
   if (value.startsWith("/")) {
@@ -33,6 +40,32 @@ export default function BannerFormPage() {
   const [errors, setErrors] = useState({});
   const [previewUrl, setPreviewUrl] = useState("");
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    async function loadDbBanner() {
+      if (!bannerId) return;
+      try {
+        const list = await fetchAdminBanners();
+        const found = (list || []).find((b) => String(b.id) === String(bannerId));
+        if (found) {
+          setForm({
+            title: found.title || "",
+            placement: found.placement || "Hero",
+            priority: String(found.sort_order || 1),
+            cta: found.cta_text || "Shop now",
+            targetUrl: found.action_route || "/",
+            start: toInputDate(found.starts_at),
+            end: toInputDate(found.ends_at),
+            status: found.is_active ? "Active" : "Scheduled",
+          });
+          if (found.image_url) {
+            setPreviewUrl(found.image_url);
+          }
+        }
+      } catch {}
+    }
+    loadDbBanner();
+  }, [bannerId]);
 
   useEffect(
     () => () => {
@@ -62,7 +95,7 @@ export default function BannerFormPage() {
     setErrors((current) => ({ ...current, image: "" }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = {};
     const priority = Number(form.priority);
@@ -79,9 +112,6 @@ export default function BannerFormPage() {
     if (!isValidTarget(form.targetUrl)) {
       nextErrors.targetUrl = "Use a valid https:// URL or an internal /path.";
     }
-    if (!bannerId && !previewUrl) {
-      nextErrors.image = "Select an image for the new banner.";
-    }
     if (!form.start) {
       nextErrors.start = "Start date is required.";
     }
@@ -96,7 +126,25 @@ export default function BannerFormPage() {
       return;
     }
 
-    setToast(bannerId ? "Banner updated." : "Banner created in local Admin state.");
+    try {
+      await saveAdminBanner({
+        id: bannerId,
+        title: form.title,
+        placement: form.placement,
+        target_route: form.targetUrl,
+        priority,
+        status: form.status,
+      });
+
+      setToast(
+        bannerId
+          ? "Banner updated in Supabase."
+          : "Banner created in Supabase."
+      );
+      window.setTimeout(() => navigate("/admin/marketing/banners"), 350);
+    } catch {
+      setToast("Error saving banner to Supabase.");
+    }
   }
 
   return (

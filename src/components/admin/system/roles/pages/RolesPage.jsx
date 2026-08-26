@@ -1,7 +1,12 @@
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Card, PageHeader, Toast } from "../../../shared/ui";
-import { roles } from "../../../shared/adminData";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Toast } from "../../../shared/ui";
+import { roles as fallbackRoles } from "../../../shared/adminData";
+import {
+  fetchAdminRolesList,
+  updateAdminRolePermissions,
+  subscribeAdminRealtime,
+} from "../../../../../services/adminSupabaseService";
 
 const permissionGroups = {
   Shops: ["shops.view", "shops.approve", "shops.suspend"],
@@ -12,7 +17,7 @@ const permissionGroups = {
 };
 
 function normalizePermissions(role) {
-  const text = role.permissions.join(" ").toLowerCase();
+  const text = (role.permissions || []).join(" ").toLowerCase();
   return Object.values(permissionGroups)
     .flat()
     .filter((permission) => {
@@ -23,26 +28,56 @@ function normalizePermissions(role) {
 
 export default function RolesPage() {
   const { roleId } = useParams();
-  const initialRole = roles.find((role) => role.id === roleId) ?? roles[0];
+  const navigate = useNavigate();
+  const [roleList, setRoleList] = useState(fallbackRoles);
+  const initialRole = roleList.find((role) => role.id === roleId) ?? roleList[0];
   const [selectedId, setSelectedId] = useState(initialRole.id);
   const [rolePermissions, setRolePermissions] = useState(() =>
-    Object.fromEntries(roles.map((role) => [role.id, normalizePermissions(role)])),
+    Object.fromEntries(roleList.map((role) => [role.id, normalizePermissions(role)]))
   );
   const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    async function loadRoles() {
+      const data = await fetchAdminRolesList();
+      if (data && data.length > 0) {
+        setRoleList(data);
+        setRolePermissions(
+          Object.fromEntries(data.map((r) => [r.id, r.permissions || []]))
+        );
+        if (!selectedId || !data.some((r) => r.id === selectedId)) {
+          setSelectedId(data[0].id);
+        }
+      }
+    }
+    loadRoles();
+    const unsub = subscribeAdminRealtime("roles", () => loadRoles());
+    return () => unsub();
+  }, []);
+
   const selectedRole = useMemo(
-    () => roles.find((role) => role.id === selectedId) ?? roles[0],
-    [selectedId],
+    () => roleList.find((role) => role.id === selectedId) ?? roleList[0],
+    [selectedId, roleList]
   );
 
-  function togglePermission(permission) {
-    setRolePermissions((current) => {
-      const permissions = current[selectedId] ?? [];
-      const nextPermissions = permissions.includes(permission)
-        ? permissions.filter((item) => item !== permission)
-        : [...permissions, permission];
+  useEffect(() => {
+    const routedRole = roleList.find((role) => role.id === roleId);
+    if (routedRole) setSelectedId(routedRole.id);
+  }, [roleId, roleList]);
 
-      return { ...current, [selectedId]: nextPermissions };
-    });
+  async function togglePermission(permission) {
+    const permissions = rolePermissions[selectedId] ?? [];
+    const nextPermissions = permissions.includes(permission)
+      ? permissions.filter((item) => item !== permission)
+      : [...permissions, permission];
+
+    setRolePermissions((current) => ({
+      ...current,
+      [selectedId]: nextPermissions,
+    }));
+
+    await updateAdminRolePermissions(selectedId, nextPermissions);
+    setToast("Role permissions updated in Supabase.");
   }
 
   return (
@@ -52,71 +87,79 @@ export default function RolesPage() {
           Roles & Permissions
         </h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Configure readable RBAC permissions for internal Admin roles. Backend authorization remains mandatory.
+          Role definitions, access control, and granular platform permission matrix in Supabase.
         </p>
       </div>
 
-      <div className="space-y-6">
-        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-3 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
-          <div className="flex gap-2 overflow-x-auto scrollbar-none lg:block lg:space-y-1">
-            {roles.map((role) => (
-              <button
-                key={role.id}
-                type="button"
-                onClick={() => setSelectedId(role.id)}
-                className={`min-w-max rounded-[30px] px-4 py-2.5 text-left text-xs font-medium lg:w-full transition-all cursor-pointer ${
-                  selectedId === role.id
-                    ? "bg-brandRed text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)]"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                {role.name}
-              </button>
-            ))}
+      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+          <p className="px-3 py-2 text-[11px] font-semibold text-slate-400">ROLES</p>
+          <div className="space-y-1">
+            {roleList.map((role) => {
+              const active = role.id === selectedId;
+              return (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedId(role.id);
+                    navigate(`/admin/roles/${role.id}`);
+                  }}
+                  className={`w-full rounded-xl px-3 py-2.5 text-left text-xs transition-colors ${
+                    active
+                      ? "bg-rose-50 font-semibold text-brandRed"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <p className="text-xs font-semibold">{role.name}</p>
+                  <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                    {role.description || "System Role"}
+                  </p>
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </aside>
 
-        <div className="rounded-[35px] bg-white border border-[#F3E5E5] p-5 sm:p-6 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h2 className="text-lg font-normal text-brandRed tracking-tight">{selectedRole.name}</h2>
-              <p className="mt-0.5 text-[11px] text-slate-500 font-normal">
-                Permission matrix for this internal role.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setToast(`${selectedRole.name} permissions saved locally.`)}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition cursor-pointer"
-            >
-              Save Changes
-            </button>
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-base font-semibold text-slate-900">{selectedRole.name}</h2>
+            <p className="mt-1 text-xs text-slate-500">{selectedRole.description}</p>
           </div>
 
-          <div className="mt-5 space-y-6">
-            {Object.entries(permissionGroups).map(([group, permissions]) => (
-              <fieldset key={group}>
-                <legend className="mb-3 text-xs font-medium text-slate-800">{group}</legend>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {permissions.map((permission) => (
-                    <label
-                      key={permission}
-                      className="flex min-h-12 items-center gap-3 rounded-[20px] border border-[#F3E5E5] bg-[#FAF8F5] p-3 text-xs"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={rolePermissions[selectedId]?.includes(permission) ?? false}
-                        onChange={() => togglePermission(permission)}
-                        className="h-4 w-4 shrink-0 accent-brandRed"
-                      />
-                      <span className="break-all font-mono text-[11px] text-slate-600">{permission}</span>
-                    </label>
-                  ))}
+          <div className="mt-6 space-y-6">
+            {Object.entries(permissionGroups).map(([groupName, permissions]) => (
+              <div key={groupName} className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {groupName}
+                </h3>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {permissions.map((permission) => {
+                    const active = (rolePermissions[selectedId] ?? []).includes(permission);
+                    return (
+                      <label
+                        key={permission}
+                        className={`flex items-center gap-3 rounded-xl border p-3 text-xs cursor-pointer transition-colors ${
+                          active
+                            ? "border-rose-200 bg-rose-50/50 text-slate-900"
+                            : "border-slate-100 text-slate-500 hover:bg-slate-50"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={active}
+                          onChange={() => togglePermission(permission)}
+                          className="rounded text-brandRed focus:ring-brandRed"
+                        />
+                        <span className="font-mono text-[11px]">{permission}</span>
+                      </label>
+                    );
+                  })}
                 </div>
-              </fieldset>
+              </div>
             ))}
           </div>
-        </div>
+        </section>
       </div>
 
       <Toast message={toast} onClose={() => setToast("")} />

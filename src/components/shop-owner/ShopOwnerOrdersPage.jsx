@@ -1,17 +1,42 @@
-import { useState } from "react";
-import { CheckCircle2, MapPin, Phone, UserCheck, ShoppingBag, Truck, Send, BellRing, Eye, X, FileText } from "lucide-react";
-import { initialSellerOrders } from "../../data/sellerData";
-import { AppFormButton, AppFormCard } from "../reusable/form";
+import { useState, useEffect } from "react";
+import { CheckCircle2, MapPin, Phone, UserCheck, ShoppingBag, Truck, Send, BellRing, Eye, X, Loader2 } from "lucide-react";
+import { fetchShopOrders, updateOrderStatusInSupabase } from "../../lib/supabase";
 
 export default function ShopOwnerOrdersPage() {
-  const [orders, setOrders] = useState(initialSellerOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [activeShopId, setActiveShopId] = useState(null);
 
-  const notifyShipping = (id) => {
+  useEffect(() => {
+    let sId = null;
+    try {
+      const active = localStorage.getItem("serofast_active_shop");
+      if (active) sId = JSON.parse(active).id;
+    } catch (e) {
+      console.warn(e);
+    }
+    setActiveShopId(sId);
+
+    (async () => {
+      setLoading(true);
+      try {
+        const data = await fetchShopOrders(sId);
+        setOrders(data);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const notifyShipping = async (order) => {
     setOrders((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, status: "Shipped", notifiedAt: "Just now" } : o))
+      prev.map((o) => (o.id === order.id ? { ...o, status: "Shipped", notifiedAt: "Just now" } : o))
     );
+    if (order.rawId) {
+      await updateOrderStatusInSupabase(order.rawId, "Shipped");
+    }
   };
 
   const shippedCount = orders.filter((o) => o.status === "Shipped" || o.status === "Delivered" || o.status === "Dispatched").length;
@@ -34,7 +59,7 @@ export default function ShopOwnerOrdersPage() {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="space-y-6 animate-fade-in font-sans font-sansation w-full pb-6">
       {/* Title */}
       <div>
         <h1 className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight">
@@ -92,11 +117,16 @@ export default function ShopOwnerOrdersPage() {
       </div>
 
       {/* Orders List */}
-      {filteredOrders.length === 0 ? (
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
+          <Loader2 size={32} className="animate-spin text-brandRed" />
+          <span className="text-xs font-normal">Fetching orders for your shop from Supabase...</span>
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="w-full rounded-[35px] bg-white border border-[#F3E5E5] p-8 text-center shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)]">
           <ShoppingBag className="mx-auto text-slate-300 mb-2" size={36} />
           <p className="text-sm font-semibold text-slate-700">No Orders Found</p>
-          <p className="text-xs text-slate-400 mt-1">There are no orders matching this view right now.</p>
+          <p className="text-xs text-slate-400 mt-1">There are no customer orders for this shop right now.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -135,10 +165,10 @@ export default function ShopOwnerOrdersPage() {
                       <UserCheck size={15} className="text-brandRed" /> {order.customerName}
                     </span>
                     <p className="text-slate-500 flex items-center gap-1.5 font-normal">
-                      <Phone size={13} /> {order.phone}
+                      <Phone size={13} /> {order.phone || "No phone provided"}
                     </p>
                     <p className="text-slate-500 flex items-center gap-1.5 font-normal">
-                      <MapPin size={13} /> {order.address}
+                      <MapPin size={13} /> {order.address || "Campus Address"}
                     </p>
                   </div>
 
@@ -150,7 +180,7 @@ export default function ShopOwnerOrdersPage() {
                 </div>
 
                 <div className="rounded-[24px] bg-[#FAF8F5] p-4 space-y-2 text-xs border border-slate-100">
-                  {order.items.map((item, idx) => (
+                  {(order.items || []).map((item, idx) => (
                     <div key={idx} className="flex items-start justify-between gap-3 font-medium text-slate-700">
                       <span className="min-w-0 flex-1">{item.qty}x {item.name}</span>
                       <span className="shrink-0 font-semibold">₹{item.price}</span>
@@ -168,14 +198,14 @@ export default function ShopOwnerOrdersPage() {
                     onClick={() => setSelectedOrder(order)}
                     className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-brandRed transition font-medium"
                   >
-                    <Eye size={14} /> View
+                    <Eye size={14} /> View Details
                   </button>
 
                   {!isShipped ? (
                     <button
                       type="button"
-                      onClick={() => notifyShipping(order.id)}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-brandRed px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-brandRedDark transition cursor-pointer active:scale-95"
+                      onClick={() => notifyShipping(order)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-brandRed px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-brandRedDark transition cursor-pointer active:scale-95"
                     >
                       <Send size={13} />
                       <span className="hidden sm:inline">Notify Shipping</span>
@@ -229,7 +259,7 @@ export default function ShopOwnerOrdersPage() {
               {/* Items Breakdown */}
               <div className="bg-slate-50 p-4 rounded-[22px] border border-slate-100 space-y-2">
                 <span className="text-slate-400 block text-[11px] font-semibold uppercase tracking-wider">Ordered Items</span>
-                {selectedOrder.items.map((item, idx) => (
+                {(selectedOrder.items || []).map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center text-slate-800">
                     <span>{item.qty}x {item.name}</span>
                     <span className="font-semibold">₹{item.price}</span>
@@ -265,7 +295,7 @@ export default function ShopOwnerOrdersPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    notifyShipping(selectedOrder.id);
+                    notifyShipping(selectedOrder);
                     setSelectedOrder(null);
                   }}
                   className="flex-1 h-11 rounded-[30px] bg-brandRed text-xs font-semibold text-white hover:bg-brandRedDark transition cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_4px_12px_rgba(211,47,47,0.3)]"

@@ -1,4 +1,4 @@
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useEffect, useSyncExternalStore } from "react";
 import { CalendarDays, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -23,6 +23,7 @@ import {
 } from "../../shared/adminData";
 import { getAdminState, subscribeAdminState } from "../../shared/localAdminRepository";
 import { stockStatus } from "../../inventory/services/inventoryService";
+import { fetchAdminOverviewStats, subscribeToAdminTableChanges } from "../../../../lib/supabase";
 
 const ranges = ["Today", "7 Days", "30 Days", "3 Months", "1 Year"];
 
@@ -37,15 +38,47 @@ const statRoutes = {
 
 export default function DashboardPage() {
   const [range, setRange] = useState("30 Days");
+  const [dbOverview, setDbOverview] = useState(null);
   const localState = useSyncExternalStore(subscribeAdminState, getAdminState, getAdminState);
   const orders = localState.orders;
   const inventory = useMemo(
     () => localState.inventory.map((record) => ({ ...record, status: stockStatus(record) })),
     [localState.inventory],
   );
+
+  useEffect(() => {
+    async function loadStats() {
+      const statsData = await fetchAdminOverviewStats();
+      const hasLiveData = statsData && (
+        statsData.totalShops > 0 ||
+        statsData.totalOrders > 0 ||
+        statsData.totalProducts > 0 ||
+        statsData.totalCustomers > 0
+      );
+      setDbOverview(hasLiveData ? statsData : null);
+    }
+    loadStats();
+
+    const unsubShops = subscribeToAdminTableChanges("shops", () => loadStats());
+    const unsubOrders = subscribeToAdminTableChanges("orders", () => loadStats());
+    const unsubProfiles = subscribeToAdminTableChanges("profiles", () => loadStats());
+
+    return () => {
+      unsubShops();
+      unsubOrders();
+      unsubProfiles();
+    };
+  }, []);
+
   const liveDashboardStats = dashboardStats.map((item) => {
-    if (item.label === "Today's Orders") return { ...item, value: orders.length };
-    if (item.label === "Pending Orders") return { ...item, value: orders.filter((order) => order.status === "Pending").length };
+    if (dbOverview) {
+      if (item.label === "Today's Orders") return { ...item, value: dbOverview.totalOrders ?? 0 };
+      if (item.label === "Pending Orders") return { ...item, value: dbOverview.pendingOrders ?? 0 };
+      if (item.label === "Active Shops") return { ...item, value: dbOverview.activeShops ?? 0 };
+      if (item.label === "Registered Customers") return { ...item, value: dbOverview.totalCustomers ?? 0 };
+      if (item.label === "Pending Shop Approvals") return { ...item, value: dbOverview.pendingShops ?? 0 };
+      if (item.label === "Total Sales") return { ...item, value: `₹${(dbOverview.totalGMV || 0).toLocaleString("en-IN")}` };
+    }
     return item;
   });
   const maximumSale = Math.max(...salesSeries, 1);
@@ -73,7 +106,7 @@ export default function DashboardPage() {
       {
         label: "Low stock",
         value: inventory.filter((item) => item.status === "Low Stock" || item.status === "Out of Stock").length,
-        href: "/admin/inventory?status=Low%20Stock",
+        href: "/admin/products",
         description: "Stock alert",
       },
       {

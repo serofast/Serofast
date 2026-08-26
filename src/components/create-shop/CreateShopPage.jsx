@@ -21,12 +21,14 @@ const STEP_PATHS = {
 
 const PATH_TO_STEP = {
   "/create-shop": 1,
+  "/create-shop/step-1": 1,
+  "/create-shop/basic": 1,
+  "/create-shop/details": 1,
   "/create-shop/step2": 2,
   "/create-shop/step3": 3,
+  "/create-shop/products": 3,
   "/create-shop/step4": 4,
   "/create-shop/step5": 5,
-  "/create-shop/details": 1,
-  "/create-shop/products": 3,
   "/create-shop/launch": 5,
 };
 
@@ -39,8 +41,8 @@ const initialForm = {
   phone: "",
   email: "",
   address: "",
-  city: "Chennai",
-  state: "Tamil Nadu",
+  city: "",
+  state: "",
   pincode: "",
   logo: null,
   cover: null,
@@ -53,6 +55,39 @@ export default function CreateShopPage({ onClose, onComplete }) {
   const step = PATH_TO_STEP[location.pathname] || 1;
   const [form, setForm] = useState(initialForm);
   const [showExitModal, setShowExitModal] = useState(false);
+
+  useEffect(() => {
+    try {
+      const activeShopStr = localStorage.getItem("serofast_active_shop");
+      const ownerStr = localStorage.getItem("serofast_current_owner");
+      const patch = {};
+
+      if (ownerStr) {
+        const owner = JSON.parse(ownerStr);
+        if (owner.full_name) patch.ownerName = owner.full_name;
+        if (owner.phone) patch.phone = owner.phone;
+        if (owner.email) patch.email = owner.email;
+        if (owner.category) patch.category = owner.category;
+      }
+
+      if (activeShopStr) {
+        const shop = JSON.parse(activeShopStr);
+        if (shop.name) patch.shopName = shop.name;
+        if (shop.tagline) patch.tagline = shop.tagline;
+        if (shop.description) patch.description = shop.description;
+        if (shop.address) patch.address = shop.address;
+        if (shop.cover_url) patch.cover = shop.cover_url;
+        if (shop.avatar_url) patch.logo = shop.avatar_url;
+        if (shop.owner_name) patch.ownerName = shop.owner_name;
+        if (shop.owner_phone) patch.phone = shop.owner_phone;
+        if (shop.owner_email) patch.email = shop.owner_email;
+      }
+
+      if (Object.keys(patch).length > 0) {
+        setForm((c) => ({ ...c, ...patch }));
+      }
+    } catch {}
+  }, []);
 
   const updateForm = (patch) => setForm((c) => ({ ...c, ...patch }));
   const next = () => navigate(STEP_PATHS[Math.min(5, step + 1)]);
@@ -81,7 +116,7 @@ export default function CreateShopPage({ onClose, onComplete }) {
       <OnboardingHeader onClose={handleOpenExitModal} />
 
       <main className="min-h-[calc(100svh-64px)]">
-        <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 lg:py-8">
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:px-10">
           <ProgressSteps step={step} />
 
           {step === 1 ? (

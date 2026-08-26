@@ -30,7 +30,7 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
   const isSelected = (id) => selected.includes(id);
 
   return (
-    <div className="space-y-7 font-sans max-w-2xl mx-auto">
+    <div className="space-y-7 font-sans w-full max-w-full lg:max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brandRed/10 text-brandRed">
@@ -66,10 +66,19 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
             <span className="text-[10px]">Ask the SeroFast admin to add products first.</span>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5">
             {products.map((p) => {
               const checked = isSelected(p.id);
-              const imgUrl = p.image_urls?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";
+              const imgUrl =
+                p.image_url ||
+                (Array.isArray(p.images) && p.images[0]?.url) ||
+                p.image ||
+                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80";
+              const storePrice = Number(p.store_price ?? p.retail_price ?? p.price ?? 0);
+              const cutPrice = Number(
+                p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price ?? storePrice
+              );
+              const hasDiscount = cutPrice > storePrice && storePrice > 0;
 
               return (
                 <button
@@ -91,16 +100,18 @@ export default function ProductSelectionStep({ form, updateForm, onNext, onBack 
 
                   <img
                     src={imgUrl}
-                    alt={p.title}
-                    className="w-full aspect-square rounded-xl object-cover bg-slate-100"
+                    alt={p.title || p.name}
+                    className="w-full aspect-square rounded-xl object-contain bg-slate-50"
                   />
 
                   <div className="mt-2 space-y-0.5">
-                    <h4 className="text-xs font-semibold text-slate-900 leading-tight line-clamp-2">{p.title}</h4>
+                    <h4 className="text-xs font-semibold text-slate-900 leading-tight line-clamp-2">
+                      {p.title || p.name}
+                    </h4>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm font-bold text-slate-900">₹{p.price}</span>
-                      {p.original_price && p.original_price > p.price && (
-                        <span className="text-[10px] text-slate-400 line-through">₹{p.original_price}</span>
+                      <span className="text-sm font-bold text-slate-900">₹{storePrice}</span>
+                      {hasDiscount && (
+                        <span className="text-[10px] text-slate-400 line-through">₹{cutPrice}</span>
                       )}
                     </div>
                   </div>

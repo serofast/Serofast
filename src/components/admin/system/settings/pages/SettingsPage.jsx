@@ -1,5 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, PageHeader, Tabs, Toast } from "../../../shared/ui";
+import {
+  saveAdminSystemSetting,
+  fetchAdminSystemSettings,
+  subscribeAdminRealtime,
+} from "../../../../../services/adminSupabaseService";
 
 const groups = [
   "General",
@@ -45,7 +50,7 @@ const settingsByGroup = {
     { id: "twoFactor", label: "Require two-factor authentication", type: "toggle", value: true },
   ],
   Integrations: [
-    { id: "integrationStatus", label: "Integration mode", type: "text", value: "Phase 4 frontend only" },
+    { id: "integrationStatus", label: "Integration mode", type: "text", value: "Supabase Integrated" },
   ],
 };
 
@@ -55,6 +60,32 @@ export default function SettingsPage() {
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
   const rows = settings[activeGroup];
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const data = await fetchAdminSystemSettings();
+        if (data && data.length > 0) {
+          const lookup = Object.fromEntries(data.map((item) => [item.key, item.value]));
+          setSettings((current) => {
+            const next = { ...current };
+            for (const grp of Object.keys(next)) {
+              next[grp] = next[grp].map((setting) => {
+                if (lookup[setting.id] !== undefined) {
+                  return { ...setting, value: lookup[setting.id] };
+                }
+                return setting;
+              });
+            }
+            return next;
+          });
+        }
+      } catch {}
+    }
+    loadSettings();
+    const unsub = subscribeAdminRealtime("system_settings", () => loadSettings());
+    return () => unsub();
+  }, []);
 
   function updateSetting(id, value) {
     setSettings((current) => ({
@@ -66,7 +97,7 @@ export default function SettingsPage() {
     setErrors((current) => ({ ...current, [id]: "" }));
   }
 
-  function saveSettings() {
+  async function saveSettings() {
     const nextErrors = {};
 
     rows.forEach((setting) => {
@@ -86,7 +117,10 @@ export default function SettingsPage() {
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) {
-      setToast(`${activeGroup} settings saved locally.`);
+      for (const setting of rows) {
+        await saveAdminSystemSetting(setting.id, setting.value);
+      }
+      setToast(`${activeGroup} settings saved in Supabase.`);
     }
   }
 

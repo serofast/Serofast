@@ -28,7 +28,12 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setRows([...seed]);
+    setRows((current) => {
+      if (current.length === seed.length && current.every((r, idx) => r === seed[idx])) {
+        return current;
+      }
+      return [...seed];
+    });
   }, [seed]);
 
   const statuses = useMemo(
@@ -41,9 +46,13 @@ export function useResourceList(seed = [], { initialPageSize = 5 } = {}) {
     const matchingRows = rows.filter((row) => {
       const matchesSearch =
         !normalizedSearch ||
-        Object.values(row).some((value) =>
-          String(value ?? "").toLowerCase().includes(normalizedSearch),
-        );
+        (row.searchText
+          ? String(row.searchText).toLowerCase().includes(normalizedSearch)
+          : Object.values(row).some(
+              (value) =>
+                typeof value !== "object" &&
+                String(value ?? "").toLowerCase().includes(normalizedSearch),
+            ));
       const matchesStatus = !status || row.status === status;
       const matchesQuickFilter = !quickFilter || quickFilter(row);
 

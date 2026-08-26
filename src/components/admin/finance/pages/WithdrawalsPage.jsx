@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Building2,
   CheckCircle2,
@@ -21,6 +21,11 @@ import {
 import ResourceTable from "../../shared/resource/ResourceTable";
 import { useResourceList } from "../../shared/resource/useResourceList";
 import { shops, withdrawals } from "../../shared/adminData";
+import {
+  fetchAdminWithdrawalsList,
+  updateAdminWithdrawalStatus,
+  subscribeAdminRealtime,
+} from "../../../../services/adminSupabaseService";
 
 const statuses = ["Pending", "Approved", "Processing", "Completed", "Rejected"];
 const seed = withdrawals.map((row, index) => ({
@@ -40,7 +45,9 @@ const columns = [
 
 export default function WithdrawalsPage() {
   const navigate = useNavigate();
-  const resource = useResourceList(seed);
+  const { withdrawalId } = useParams();
+  const [rows, setRows] = useState([]);
+  const resource = useResourceList(rows);
   const [selected, setSelected] = useState(null);
   const [drawerSection, setDrawerSection] = useState("review");
   const [pendingAction, setPendingAction] = useState(null);
@@ -48,9 +55,54 @@ export default function WithdrawalsPage() {
   const [reasonError, setReasonError] = useState("");
   const [toast, setToast] = useState("");
 
+  async function loadWithdrawals() {
+    try {
+      const data = await fetchAdminWithdrawalsList();
+      if (Array.isArray(data)) {
+        const mapped = data.map((w, idx) => ({
+          id: w.payout_number || w.id,
+          rawId: w.id,
+          shop: w.shops?.name || "Merchant Shop",
+          owner: w.shop_owners?.full_name || "Shop Owner",
+          amount: `₹${w.amount || 0}`,
+          method: w.payout_method || "UPI",
+          status: w.status || "Pending",
+          requested: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN"),
+          accountDetails: w.account_details || {},
+        }));
+        setRows(mapped);
+      }
+    } catch {}
+  }
+
+  useEffect(() => {
+    loadWithdrawals();
+    const unsub = subscribeAdminRealtime("withdrawals", () => loadWithdrawals());
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (!withdrawalId) return;
+    const routedWithdrawal = resource.rows.find(
+      (item) => String(item.id) === withdrawalId,
+    );
+    if (routedWithdrawal) {
+      setSelected(routedWithdrawal);
+      setDrawerSection("review");
+    }
+  }, [resource.rows, withdrawalId]);
+
   function openDrawer(row, section = "review") {
     setSelected(resource.rows.find((item) => item.id === row.id) ?? row);
     setDrawerSection(section);
+    if (section === "review") {
+      navigate(`/admin/finance/withdrawals/${encodeURIComponent(row.id)}`);
+    }
+  }
+
+  function closeDrawer() {
+    setSelected(null);
+    if (withdrawalId) navigate("/admin/finance/withdrawals", { replace: true });
   }
 
   function requestAction(row, status) {
@@ -59,12 +111,20 @@ export default function WithdrawalsPage() {
     setPendingAction({ row, status });
   }
 
-  function confirmAction() {
+  async function confirmAction() {
     if (!pendingAction) return;
     if (pendingAction.status === "Rejected" && !reason.trim()) {
       setReasonError("A rejection reason is required.");
       return;
     }
+
+    try {
+      await updateAdminWithdrawalStatus(
+        pendingAction.row.id,
+        pendingAction.status,
+        reason.trim()
+      );
+    } catch {}
 
     const patch = {
       status: pendingAction.status,
@@ -75,7 +135,7 @@ export default function WithdrawalsPage() {
       setSelected((current) => ({ ...current, ...patch }));
     }
     setToast(
-      `Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()}.`,
+      `Withdrawal ${pendingAction.row.id} marked ${pendingAction.status.toLowerCase()} in Supabase.`
     );
     setPendingAction(null);
   }
@@ -202,7 +262,7 @@ export default function WithdrawalsPage() {
 
       <Drawer
         open={Boolean(selected)}
-        onClose={() => setSelected(null)}
+        onClose={closeDrawer}
         title={
           drawerSection === "bank"
             ? "Bank details"

@@ -59,30 +59,28 @@ export default function ShopOwnerDashboardPage() {
 
         <div className="h-6" />
 
-        {/* Flutter-styled Create Shop Card */}
+        {/* Flutter-styled Create Your Shop First Card */}
         <div className="w-full max-w-[440px] rounded-[35px] bg-white border border-[#F3E5E5] px-6 py-8 sm:px-8 sm:py-9 shadow-[-4px_5px_10px_rgba(211,47,47,0.24),-7px_8px_18px_rgba(211,47,47,0.12)] text-center transition-all duration-300">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-rose-50 text-brandRed mb-4 border border-rose-100">
-            <Store size={28} />
+          <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-rose-50 text-brandRed mb-5 border border-rose-100/80 shadow-2xs">
+            <Store size={30} />
           </div>
 
-          <h2 className="text-2xl font-normal text-brandRed tracking-tight">
-            No Shop Found
+          <h2 className="text-2xl sm:text-[28px] font-extrabold text-brandRed tracking-tight">
+            Create Your Shop First
           </h2>
 
-          <p className="mt-2 text-sm text-slate-500 font-normal leading-relaxed">
-            You haven't set up your store yet. Create your campus shop to continue and unlock your seller workspace.
+          <p className="mt-2.5 text-xs sm:text-sm text-slate-500 font-normal leading-relaxed px-1">
+            Welcome to SeroFast! You haven't set up your campus store yet. Please complete the quick shop creation form to unlock your inventory, orders, payouts, and settings.
           </p>
 
-          <div className="h-6" />
-
-          {/* Primary Action Button */}
-          <Link
-            to="/create-shop"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-[30px] bg-brandRed text-[15px] font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] transition hover:bg-brandRedDark active:scale-[0.98]"
-          >
-            <span>Create Shop to Continue</span>
-            <ArrowRight size={18} />
-          </Link>
+          <div className="mt-7 flex flex-col gap-3">
+            <Link
+              to="/create-shop/basic"
+              className="inline-flex min-h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-brandRed px-6 text-sm sm:text-base font-bold text-white shadow-md shadow-brandRed/25 hover:bg-brandRedDark active:scale-[0.98] transition cursor-pointer"
+            >
+              <Store size={20} /> Create My Shop Now
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -90,7 +88,7 @@ export default function ShopOwnerDashboardPage() {
 
   // SHOP EXISTS: DASHBOARD OVERVIEW
   return (
-    <div className="space-y-6 animate-fade-in font-sans font-sansation max-w-5xl mx-auto pb-6">
+    <div className="space-y-6 animate-fade-in font-sans font-sansation w-full pb-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -104,11 +102,11 @@ export default function ShopOwnerDashboardPage() {
 
         <div className="flex gap-2">
           <Link
-            to="/create-shop"
+            to="/shop-owner/settings"
             className="flex-1 sm:flex-initial h-10 flex items-center justify-center gap-1.5 rounded-[30px] bg-brandRed px-4 text-xs font-semibold text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)] hover:bg-brandRedDark transition"
           >
-            <Plus size={15} />
-            <span>Add Shop</span>
+            <Store size={15} />
+            <span>Shop Settings</span>
           </Link>
           <Link
             to="/shop-owner/settings"

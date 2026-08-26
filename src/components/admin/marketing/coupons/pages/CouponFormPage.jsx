@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdminDatePicker, AdminSelect, Card, PageHeader, Toast } from "../../../shared/ui";
-import { coupons } from "../../../shared/adminData";
+import { fetchAdminCoupons, saveAdminCoupon } from "../../../../../services/adminSupabaseService";
 
 const initialForm = {
   code: "",
@@ -56,32 +56,42 @@ function validateCoupon(form) {
 export default function CouponFormPage() {
   const navigate = useNavigate();
   const { couponId } = useParams();
-  const existingCoupon = coupons.find((coupon) => coupon.id === couponId);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    if (!existingCoupon) {
-      return;
+    async function loadDbCoupon() {
+      if (!couponId) return;
+      try {
+        const list = await fetchAdminCoupons();
+        const found = (list || []).find((c) => String(c.id) === String(couponId));
+        if (found) {
+          setForm({
+            code: found.code || "",
+            type: found.discount_type === "PERCENTAGE" ? "Percent" : "Fixed",
+            value: String(found.discount_value || 10),
+            minOrder: String(found.min_order_value || 0),
+            maxDiscount: "300",
+            usageLimit: "500",
+            audience: "All Customers",
+            scope: "Marketplace",
+            start: "2026-08-16",
+            end: found.valid_until ? found.valid_until.slice(0, 10) : "2026-12-31",
+            status: found.is_active ? "Active" : "Inactive",
+          });
+        }
+      } catch {}
     }
-
-    setForm((current) => ({
-      ...current,
-      code: existingCoupon.code,
-      type: existingCoupon.type,
-      value: String(existingCoupon.value).replace(/[^\d.]/g, ""),
-      minOrder: String(existingCoupon.minOrder).replace(/[^\d.]/g, ""),
-      status: existingCoupon.status,
-    }));
-  }, [existingCoupon]);
+    loadDbCoupon();
+  }, [couponId]);
 
   function updateField(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => ({ ...current, [key]: "" }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     const nextErrors = validateCoupon(form);
 
@@ -90,7 +100,26 @@ export default function CouponFormPage() {
       return;
     }
 
-    setToast(couponId ? "Coupon updated in local Admin state." : "Coupon created in local Admin state.");
+    try {
+      await saveAdminCoupon({
+        id: couponId,
+        code: form.code,
+        type: form.type,
+        value: form.value,
+        minOrder: form.minOrder,
+        status: form.status,
+        end: form.end,
+      });
+
+      setToast(
+        couponId
+          ? "Coupon successfully updated in Supabase."
+          : "Coupon successfully created in Supabase."
+      );
+      window.setTimeout(() => navigate("/admin/marketing/coupons"), 350);
+    } catch {
+      setToast("Error saving coupon to Supabase.");
+    }
   }
 
   return (

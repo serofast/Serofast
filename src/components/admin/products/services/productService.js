@@ -25,8 +25,7 @@ const cloneVariants = (variants, productId) =>
 
 function normalizeProduct(values, current, categories) {
   const id = current?.id ?? localAdminRepository.createId("PRD");
-  const category = categories.find((item) => item.id === values.categoryId);
-  const variants = cloneVariants(values.variants, id);
+  const category = categories.find((item) => item.id === values.categoryId) || { name: values.categoryName || "General" };
   const images = (values.images ?? []).map((image, index) => ({
     ...image,
     id: image.id || localAdminRepository.createId("IMG"),
@@ -36,26 +35,33 @@ function normalizeProduct(values, current, categories) {
       : index === 0,
   }));
 
+  const stock = values.stock === "" || values.stock == null ? 1 : Number(values.stock);
+
   return {
     ...current,
     ...values,
     id,
     name: values.name.trim(),
-    slug: localAdminRepository.slugify(values.slug || values.name),
+    slug: localAdminRepository.slugify(values.name),
     categoryName: category.name,
-    sku: values.sku.trim().toUpperCase(),
-    price: Number(values.price),
+    categoryId: values.categoryId,
+    sections: values.sections || ["Explore Products"],
+    material: values.material || "",
+    fit: values.fit || "",
+    care: values.care || "",
+    sizes: values.sizes || [],
+    base_price: Number(values.base_price || values.retail_price || values.price) || 0,
+    retail_price: Number(values.retail_price ?? values.price) || 0,
+    price: Number(values.retail_price ?? values.price) || 0,
     discountPrice:
-      values.discountPrice === "" || values.discountPrice == null
-        ? null
-        : Number(values.discountPrice),
-    stock: variants.length
-      ? variants.reduce((sum, variant) => sum + variant.stock, 0)
-      : Number(values.stock),
-    lowStockThreshold: Number(values.lowStockThreshold),
+      values.base_price > values.retail_price ? Number(values.retail_price) : null,
+    stock: Number.isFinite(stock) ? stock : 1,
+    status: values.status || "Active",
+    approvalStatus: "Approved",
+    description: values.description || "",
     tags: cleanTags(values.tags),
     images,
-    variants,
+    variants: [],
     updatedAt: localAdminRepository.nowIso(),
     createdAt: current?.createdAt ?? localAdminRepository.nowIso(),
   };
@@ -63,36 +69,20 @@ function normalizeProduct(values, current, categories) {
 
 function syncProductInventory(state, product) {
   const retained = state.inventory.filter((record) => record.productId !== product.id);
-  const records = product.variants.length
-    ? product.variants.map((variant) => ({
-        id: `INV-${variant.id}`,
-        shopId: product.shopId,
-        shopName: product.shopName,
-        productId: product.id,
-        productName: product.name,
-        variantId: variant.id,
-        variantLabel: Object.values(variant.attributes).join(" / ") || "Variant",
-        sku: variant.sku,
-        quantity: variant.stock,
-        lowStockThreshold: variant.lowStockThreshold,
-        updatedAt: product.updatedAt,
-      }))
-    : [
-        {
-          id: `INV-${product.id}`,
-          shopId: product.shopId,
-          shopName: product.shopName,
-          productId: product.id,
-          productName: product.name,
-          variantId: null,
-          variantLabel: "Standard",
-          sku: product.sku,
-          quantity: product.stock,
-          lowStockThreshold: product.lowStockThreshold,
-          updatedAt: product.updatedAt,
-        },
-      ];
-  return [...retained, ...records];
+  const record = {
+    id: `INV-${product.id}`,
+    shopId: "SHOP-CENTRAL-CATALOG",
+    shopName: "SeroFast Warehouse",
+    productId: product.id,
+    productName: product.name,
+    variantId: null,
+    variantLabel: "Standard",
+    sku: `SF-${product.id.slice(-6).toUpperCase()}`,
+    quantity: product.stock,
+    lowStockThreshold: 0,
+    updatedAt: product.updatedAt,
+  };
+  return [...retained, record];
 }
 
 export function list() {

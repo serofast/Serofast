@@ -36,7 +36,7 @@ export default function SellerInfoStep({ form, updateForm, onNext, onBack }) {
   return (
     <form
       onSubmit={(e) => { e.preventDefault(); if (validate()) onNext(); }}
-      className="space-y-7 font-sans max-w-2xl mx-auto"
+      className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto"
     >
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -90,11 +90,11 @@ export default function SellerInfoStep({ form, updateForm, onNext, onBack }) {
         <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">City</label>
-            <input type="text" value={form.city || "Chennai"} onChange={(e) => updateForm({ city: e.target.value })} className={inputClass} />
+            <input type="text" value={form.city || ""} onChange={(e) => updateForm({ city: e.target.value })} placeholder="City" className={inputClass} />
           </div>
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">State</label>
-            <input type="text" value={form.state || "Tamil Nadu"} onChange={(e) => updateForm({ state: e.target.value })} className={inputClass} />
+            <input type="text" value={form.state || ""} onChange={(e) => updateForm({ state: e.target.value })} placeholder="State" className={inputClass} />
           </div>
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">PIN <span className="text-brandRed">*</span></label>

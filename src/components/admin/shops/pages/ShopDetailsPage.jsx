@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Banknote, PackageSearch, ShieldCheck, ShoppingBag, Eye, FileText } from "lucide-react";
 import { useParams } from "react-router-dom";
 import {
@@ -9,7 +9,8 @@ import {
   Tabs,
   Toast,
 } from "../../shared/ui";
-import { shops } from "../../shared/adminData";
+import { fetchAdminShopDetails, updateShopStatusInSupabase } from "../../../../lib/supabase";
+import { shops as shopSeed } from "../../shared/adminData";
 
 const tabs = [
   "Overview",
@@ -26,15 +27,46 @@ const tabs = [
 
 export default function ShopDetailsPage() {
   const { shopId } = useParams();
-  const sourceShop = shops.find((item) => item.id === shopId) ?? shops[0];
-  const [shop, setShop] = useState(sourceShop);
+  const fallbackShop = shopSeed.find((item) => item.id === shopId) ?? shopSeed[0];
+  const [shop, setShop] = useState(fallbackShop);
   const [activeTab, setActiveTab] = useState("Overview");
   const [pendingStatus, setPendingStatus] = useState(null);
   const [reason, setReason] = useState("");
   const [toast, setToast] = useState("");
+  const [selectedDoc, setSelectedDoc] = useState(null);
   const verificationStatus = shop.status === "Pending" ? "Pending" : "Verified";
 
-  function confirmStatus() {
+  useEffect(() => {
+    async function loadShop() {
+      if (!shopId) return;
+      const data = await fetchAdminShopDetails(shopId);
+      if (data) {
+        setShop({
+          id: data.id,
+          shop: data.name || "Untitled Shop",
+          owner: data.owner_name || data.shop_owners?.full_name || "Shop Owner",
+          email: data.owner_email || data.shop_owners?.email || "",
+          phone: data.owner_phone || data.shop_owners?.phone || "",
+          category: data.category_id || "Fashion",
+          products: 0,
+          orders: 0,
+          revenue: "₹0",
+          rating: String(data.rating || "4.8"),
+          status: data.status === "active" ? "Active" : data.status === "pending_review" ? "Pending" : "Active",
+          joined: new Date(data.created_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" }),
+          cover_url: data.cover_url,
+          avatar_url: data.avatar_url,
+        });
+      } else {
+        setShop(shopSeed.find((item) => item.id === shopId) ?? shopSeed[0]);
+      }
+    }
+    loadShop();
+  }, [shopId]);
+
+  async function confirmStatus() {
+    const newStatus = pendingStatus === "Active" ? "active" : pendingStatus.toLowerCase();
+    await updateShopStatusInSupabase(shop.id, newStatus);
     setShop((current) => ({ ...current, status: pendingStatus }));
     setToast(`${shop.shop} marked ${pendingStatus.toLowerCase()}.`);
     setPendingStatus(null);
@@ -232,7 +264,7 @@ function Documents() {
               </div>
               <p className="text-xs font-semibold text-slate-800">{selectedDoc} (PDF Preview)</p>
               <p className="text-[11px] text-slate-500 font-normal">
-                Status: Verified ✓ · Uploaded on 12 Aug 2026
+                Status: Verified · Uploaded on 12 Aug 2026
               </p>
             </div>
             <button

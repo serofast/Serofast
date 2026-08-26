@@ -26,7 +26,7 @@ export default function LogoMarquee() {
       </div>
 
       <div className="flex overflow-hidden">
-        <div className="flex w-max animate-[marquee_28s_linear_infinite] hover:[animation-play-state:paused] gap-6">
+        <div className="animate-marquee pause-on-hover gap-6">
           {marqueeItems.map((item, idx) => (
             <div
               key={idx}

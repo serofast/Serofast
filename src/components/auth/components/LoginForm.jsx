@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { Mail, LockKeyhole, CheckCircle2 } from "lucide-react";
+import { Mail, LockKeyhole, CheckCircle2, ShieldAlert } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { loginShopOwner } from "../../../lib/supabase";
+import { firebaseSignIn, firebaseGoogleSignIn } from "../../../lib/firebase";
+import { loginShopOwner, registerShopOwner } from "../../../lib/supabase";
 import { AppFormField, AppFormButton } from "../../reusable/form";
 
 export default function LoginForm() {
   const [submitted, setSubmitted] = useState(false);
   const [values, setValues] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
+  const [authError, setAuthError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const update = (key, value) =>
+  const update = (key, value) => {
+    setAuthError(null);
     setValues((current) => ({ ...current, [key]: value }));
+  };
 
   const validate = () => {
     const errs = {};
@@ -29,17 +33,52 @@ export default function LoginForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (validate()) {
-      setIsLoading(true);
+    if (!validate()) return;
+
+    setIsLoading(true);
+    setAuthError(null);
+
+    try {
+      // 1. Firebase Auth Sign-in (handles security & brute-force checks)
+      const { user } = await firebaseSignIn(values.email, values.password);
+
+      // 2. Fetch owner & shop from Supabase database
       await loginShopOwner({
+        id: user.uid,
         email: values.email,
         password: values.password,
+      });
+
+      setIsLoading(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        navigate("/shop-owner/dashboard");
+      }, 800);
+    } catch (err) {
+      setIsLoading(false);
+      setAuthError(err.message || "Failed to log in. Please check your credentials.");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    setAuthError(null);
+    try {
+      const { user } = await firebaseGoogleSignIn();
+      await registerShopOwner({
+        id: user.uid,
+        name: user.displayName || "Shop Owner",
+        email: user.email,
+        phone: user.phoneNumber || "",
       });
       setIsLoading(false);
       setSubmitted(true);
       setTimeout(() => {
         navigate("/shop-owner/dashboard");
       }, 800);
+    } catch (err) {
+      setIsLoading(false);
+      setAuthError(err.message || "Google Sign-In failed.");
     }
   };
 
@@ -53,7 +92,7 @@ export default function LoginForm() {
           Welcome Back
         </h2>
         <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500 font-normal">
-          Logging into SeroFast...
+          Authenticated securely with Firebase...
         </p>
       </div>
     );
@@ -62,9 +101,17 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col space-y-4 font-sans font-sansation">
       {/* Title */}
-      <h2 className="text-center text-[22px] font-semibold text-brandRed tracking-tight pb-2">
-        Login
+      <h2 className="text-center text-[22px] font-semibold text-brandRed tracking-tight pb-1">
+        Shop Owner Login
       </h2>
+
+      {/* Security Error Banner (e.g. Brute Force Lockout or Invalid Credentials) */}
+      {authError && (
+        <div className="p-3 rounded-[16px] bg-rose-50 border border-rose-200 text-brandRed text-xs flex items-center gap-2 animate-fade-in font-medium">
+          <ShieldAlert size={18} className="shrink-0 text-brandRed" />
+          <span>{authError}</span>
+        </div>
+      )}
 
       {/* 1. EMAIL FIELD */}
       <AppFormField
@@ -72,7 +119,7 @@ export default function LoginForm() {
         type="email"
         value={values.email}
         onChange={(val) => update("email", val)}
-        placeholder="Email"
+        placeholder="Email Address"
         error={errors.email}
         autoComplete="email"
       />
@@ -92,7 +139,7 @@ export default function LoginForm() {
 
       {/* 3. LOGIN BUTTON */}
       <AppFormButton type="submit" isLoading={isLoading}>
-        Login
+        Secure Login
       </AppFormButton>
 
       {/* 4. DIVIDER */}
@@ -105,7 +152,7 @@ export default function LoginForm() {
       {/* 5. GOOGLE SIGN IN BUTTON */}
       <button
         type="button"
-        onClick={() => alert("Google Sign-In integration ready")}
+        onClick={handleGoogleSignIn}
         className="flex h-12 w-full items-center justify-center gap-2 rounded-[30px] border border-[#E5E7EB] bg-white text-[13px] font-semibold text-slate-800 shadow-2xs transition hover:bg-slate-50 cursor-pointer"
       >
         <span className="text-xl font-bold text-brandRed leading-none">G</span>
@@ -114,12 +161,12 @@ export default function LoginForm() {
 
       {/* 6. REGISTER LINK */}
       <div className="flex items-center justify-center text-[13px] pt-2">
-        <span className="text-slate-500 font-medium">Don't have an account?&nbsp;</span>
+        <span className="text-slate-500 font-medium">Don't have a shop account?&nbsp;</span>
         <Link
           to="/signup"
           className="font-semibold text-brandRed hover:underline"
         >
-          Register
+          Register Shop
         </Link>
       </div>
     </form>
