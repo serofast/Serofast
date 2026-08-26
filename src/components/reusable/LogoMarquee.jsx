@@ -15,18 +15,21 @@ export default function LogoMarquee() {
   const marqueeItems = [...partners, ...partners];
 
   return (
-    <section className="relative w-full overflow-hidden bg-gradient-to-r from-[#fafafa] via-white to-[#fafafa] py-10 border-y border-[#eee]">
-      {/* Edge gradient blur overlays */}
-      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-24 bg-gradient-to-r from-white via-white/80 to-transparent" />
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-24 bg-gradient-to-l from-white via-white/80 to-transparent" />
+    <section className="landing-marquee relative w-full overflow-hidden bg-gradient-to-r from-[#fafafa] via-white to-[#fafafa] py-10 border-y border-[#f0f0f0] max-800:py-8">
+      {/* Edge gradient blur overlays for smooth fade */}
+      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-32 bg-gradient-to-r from-white via-white/90 to-transparent max-560:w-16" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-32 bg-gradient-to-l from-white via-white/90 to-transparent max-560:w-16" />
 
-      <div className="mb-6 flex items-center justify-center gap-2 text-center text-xs font-extrabold uppercase tracking-widest text-[#777] max-560:mb-4 max-560:text-[10px] max-560:tracking-wide">
-        <Sparkles size={14} className="text-brandRed" />
-        <span>Trusted by 500+ Verified Hyperlocal Partner Stores &amp; Campus Hubs</span>
+      <div className="mb-7 flex items-center justify-center gap-2 text-center text-[11px] font-extrabold uppercase tracking-widest text-[#999] max-560:mb-5 max-560:text-[10px] max-560:tracking-wide">
+        <span className="h-px w-6 bg-gradient-to-r from-transparent to-[#ddd]" />
+        <Sparkles size={13} className="text-brandRed/60" />
+        <span className="text-[#888]">Trusted by 500+ Verified Hyperlocal Partner Stores & Campus Hubs</span>
+        <Sparkles size={13} className="text-brandRed/60" />
+        <span className="h-px w-6 bg-gradient-to-l from-transparent to-[#ddd]" />
       </div>
 
       <div className="flex overflow-hidden">
-        <div className="animate-marquee pause-on-hover gap-6">
+        <div className="animate-marquee pause-on-hover gap-5 max-560:gap-3">
           {marqueeItems.map((item, idx) => (
             <div
               key={idx}

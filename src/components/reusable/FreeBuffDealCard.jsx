@@ -7,7 +7,7 @@ export default function FreeBuffDealCard({ deal, onClaim }) {
   );
 
   return (
-    <article className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-[#F3E5E5] bg-white p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.12)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brandRed/40 hover:shadow-[-4px_8px_20px_rgba(211,47,47,0.22)] font-sans font-sansation">
+    <article className="landing-deal-card group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-[#F3E5E5] bg-white p-4 shadow-[-4px_5px_10px_rgba(211,47,47,0.12)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brandRed/40 hover:shadow-[-4px_8px_20px_rgba(211,47,47,0.22)] font-sans font-sansation">
       {/* Top Banner Tag */}
       <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-brandRed px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wider text-white shadow-xs">
         <Sparkles size={10} className="animate-pulse text-amber-300" />

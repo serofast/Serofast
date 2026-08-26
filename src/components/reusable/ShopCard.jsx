@@ -11,7 +11,7 @@ export default function ShopCard({ shop, onOpenAppTeaser }) {
   return (
     <article
       onClick={handleClick}
-      className="group relative cursor-pointer overflow-hidden rounded-[16px] border border-[#ededed] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brandRed/30 hover:shadow-[0_18px_36px_rgba(210,33,37,0.12)]"
+      className="landing-shop-card group relative cursor-pointer overflow-hidden rounded-[16px] border border-[#ededed] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brandRed/30 hover:shadow-[0_18px_36px_rgba(210,33,37,0.12)]"
     >
       <div className="relative h-[111px] overflow-visible max-560:h-[105px]">
         <div className="h-full w-full overflow-hidden rounded-t-[15px]">

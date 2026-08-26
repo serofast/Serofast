@@ -42,7 +42,7 @@ export default function Header({ onOpenAppTeaser }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
+      className={`landing-header sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "border-b border-[#e5e5e5] bg-white/[0.98] shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-[20px]"
           : "border-b border-[#eee] bg-white/[0.95] backdrop-blur-[16px]"
@@ -58,7 +58,7 @@ export default function Header({ onOpenAppTeaser }) {
         aria-valuemax={100}
       />
 
-      <div className="mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] pt-2.5 max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:pt-3.5 max-800:pb-1 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
+      <div className="landing-header-main mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] pt-2.5 max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:pt-3.5 max-800:pb-1 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
         <Link
           to="/"
           className="group inline-flex items-center gap-2 text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] max-560:text-[18px]"
@@ -130,7 +130,7 @@ export default function Header({ onOpenAppTeaser }) {
       </div>
 
       {/* Sub Navigation Bar */}
-      <div className="border-t border-[#f4f4f4] max-800:hidden">
+      <div className="landing-subnav border-t border-[#f4f4f4] max-800:hidden">
         <nav
           className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] text-[13px] font-semibold text-[#333]"
           aria-label="Section Navigation"
