@@ -201,8 +201,8 @@ export default function ShopOwnerLayout() {
       {/* Main Layout Body */}
       <div className="flex flex-1 w-full">
         {/* Desktop Sidebar — Expanded Buttons for Great UI/UX */}
-        <aside className="hidden md:block w-64 border-r border-[#E5E7EB] bg-white min-h-[calc(100vh-56px)] shrink-0">
-          <div className="flex h-full flex-col justify-between p-4 sticky top-14">
+        <aside className="hidden md:block w-64 border-r border-[#E5E7EB] bg-white sticky top-14 h-[calc(100vh-56px)] shrink-0 overflow-y-auto self-start z-30">
+          <div className="flex h-full flex-col justify-between p-4">
             <div className="space-y-5">
               {/* Store Profile Card */}
               <div className="rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-3.5 flex items-center gap-3">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   QrCode,
@@ -12,9 +13,6 @@ import {
   CheckCircle2,
   Tag,
   FileText,
-  Truck,
-  DollarSign,
-  Clock,
   Image as ImageIcon,
   Loader2,
   Sparkles,
@@ -46,12 +44,6 @@ export default function ShopOwnerSettingsPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-
-  // Enhanced Operational Settings
-  const [isOnline, setIsOnline] = useState(true);
-  const [deliveryRadiusKm, setDeliveryRadiusKm] = useState(5);
-  const [minOrderAmount, setMinOrderAmount] = useState(199);
-  const [prepTimeMins, setPrepTimeMins] = useState(15);
 
   // Media URLs & File Upload States
   const [logoUrl, setLogoUrl] = useState("");
@@ -87,10 +79,6 @@ export default function ShopOwnerSettingsPage() {
           setCategory(shop.category || shop.category_id || "Fashion");
           setDescription(shop.description || "");
           setAddress(shop.address || shop.location || "");
-          setIsOnline(shop.status !== "offline");
-          setDeliveryRadiusKm(shop.deliveryRadiusKm || shop.delivery_radius || 5);
-          setMinOrderAmount(shop.minOrderAmount || shop.min_order || 199);
-          setPrepTimeMins(shop.prepTimeMins || 15);
           setLogoUrl(shop.avatar_url || shop.logoUrl || shop.logo || "");
           setCoverUrl(shop.cover_url || shop.coverUrl || shop.cover || "");
         }
@@ -147,7 +135,6 @@ export default function ShopOwnerSettingsPage() {
 
     try {
       if (logoFile) {
-        setToastMessage("Uploading new shop logo to Supabase storage bucket...");
         const uploadedLogo = await uploadShopAsset(logoFile, "logos", storeName || activeShopId);
         if (uploadedLogo) {
           finalLogoUrl = uploadedLogo;
@@ -158,7 +145,6 @@ export default function ShopOwnerSettingsPage() {
       }
 
       if (coverFile) {
-        setToastMessage("Uploading new cover banner to Supabase storage bucket...");
         const uploadedCover = await uploadShopAsset(coverFile, "covers", storeName || activeShopId);
         if (uploadedCover) {
           finalCoverUrl = uploadedCover;
@@ -177,10 +163,6 @@ export default function ShopOwnerSettingsPage() {
         category,
         description,
         address,
-        status: isOnline ? "online" : "offline",
-        deliveryRadiusKm: Number(deliveryRadiusKm) || 5,
-        minOrderAmount: Number(minOrderAmount) || 199,
-        prepTimeMins: Number(prepTimeMins) || 15,
         avatar_url: finalLogoUrl,
         cover_url: finalCoverUrl,
       };
@@ -196,18 +178,16 @@ export default function ShopOwnerSettingsPage() {
       await updateShopDetails(activeShopId, activeOwnerId, shopPayload, ownerPayload);
 
       setSaved(true);
-      setToastMessage(null);
     } catch (err) {
       console.error(err);
-      setToastMessage("Failed to update store settings. Please try again.");
+      setErrorMessage("Failed to update store settings. Please try again.");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDownloadPoster = () => {
-    setToastMessage("Downloading printable QR code PDF poster...");
-    setTimeout(() => setToastMessage(null), 3500);
+    // Printable QR code poster download action
   };
 
   const handleLogout = () => {
@@ -223,7 +203,7 @@ export default function ShopOwnerSettingsPage() {
           Store Settings &amp; Profile
         </h1>
         <p className="text-xs text-slate-500 font-normal mt-0.5">
-          Manage your campus store details, operational preferences, and owner contact profile.
+          Manage your campus store details, owner contact profile, and brand assets.
         </p>
       </div>
 
@@ -325,75 +305,7 @@ export default function ShopOwnerSettingsPage() {
                 </div>
               </AppFormCard>
 
-              {/* Section 3: Operational & Delivery Settings */}
-              <AppFormCard className="max-w-full" title="Operations & Delivery Preferences" subtitle="Configure order fulfillment parameters for campus delivery">
-                <div className="space-y-4">
-                  {/* Store Status Toggle */}
-                  <div className="flex items-center justify-between p-4 rounded-[22px] bg-[#FAF8F5] border border-[#F3E5E5]">
-                    <div>
-                      <span className="text-xs font-semibold text-slate-900 block">Store Online Status</span>
-                      <span className="text-[11px] text-slate-500 font-normal">Toggle whether your shop is currently accepting customer orders.</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsOnline(!isOnline)}
-                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors cursor-pointer ${
-                        isOnline ? "bg-emerald-500" : "bg-slate-300"
-                      }`}
-                    >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                          isOnline ? "translate-x-6" : "translate-x-1"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-normal text-slate-700 mb-1 flex items-center gap-1">
-                        <Truck size={13} className="text-slate-400" /> Delivery Radius (km)
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        max="50"
-                        value={deliveryRadiusKm}
-                        onChange={(e) => setDeliveryRadiusKm(e.target.value)}
-                        className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-normal text-slate-700 mb-1 flex items-center gap-1">
-                        <DollarSign size={13} className="text-slate-400" /> Min. Order Amount (₹)
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={minOrderAmount}
-                        onChange={(e) => setMinOrderAmount(e.target.value)}
-                        className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-normal text-slate-700 mb-1 flex items-center gap-1">
-                        <Clock size={13} className="text-slate-400" /> Avg. Prep Time (Mins)
-                      </label>
-                      <input
-                        type="number"
-                        min="5"
-                        value={prepTimeMins}
-                        onChange={(e) => setPrepTimeMins(e.target.value)}
-                        className="w-full h-10 rounded-[14px] border border-[#E5E7EB] px-3 text-xs font-normal focus:border-brandRed focus:ring-1 focus:ring-brandRed outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </AppFormCard>
-
-              {/* Section 4: Brand Assets & Media */}
+              {/* Section 3: Brand Assets & Media */}
               <AppFormCard
                 className="max-w-full"
                 title="Brand Assets & Images"
