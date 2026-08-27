@@ -362,7 +362,7 @@ export default function ShopDetailsStep({ form, updateForm, onNext, onBack }) {
 
             <div role="radiogroup" aria-label="Entry charge" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
-                { value: "standard", price: "₹50", label: "Standard Entry Fee" },
+                { value: "standard", price: "₹49", label: "Standard Entry Fee" },
                 { value: "offer", price: "₹0", label: "Limited Time Offer" },
               ].map((option) => {
                 const active = form.entryFee === option.value;

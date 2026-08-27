@@ -39,13 +39,13 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
       phone: form.phone,
       category: form.category,
       address: form.address || form.city,
-      amount: 50,
+      amount: 49,
     });
   };
 
   const handleCreate = async () => {
     if (!isPaid) {
-      setLaunchError("Store activation payment of ₹50 is required before launching your shop.");
+      setLaunchError("Store activation payment of ₹49 is required before launching your shop.");
       return;
     }
 

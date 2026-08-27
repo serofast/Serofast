@@ -10,15 +10,18 @@ import {
   CheckCircle2,
   ArrowRight,
   Store,
+  Coins,
 } from "lucide-react";
 import Logo from "../reusable/Logo";
 import { ProgressCircle } from "../admin/shared/ui";
+import { fetchShopOrders, updateOrderStatusInSupabase } from "../../lib/supabase";
 
 export default function ShopOwnerDashboardPage() {
   const [activeShop, setActiveShop] = useState(null);
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
+    let sId = null;
     try {
       const storedOwner = localStorage.getItem("serofast_current_owner");
       const ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
@@ -32,6 +35,7 @@ export default function ShopOwnerDashboardPage() {
 
         if (isMatch) {
           setActiveShop(parsed);
+          sId = parsed.id;
           setOrders(parsed.orders || []);
         } else {
           localStorage.removeItem("serofast_active_shop");
@@ -46,12 +50,27 @@ export default function ShopOwnerDashboardPage() {
     } catch (e) {
       console.warn("Storage read error", e);
     }
+
+    if (sId) {
+      (async () => {
+        try {
+          const liveOrders = await fetchShopOrders(sId);
+          if (liveOrders && liveOrders.length > 0) {
+            setOrders(liveOrders);
+          }
+        } catch {}
+      })();
+    }
   }, []);
 
-  const updateOrderStatus = (orderId, newStatus) => {
+  const updateOrderStatus = async (orderId, newStatus) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (targetOrder?.rawId) {
+      await updateOrderStatusInSupabase(targetOrder.rawId, newStatus);
+    }
   };
 
   const totalRevenue = orders

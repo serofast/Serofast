@@ -9,7 +9,7 @@ import { supabase } from "../lib/supabase";
 export const OFFICIAL_SUPPORT_EMAIL = "serofastinfo@gmail.com";
 
 /**
- * Creates structured invoice metadata for a successful ₹50 store activation payment.
+ * Creates structured invoice metadata for a successful ₹49 store activation payment.
  */
 export function generateInvoiceData({
   paymentId = `pay_${Date.now().toString(36).toUpperCase()}`,
@@ -20,7 +20,7 @@ export function generateInvoiceData({
   phone = "",
   category = "",
   address = "",
-  amount = 50,
+  amount = 49,
 } = {}) {
   // Resolve fallbacks from localStorage if missing
   let storedOwner = null;
@@ -72,18 +72,18 @@ export function generateInvoiceData({
       method: "Razorpay Online Payment (UPI / Card / Netbanking)",
       status: "COMPLETED / PAID",
       currency: "INR",
-      amount: Number(amount) || 50,
+      amount: Number(amount) || 49,
     },
     items: [
       {
         description: "Seller Onboarding & Lifetime Store Activation Fee",
         notes: "0% Commission Campus Marketplace Access & Instant UPI Settlement Guarantee",
         quantity: 1,
-        unitPrice: Number(amount) || 50,
-        total: Number(amount) || 50,
+        unitPrice: Number(amount) || 49,
+        total: Number(amount) || 49,
       },
     ],
-    totalAmount: Number(amount) || 50,
+    totalAmount: Number(amount) || 49,
   };
 }
 
@@ -156,7 +156,7 @@ export function generateInvoiceHtml(invoice) {
           <p>${invoice.invoiceNumber}</p>
           <span><strong>Issued Date:</strong> ${invoice.date} (${invoice.time})</span>
           <span><strong>Issued By:</strong> ${invoice.sender.email}</span>
-          <span><strong>Service Type:</strong> Seller Activation (₹50)</span>
+          <span><strong>Service Type:</strong> Seller Activation (₹49)</span>
           <span><strong>Platform:</strong> ${invoice.sender.platform}</span>
         </div>
       </div>

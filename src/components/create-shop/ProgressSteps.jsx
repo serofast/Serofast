@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 
-const labels = ["Your Shop", "About You", "Products", "Activation (₹50)", "Launch"];
+const labels = ["Your Shop", "About You", "Products", "Activation (₹49)", "Launch"];
 
 export default function ProgressSteps({ step }) {
   const progress = ((step - 1) / 4) * 100;

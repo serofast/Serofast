@@ -463,7 +463,7 @@ export async function saveOnboardingDraft(stepNumber, formData) {
           shopFields.is_paid = true;
           shopFields.payment_id = formData.payment_id;
           shopFields.payment_status = "paid";
-          shopFields.onboarding_amount = 50.00;
+          shopFields.onboarding_amount = 49.00;
         }
 
         if (existingShop) {
@@ -622,9 +622,9 @@ export async function createShopInSupabase(shopData) {
   const ownerEmail = shopData.email || currentOwnerObj?.email || "";
   const ownerPhone = shopData.phone || currentOwnerObj?.phone || "";
 
-  // 1. Strict Payment Security Check: Store cannot be created without verified ₹50 payment
+  // 1. Strict Payment Security Check: Store cannot be created without verified ₹49 payment
   if (!shopData.is_paid || !shopData.payment_id) {
-    throw new Error("Store activation requires completing the ₹50 onboarding payment.");
+    throw new Error("Store activation requires completing the ₹49 onboarding payment.");
   }
 
   // Format shop address (location, city, pincode separated by commas)
@@ -649,7 +649,7 @@ export async function createShopInSupabase(shopData) {
     is_paid: true,
     payment_id: shopData.payment_id,
     payment_status: "paid",
-    onboarding_amount: 50.00,
+    onboarding_amount: 49.00,
     created_at: new Date().toISOString(),
   };
 
@@ -693,9 +693,9 @@ export async function createShopInSupabase(shopData) {
           {
             transaction_number: txNumber,
             type: "Seller Onboarding",
-            gross_amount: 50.00,
+            gross_amount: 49.00,
             platform_fee: 0.00,
-            net_amount: 50.00,
+            net_amount: 49.00,
             payment_method: "Razorpay Online",
             status: "Success",
             gateway_ref_id: shopData.payment_id,
@@ -1083,6 +1083,286 @@ export async function updateOwnerUpiId(ownerId, upiId) {
       localStorage.setItem("serofast_current_owner", JSON.stringify(owner));
     }
   } catch {}
+}
+
+/* ── Shop Owner Payouts, Sales & Withdrawals (₹30/dress & ₹100 Min Withdrawal) ── */
+
+export async function fetchShopPayoutStats(shopId, ownerId) {
+  let totalSalesAmount = 0;
+  let completedOrdersCount = 0;
+  let totalDressesSold = 0;
+  let totalWithdrawn = 0;
+
+  // 1. Fetch Orders from Supabase or localStorage
+  let ordersList = [];
+  if (supabase && shopId && isValidUuid(shopId)) {
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("shop_id", shopId)
+        .order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) ordersList = data;
+    } catch {}
+  }
+
+  if (!ordersList.length) {
+    try {
+      const stored = localStorage.getItem(`serofast_orders_${shopId}`) || localStorage.getItem("serofast_active_shop");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) ordersList = parsed;
+        else if (parsed?.orders) ordersList = parsed.orders;
+      }
+    } catch {}
+  }
+
+  // Calculate completed sales & dress units sold
+  ordersList.forEach((order) => {
+    const status = String(order.status || order.order_status || "").toLowerCase();
+    const isCancelled = status === "cancelled" || status === "rejected";
+    if (!isCancelled) {
+      completedOrdersCount += 1;
+      totalSalesAmount += Number(order.total_amount || order.totalAmount || 0);
+
+      const items = order.order_items || order.items || [];
+      if (items.length > 0) {
+        items.forEach((item) => {
+          totalDressesSold += Math.max(1, Number(item.quantity || item.qty || 1));
+        });
+      } else {
+        totalDressesSold += 1;
+      }
+    }
+  });
+
+  // Shop owner earns 30rs per dress/item sold
+  const ratePerDress = 30;
+  const minWithdrawal = 100;
+  const totalEarnings = totalDressesSold * ratePerDress;
+
+  // 2. Fetch withdrawals from Supabase
+  let withdrawalsList = [];
+  if (supabase && (shopId || ownerId)) {
+    try {
+      let query = supabase.from("withdrawals").select("*");
+      if (shopId && isValidUuid(shopId) && ownerId && isValidUuid(ownerId)) {
+        query = query.or(`shop_id.eq.${shopId},owner_id.eq.${ownerId}`);
+      } else if (shopId && isValidUuid(shopId)) {
+        query = query.eq("shop_id", shopId);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        query = query.eq("owner_id", ownerId);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) withdrawalsList = data;
+    } catch {}
+  }
+
+  if (!withdrawalsList.length) {
+    try {
+      const stored = localStorage.getItem(`serofast_withdrawals_${shopId || ownerId}`);
+      if (stored) withdrawalsList = JSON.parse(stored);
+    } catch {}
+  }
+
+  withdrawalsList.forEach((w) => {
+    const st = String(w.status || "").toLowerCase();
+    if (st !== "rejected" && st !== "cancelled" && st !== "failed") {
+      totalWithdrawn += Number(w.amount || 0);
+    }
+  });
+
+  const availableAmount = Math.max(0, totalEarnings - totalWithdrawn);
+
+  return {
+    totalSalesAmount,
+    completedOrdersCount,
+    totalDressesSold,
+    ratePerDress,
+    totalEarnings,
+    totalWithdrawn,
+    availableAmount,
+    minWithdrawal,
+    canWithdraw: availableAmount >= minWithdrawal,
+    withdrawals: withdrawalsList.map((w) => ({
+      id: w.id,
+      payoutNumber: w.payout_number || `PO-${w.id?.slice(0, 8)}`,
+      amount: Number(w.amount || 0),
+      status: w.status || "Completed",
+      method: w.payout_method || "Razorpay UPI",
+      upiId: w.account_details?.upi_id || w.upi_id || "Direct UPI",
+      transactionRef: w.transaction_ref || `RZP-${w.id?.slice(0, 8)}`,
+      createdAt: w.created_at,
+      date: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    })),
+  };
+}
+
+export async function fetchShopWithdrawals(shopId, ownerId) {
+  if (supabase && (shopId || ownerId)) {
+    try {
+      let query = supabase.from("withdrawals").select("*");
+      if (shopId && isValidUuid(shopId) && ownerId && isValidUuid(ownerId)) {
+        query = query.or(`shop_id.eq.${shopId},owner_id.eq.${ownerId}`);
+      } else if (shopId && isValidUuid(shopId)) {
+        query = query.eq("shop_id", shopId);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        query = query.eq("owner_id", ownerId);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (!error && data) {
+        return data.map((w) => ({
+          id: w.id,
+          payoutNumber: w.payout_number || `PO-${w.id?.slice(0, 8)}`,
+          amount: Number(w.amount || 0),
+          status: w.status || "Completed",
+          method: w.payout_method || "Razorpay UPI",
+          upiId: w.account_details?.upi_id || w.upi_id || "Direct UPI",
+          transactionRef: w.transaction_ref || `RZP-${w.id?.slice(0, 8)}`,
+          createdAt: w.created_at,
+          date: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+      }
+    } catch {}
+  }
+
+  try {
+    const stored = localStorage.getItem(`serofast_withdrawals_${shopId || ownerId}`);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+
+  return [];
+}
+
+export async function requestShopWithdrawal({ shopId, ownerId, amount, upiId, payoutMethod = "Razorpay UPI" }) {
+  const numAmount = Number(amount);
+  if (!numAmount || numAmount < 100) {
+    throw new Error("Minimum withdrawal amount is ₹100.");
+  }
+  if (!upiId || !String(upiId).trim()) {
+    throw new Error("A valid UPI ID is required for Razorpay settlement.");
+  }
+
+  const cleanUpi = String(upiId).trim();
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randSuffix = Math.floor(1000 + Math.random() * 9000);
+  const payoutNumber = `PO-${dateStr}-${randSuffix}`;
+  const txnRef = `RZP-PAYOUT-${Date.now().toString(36).toUpperCase()}`;
+
+  const payload = {
+    payout_number: payoutNumber,
+    amount: numAmount,
+    payout_method: payoutMethod || "Razorpay UPI",
+    account_details: { upi_id: cleanUpi, gateway: "Razorpay Payouts" },
+    status: "Completed", // Instant Razorpay direct payout settlement
+    transaction_ref: txnRef,
+    processed_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (shopId && isValidUuid(shopId)) payload.shop_id = shopId;
+  if (ownerId && isValidUuid(ownerId)) payload.owner_id = ownerId;
+
+  let insertedRow = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("withdrawals")
+        .insert([payload])
+        .select()
+        .single();
+      if (!error && data) {
+        insertedRow = data;
+      }
+    } catch {}
+
+    // Record notification
+    try {
+      await sendNotification({
+        recipient_role: "shop_owner",
+        recipient_id: ownerId || "all",
+        shop_id: shopId,
+        title: "Razorpay Payout Processed",
+        message: `₹${numAmount.toLocaleString("en-IN")} has been sent to your UPI address (${cleanUpi}) via Razorpay. Ref: ${txnRef}`,
+        type: "payout",
+        action_route: "/shop-owner/payouts",
+        action_label: "View Payout",
+        details: { payout_number: payoutNumber, amount: numAmount, upi_id: cleanUpi, transaction_ref: txnRef },
+      });
+    } catch {}
+  }
+
+  if (!insertedRow) {
+    insertedRow = { id: `with_${Date.now()}`, ...payload };
+  }
+
+  const mappedRow = {
+    id: insertedRow.id,
+    payoutNumber: insertedRow.payout_number || payoutNumber,
+    amount: numAmount,
+    status: insertedRow.status || "Completed",
+    method: insertedRow.payout_method || "Razorpay UPI",
+    upiId: cleanUpi,
+    transactionRef: insertedRow.transaction_ref || txnRef,
+    createdAt: insertedRow.created_at,
+    date: new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  // Cache in localStorage
+  try {
+    const key = `serofast_withdrawals_${shopId || ownerId}`;
+    const stored = localStorage.getItem(key);
+    const list = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(key, JSON.stringify([mappedRow, ...list]));
+  } catch {}
+
+  return mappedRow;
+}
+
+export function subscribeToShopPayouts(shopId, ownerId, onUpdate) {
+  if (!supabase) return () => {};
+
+  try {
+    const channelName = `shop_payouts_${shopId || ownerId || "all"}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "shop_owners" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 /* ── Realtime Role-Based Notifications (User, Shop Owner, Admin) ── */

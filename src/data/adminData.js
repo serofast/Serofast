@@ -1,7 +1,7 @@
 export const adminPlatformMetrics = {
   totalGMV: "₹12,48,500",
   totalShopsCount: 542,
-  onboardingRevenue: "₹27,100", // 542 * ₹50
+  onboardingRevenue: "₹26,558", // 542 * ₹49
   activeStudentsCount: 1240,
   totalOrdersCount: 4890,
   averageDeliveryMins: 32,
@@ -16,7 +16,7 @@ export const adminShops = [
     phone: "+91 98765 43210",
     category: "Fashion & Apparel",
     location: "Chennai Campus Zone",
-    status: "Verified (₹50 Paid)",
+    status: "Verified (₹49 Paid)",
     registeredAt: "10 Aug 2026",
     totalOrders: 142,
     revenueDriven: "₹1,24,000",
@@ -29,7 +29,7 @@ export const adminShops = [
     phone: "+91 98111 22233",
     category: "Mobiles & Tech",
     location: "Vellore Town Hub",
-    status: "Verified (₹50 Paid)",
+    status: "Verified (₹49 Paid)",
     registeredAt: "11 Aug 2026",
     totalOrders: 98,
     revenueDriven: "₹2,10,000",
@@ -55,7 +55,7 @@ export const adminShops = [
     phone: "+91 95555 66677",
     category: "Stationery & Books",
     location: "Student Hub Block",
-    status: "Verified (₹50 Paid)",
+    status: "Verified (₹49 Paid)",
     registeredAt: "08 Aug 2026",
     totalOrders: 310,
     revenueDriven: "₹95,000",

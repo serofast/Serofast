@@ -56,7 +56,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
       phone: effectivePhone,
       category: effectiveCategory,
       address: effectiveAddress,
-      amount: 50,
+      amount: 49,
     });
   };
 
@@ -83,7 +83,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
             phone: effectivePhone,
             category: effectiveCategory,
             address: effectiveAddress,
-            amount: 50,
+            amount: 49,
           });
 
           setInvoice(invData);
@@ -97,7 +97,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
             payment_id: paymentResult.paymentId,
             payment_order_id: paymentResult.orderId,
             payment_status: "paid",
-            onboarding_fee: 50,
+            onboarding_fee: 49,
             invoice_number: invData.invoiceNumber,
             invoice_data: invData,
             ownerName: effectiveOwnerName,
@@ -141,7 +141,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
             Store Activation &amp; Onboarding Fee
           </h2>
           <p className="text-xs text-slate-500 font-normal mt-0.5">
-            One-time ₹50 campus verification fee for lifetime store access with 0% commission.
+            One-time ₹49 campus verification fee for lifetime store access with 0% commission.
           </p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
                     Payment Verified &amp; Store Activated!
                   </h4>
                   <p className="text-xs text-emerald-800 mt-0.5">
-                    ₹50.00 successfully received via Razorpay
+                    ₹49.00 successfully received via Razorpay
                   </p>
                 </div>
               </div>
@@ -261,7 +261,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
                   Activate your store on SeroFast Campus Marketplace
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  To maintain campus quality and prevent spam, we require a nominal ₹50 onboarding
+                  To maintain campus quality and prevent spam, we require a nominal ₹49 onboarding
                   fee. Once paid, you get lifetime merchant access with zero recurring charges.
                 </p>
               </div>
@@ -287,7 +287,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
                 </span>
 
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">₹50</span>
+                  <span className="text-4xl font-extrabold text-slate-900">₹49</span>
                   <span className="text-xs text-slate-400 font-medium">/ lifetime</span>
                 </div>
 
@@ -312,7 +312,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
                   ) : (
                     <>
                       <Lock size={16} />
-                      <span>Pay ₹50 with Razorpay</span>
+                      <span>Pay ₹49 with Razorpay</span>
                     </>
                   )}
                 </button>

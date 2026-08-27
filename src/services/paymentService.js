@@ -1,12 +1,12 @@
 /**
  * SeroFast Secure Payment Gateway Service (Razorpay Integration)
  * Handles client-side checkout initiation, dynamic SDK injection,
- * and verified receipt metadata handling for the ₹50 Onboarding Fee.
+ * and verified receipt metadata handling for the ₹49 Onboarding Fee.
  */
 
 const RAZORPAY_SDK_URL = "https://checkout.razorpay.com/v1/checkout.js";
-export const ONBOARDING_FEE_INR = 50;
-export const ONBOARDING_FEE_PAISE = ONBOARDING_FEE_INR * 100; // 5000 paise = ₹50.00
+export const ONBOARDING_FEE_INR = 49;
+export const ONBOARDING_FEE_PAISE = ONBOARDING_FEE_INR * 100; // 4900 paise = ₹49.00
 
 /**
  * Dynamically loads the official Razorpay Checkout SDK if not already loaded.
@@ -28,7 +28,7 @@ export function loadRazorpayScript() {
 }
 
 /**
- * Initiates the ₹50 Store Activation payment via Razorpay.
+ * Initiates the ₹49 Store Activation payment via Razorpay.
  *
  * @param {Object} params
  * @param {string} params.shopName - Name of the store being registered
@@ -75,7 +75,7 @@ export async function initiateOnboardingPayment({
     notes: {
       purpose: "Shop Owner Onboarding Fee",
       store_name: shopName,
-      amount_inr: "50",
+      amount_inr: "49",
       official_support: "serofastinfo@gmail.com",
     },
     theme: {
@@ -85,7 +85,7 @@ export async function initiateOnboardingPayment({
       ondismiss: function () {
         onFailure({
           cancelled: true,
-          message: "Payment was cancelled. Shop activation requires ₹50 payment to proceed.",
+          message: "Payment was cancelled. Shop activation requires ₹49 payment to proceed.",
         });
       },
     },
