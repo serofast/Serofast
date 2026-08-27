@@ -37,7 +37,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="hidden max-560:fixed max-560:inset-x-0 max-560:bottom-0 max-560:z-[100] max-560:flex max-560:h-[60px] max-560:items-center max-560:justify-around max-560:rounded-t-[20px] max-560:border-t max-560:border-[#E5E7EB] max-560:bg-white max-560:px-3 max-560:pb-[max(4px,env(safe-area-inset-bottom))] max-560:shadow-[0_-4px_16px_rgba(0,0,0,0.04)] font-sans font-sansation"
+      className="mobile-bottom-nav hidden max-560:fixed max-560:inset-x-2 max-560:bottom-2 max-560:z-[100] max-560:flex max-560:h-[68px] max-560:items-center max-560:justify-around max-560:rounded-[20px] max-560:border max-560:border-[#eadfda] max-560:bg-white/95 max-560:px-1.5 max-560:pb-[max(3px,env(safe-area-inset-bottom))] max-560:shadow-[0_10px_30px_rgba(25,22,22,0.14)] max-560:backdrop-blur-md font-sans font-sansation"
       aria-label="Shop Owner Mobile navigation"
     >
       {navItems.map((item) => {
@@ -49,12 +49,12 @@ export default function MobileBottomNav() {
             <Link
               key={item.label}
               to={item.href}
-              className="flex-1 flex flex-col items-center justify-center -mt-4 cursor-pointer select-none active:scale-95 transition-transform"
+              className="flex-1 flex flex-col items-center justify-center cursor-pointer select-none active:scale-95 transition-transform"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-tr from-brandRed to-red-500 text-white shadow-[0_6px_16px_rgba(211,47,47,0.35)]">
-                <Icon size={22} className="stroke-[2.2]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-[12px] border-2 border-white bg-brandRed text-white shadow-[0_4px_12px_rgba(211,47,47,0.25)]">
+                <Icon size={20} className="stroke-[2.2]" />
               </div>
-              <span className="mt-0.5 text-[10px] font-bold text-brandRed">
+              <span className="mt-1 text-[10px] font-bold leading-none text-brandRed">
                 {item.label}
               </span>
             </Link>
@@ -64,7 +64,7 @@ export default function MobileBottomNav() {
         const isActive = !item.isHash && location.pathname === item.href;
 
         const content = (
-          <div className="flex flex-col items-center justify-center h-full w-full">
+          <div className="flex flex-col items-center justify-center h-full w-full gap-0.5">
             {/* Top Line Indicator */}
             <div
               className={`h-[3px] rounded-[2px] transition-all duration-220 ease-out ${
@@ -73,8 +73,6 @@ export default function MobileBottomNav() {
                   : "w-0 bg-transparent"
               }`}
             />
-
-            <div className="h-[5px]" />
 
             {/* Icon */}
             <Icon
@@ -85,8 +83,6 @@ export default function MobileBottomNav() {
                   : "text-[#9CA3AF] scale-100 stroke-[1.8]"
               }`}
             />
-
-            <div className="h-[3px]" />
 
             {/* Label */}
             <span

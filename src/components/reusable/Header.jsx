@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import Logo from "./Logo";
-import { Search, Smartphone, Store, UserRound, Sparkles } from "lucide-react";
+import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { categories } from "../../data/landing";
 
-export default function Header({ onOpenAppTeaser }) {
+export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let ticking = false;
@@ -44,13 +45,13 @@ export default function Header({ onOpenAppTeaser }) {
     <header
       className={`landing-header sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "border-b border-[#e5e5e5] bg-white/[0.98] shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-[20px]"
-          : "border-b border-[#eee] bg-white/[0.95] backdrop-blur-[16px]"
+          ? "border-b border-slate-200/60 bg-white/[0.98] shadow-[0_4px_24px_rgba(0,0,0,0.06)] backdrop-blur-[20px]"
+          : "border-b border-slate-100 bg-white/[0.95] backdrop-blur-[16px]"
       }`}
     >
-      {/* Top Dynamic Scroll Progress Indicator */}
+      {/* Scroll Progress Bar */}
       <div
-        className="fixed top-0 left-0 z-[100] h-[3px] bg-gradient-to-r from-[#D22125] via-red-500 to-rose-400 shadow-[0_0_8px_rgba(210,33,37,0.5)] transition-all duration-75 ease-out"
+        className="fixed top-0 left-0 z-[100] h-[3px] bg-gradient-to-r from-brandRed via-red-500 to-rose-400 shadow-[0_0_10px_rgba(210,33,37,0.5)] transition-[width] duration-100 ease-out"
         style={{ width: `${scrollProgress}%` }}
         role="progressbar"
         aria-valuenow={scrollProgress}
@@ -58,109 +59,165 @@ export default function Header({ onOpenAppTeaser }) {
         aria-valuemax={100}
       />
 
-      <div className="landing-header-main mx-auto grid min-h-[68px] w-[min(1280px,calc(100%_-_48px))] grid-cols-[190px_minmax(280px,1fr)_auto] items-center gap-[26px] pt-2.5 max-1100:grid-cols-[170px_1fr_auto] max-1100:gap-[15px] max-800:w-[min(680px,calc(100%_-_28px))] max-800:grid-cols-[1fr_auto] max-800:min-h-[60px] max-800:pt-3.5 max-800:pb-1 max-560:w-[calc(100%_-_20px)] max-560:gap-[9px]">
+      {/* Main Header Row */}
+      <div className="landing-header-main mx-auto flex min-h-[64px] w-[min(1320px,calc(100%_-_40px))] items-center justify-between gap-4 px-1 sm:min-h-[68px] sm:px-2 lg:min-h-[72px]">
+        {/* Logo */}
         <Link
           to="/"
-          className="group inline-flex items-center gap-2 text-[21px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] max-560:text-[18px]"
+          className="group inline-flex shrink-0 items-center gap-2 text-[20px] font-extrabold tracking-[-0.5px] text-brandRed transition-transform duration-200 hover:scale-[1.02] sm:text-[22px]"
           aria-label="SeroFast home"
         >
-          <Logo size="sm" iconClassName="transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5" />
+          <Logo size="sm" iconClassName="transition-transform duration-300 group-hover:scale-110" />
           <span className="tracking-tight">SEROFAST</span>
         </Link>
 
-        {/* Search Bar (Triggers App Teaser for Shoppers) */}
+        {/* Search Bar — Desktop */}
         <form
           onSubmit={handleSearchSubmit}
-          className="group flex h-[44px] items-center rounded-[18px] border border-[#d9d9d9] bg-[#fafafa] px-[14px] text-[#777] shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-300 hover:border-[#bbb] hover:bg-white focus-within:border-brandRed focus-within:bg-white focus-within:ring-4 focus-within:ring-brandRed/10 focus-within:shadow-[0_4px_18px_rgba(210,33,37,0.1)] max-800:order-3 max-800:col-span-full max-800:mb-2.5"
+          className="group hidden flex-1 items-center rounded-full border border-slate-200 bg-slate-50/80 px-4 py-2.5 text-[#777] transition-all duration-300 hover:border-slate-300 hover:bg-white focus-within:border-brandRed focus-within:bg-white focus-within:ring-4 focus-within:ring-brandRed/10 focus-within:shadow-[0_4px_18px_rgba(210,33,37,0.08)] sm:flex sm:max-w-[420px] lg:max-w-[480px]"
         >
-          <Search size={20} className="shrink-0 transition-colors duration-200 group-hover:text-brandRed group-focus-within:text-brandRed" />
+          <Search size={18} className="shrink-0 transition-colors group-hover:text-brandRed group-focus-within:text-brandRed" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search products"
-            placeholder="Search"
-            className="w-full border-0 bg-transparent px-3 text-[14px] text-textPrimary outline-none placeholder:text-[#999]"
+            placeholder="Search shops, deals, products..."
+            className="w-full border-0 bg-transparent px-3 text-[13px] text-[#191616] outline-none placeholder:text-[#aaa]"
           />
           <button
             type="submit"
-            className="rounded-full bg-brandRed/10 px-2.5 py-1 text-[11px] font-bold text-brandRed transition hover:bg-brandRed hover:text-white"
+            className="rounded-full bg-brandRed/10 px-3 py-1 text-[11px] font-bold text-brandRed transition-colors hover:bg-brandRed hover:text-white"
           >
             Search
           </button>
         </form>
 
-        <nav
-          className="flex items-center gap-[17px] whitespace-nowrap text-[13px] font-semibold max-1100:gap-2.5 max-1100:text-[11px]"
-          aria-label="Account actions"
-        >
+        {/* Nav Actions — Desktop */}
+        <nav className="hidden items-center gap-2 text-[12px] font-semibold lg:flex lg:gap-3" aria-label="Account actions">
           <button
             type="button"
             onClick={() => onOpenAppTeaser?.("Customer Mobile App")}
-            className="inline-flex items-center gap-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:text-brandRed max-800:hidden"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/30 hover:text-brandRed"
           >
-            <Smartphone size={18} className="text-brandRed transition-transform duration-200 hover:scale-110" />
+            <Smartphone size={15} className="text-brandRed" />
             <span>Mobile App</span>
-            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-extrabold text-amber-700 border border-amber-300">
+            <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[8px] font-extrabold text-amber-700 border border-amber-200">
               NEW
             </span>
           </button>
 
-          <span className="h-7 w-px bg-[#e6e6e6] max-800:hidden" />
-
-          {/* Become a Shop Owner CTA */}
           <Link
             to="/signup"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brandRed/30 active:scale-95 max-560:text-[12px] max-560:px-3 max-380:text-[11px] max-380:px-2.5"
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-[0_4px_14px_rgba(211,47,47,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(211,47,47,0.35)] active:scale-95"
           >
-            <Store size={18} className="animate-bounce shrink-0 max-380:hidden" />
-            <span>Become a Shop Owner</span>
+            <Store size={15} />
+            <span>List Shop</span>
           </Link>
 
-          <span className="h-7 w-px bg-[#e6e6e6] max-800:hidden" />
-
-          {/* Shop Owner Login Link */}
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/40 hover:bg-white hover:text-brandRed max-800:hidden"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/30 hover:bg-white hover:text-brandRed"
           >
-            <UserRound size={17} />
+            <UserRound size={15} />
             <span>Shop Owner Login</span>
           </Link>
         </nav>
+
+        {/* Mobile Menu Toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="no-btn-anim grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white text-slate-700 lg:hidden"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
 
-      {/* Sub Navigation Bar */}
-      <div className="landing-subnav border-t border-[#f4f4f4] max-800:hidden">
+      {/* Mobile Search Bar */}
+      <div className="border-t border-slate-100 px-4 py-2.5 sm:hidden">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2"
+        >
+          <Search size={16} className="text-[#aaa]" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search shops, deals..."
+            className="w-full border-0 bg-transparent text-[13px] text-[#191616] outline-none placeholder:text-[#aaa]"
+          />
+        </form>
+      </div>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="border-t border-slate-100 bg-white px-4 py-4 sm:hidden animate-fade-in-down">
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => { onOpenAppTeaser?.("Customer Mobile App"); setMobileMenuOpen(false); }}
+              className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-left text-[13px] font-semibold text-slate-700 transition hover:bg-white hover:border-brandRed/20"
+            >
+              <Smartphone size={16} className="text-brandRed" />
+              <span>Mobile App</span>
+              <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">NEW</span>
+            </button>
+            <Link
+              to="/signup"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brandRed to-rose-600 px-4 py-3 text-[13px] font-bold text-white shadow-sm"
+            >
+              <Store size={16} />
+              <span>List Your Shop</span>
+            </Link>
+            <Link
+              to="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] font-semibold text-slate-700 transition hover:border-brandRed/20"
+            >
+              <UserRound size={16} />
+              <span>Shop Owner Login</span>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Sub Navigation Bar — Desktop Only */}
+      <div className="landing-subnav border-t border-slate-100 max-sm:hidden">
         <nav
-          className="mx-auto flex h-[51px] w-[min(1280px,calc(100%_-_48px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] text-[13px] font-semibold text-[#333]"
+          className="mx-auto flex h-[46px] w-[min(1320px,calc(100%_-_40px))] items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] font-semibold text-[#555]"
           aria-label="Section Navigation"
         >
-          <a href="#freebuff" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 bg-brandRed/10 text-brandRed font-bold active:scale-95 flex items-center gap-1">
-            <Sparkles size={13} className="text-amber-500" /> FreeBuff Deals
-          </a>
-          <a href="#buffets" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Campus Buffets
-          </a>
-          <a href="#vouchers" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Student Vouchers
-          </a>
-          <a href="#shops" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Partner Campus Shops
-          </a>
-          <a href="#comparison" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Profit Calculator
-          </a>
-          <a href="#about" className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95">
-            Ecosystem
-          </a>
-          <span className="h-4 w-px bg-gray-200" />
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {categories.slice(0, 5).map((category) => (
+          {!hideFreeBuffBranding && (
+            <a href="#freebuff" className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3.5 py-1.5 text-brandRed font-bold transition hover:bg-brandRed/15">
+              <Sparkles size={12} className="text-amber-500" /> FreeBuff Deals
+            </a>
+          )}
+          {[
+            { label: "Campus Shops", href: "#shops" },
+            { label: "Profit Calculator", href: "#comparison" },
+            { label: "Platform Demo", href: "#demo" },
+            { label: "Ecosystem", href: "#about" },
+            { label: "FAQ", href: "#faq" },
+            { label: "Contact", href: "#enquiry" },
+          ].map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95"
+            >
+              {item.label}
+            </a>
+          ))}
+          <span className="mx-1 h-4 w-px bg-slate-200" />
+          <div className="flex items-center gap-1">
+            {categories.slice(0, 4).map((category) => (
               <button
                 key={category}
                 type="button"
                 onClick={() => onOpenAppTeaser?.(category)}
-                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] text-gray-600 transition-all duration-200 hover:text-brandRed hover:bg-rose-50"
+                className="shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#888] transition-all duration-200 hover:text-brandRed hover:bg-brandRed/5"
               >
                 {category}
               </button>

@@ -9,220 +9,157 @@ import {
   Mail,
   Phone,
   MapPin,
-  Heart,
   ArrowRight,
+  Heart,
+  Sparkles,
 } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t border-[#eaeaea] bg-white text-textPrimary">
-      {/* Top Banner inside footer highlighting core guarantees */}
-      <div className="border-b border-[#f4f4f4] bg-[#fafafa]">
-        <div className="mx-auto grid w-[min(1280px,calc(100%_-_48px))] grid-cols-2 gap-4 py-6 lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-2.5">
-          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-promoHighlight text-brandRed">
-              <Store size={20} />
+    <footer className="w-full border-t border-slate-100 bg-white text-[#191616]">
+      {/* Top Banner — Guarantees */}
+      <div className="border-b border-slate-100 bg-[#fafafa]">
+        <div className="mx-auto grid w-[min(1320px,calc(100%_-_40px))] sm:w-[min(1320px,calc(100%_-_48px))] grid-cols-2 gap-4 py-6 lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-3">
+          {[
+            { icon: Store, color: "bg-brandRed/10 text-brandRed", title: "₹50 Shop Registration", desc: "Keep 100% your margin profit" },
+            { icon: GraduationCap, color: "bg-blue-50 text-blue-600", title: "Student Entrepreneurship", desc: "Earn profits, certificates & awards" },
+            { icon: Truck, color: "bg-emerald-50 text-emerald-600", title: "Delivered in Hours", desc: "₹0 Shipping on all local orders" },
+            { icon: ShieldCheck, color: "bg-amber-50 text-amber-600", title: "100% Trusted Shops", desc: "Verified neighborhood stores" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-2 max-560:text-center">
+              <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-[11px] ${item.color}`}>
+                <item.icon size={18} />
+              </div>
+              <div>
+                <strong className="block text-[12px] font-bold text-[#191616]">{item.title}</strong>
+                <span className="text-[10px] text-[#8b8282]">{item.desc}</span>
+              </div>
             </div>
-            <div>
-              <strong className="block text-[13px] font-bold text-textPrimary">₹50 Shop Registration</strong>
-              <span className="text-[11px] text-textSecondary">Keep 100% your margin profit</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600">
-              <GraduationCap size={20} />
-            </div>
-            <div>
-              <strong className="block text-[13px] font-bold text-textPrimary">Student Entrepreneurship</strong>
-              <span className="text-[11px] text-textSecondary">Earn profits, certificates &amp; awards</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
-              <Truck size={20} />
-            </div>
-            <div>
-              <strong className="block text-[13px] font-bold text-textPrimary">Delivered in Hours</strong>
-              <span className="text-[11px] text-textSecondary">₹0 Shipping on all local orders</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 max-560:flex-col max-560:justify-center max-560:gap-1.5 max-560:text-center">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-600">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <strong className="block text-[13px] font-bold text-textPrimary">100% Trusted Shops</strong>
-              <span className="text-[11px] text-textSecondary">Verified neighborhood stores</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Footer Links Columns */}
-      <div className="mx-auto w-[min(1280px,calc(100%_-_48px))] py-12 lg:py-16 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]">
-        <div className="grid grid-cols-1 gap-x-10 gap-y-10 max-560:grid-cols-2 max-560:gap-x-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {/* Col 1: Brand Info */}
-          <div className="max-560:col-span-2 lg:col-span-2 space-y-4 pr-0 lg:pr-8">
+      {/* Main Footer Content */}
+      <div className="mx-auto w-[min(1320px,calc(100%_-_40px))] sm:w-[min(1320px,calc(100%_-_48px))] py-10 lg:py-14 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-8 max-560:grid-cols-2 max-560:gap-x-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          {/* Brand Column */}
+          <div className="max-560:col-span-2 lg:col-span-2 space-y-3 pr-0 lg:pr-6">
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-[22px] font-extrabold tracking-tight text-brandRed"
+              className="inline-flex items-center gap-2 text-[20px] font-extrabold tracking-tight text-brandRed"
               aria-label="SeroFast home"
             >
               <Logo size="sm" />
               <span>SEROFAST</span>
             </Link>
 
-            <p className="text-[13.5px] leading-relaxed text-textSecondary max-w-sm">
-              India&apos;s leading hyperlocal marketplace connecting verified neighborhood shops, empowering ambitious student entrepreneurs, and delivering authentic products to local customers in hours with ₹0 shipping fees.
+            <p className="text-[12px] leading-relaxed text-[#8b8282] max-w-[320px]">
+              India&apos;s leading hyperlocal marketplace connecting verified neighbourhood shops, empowering student entrepreneurs, and delivering authentic products with ₹0 shipping fees.
             </p>
 
-            <div className="pt-2">
-              <span className="block text-[12px] font-bold uppercase tracking-wider text-textPrimary">
-                Headquarters &amp; Support
-              </span>
-              <div className="mt-2.5 space-y-2 text-[13px] text-textSecondary">
-                <p className="flex items-center gap-2.5">
-                  <MapPin size={16} className="text-brandRed shrink-0" />
-                  <span>Hyperlocal Tech Hub, Bangalore, India</span>
-                </p>
-                <p className="flex items-center gap-2.5">
-                  <Mail size={16} className="text-brandRed shrink-0" />
-                  <span>support@serofast.com</span>
-                </p>
-                <p className="flex items-center gap-2.5">
-                  <Phone size={16} className="text-brandRed shrink-0" />
-                  <span>+91 98765 43210 (7 AM - 11 PM)</span>
-                </p>
-              </div>
+            <div className="pt-1 space-y-1.5 text-[12px] text-[#8b8282]">
+              <p className="flex items-center gap-2">
+                <MapPin size={14} className="text-brandRed shrink-0" />
+                <span>Bangalore, India</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Mail size={14} className="text-brandRed shrink-0" />
+                <span>support@serofast.com</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Phone size={14} className="text-brandRed shrink-0" />
+                <span>+91 98765 43210</span>
+              </p>
             </div>
           </div>
 
-          {/* Col 2: For Shop Owners */}
+          {/* Shop Owners */}
           <div>
-            <h4 className="text-[14px] font-bold uppercase tracking-wider text-textPrimary">
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#191616]">
               For Shop Owners
             </h4>
-            <ul className="mt-4 space-y-2.5 text-[13px] text-textSecondary">
-              <li>
-                <Link to="/create-shop" className="transition-colors hover:text-brandRed flex items-center gap-1.5">
-                  <ArrowRight size={13} className="text-brandRed" />
-                  <span>Start Shop for ₹50</span>
-                </Link>
-              </li>
-              <li>
-                <a href="#about" className="transition-colors hover:text-brandRed">
-                  Keep Full Margin Profit
-                </a>
-              </li>
-              <li>
-                <Link to="/login" className="transition-colors hover:text-brandRed">
-                  Shop Owner Portal
-                </Link>
-              </li>
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed">
-                  Catalog Digitalization
-                </a>
-              </li>
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed">
-                  Local Merchant FAQ
-                </a>
-              </li>
+            <ul className="mt-3 space-y-2 text-[12px] text-[#8b8282]">
+              {[
+                { label: "Start Shop for ₹50", to: "/create-shop", bold: true },
+                { label: "Keep Full Margin Profit", href: "#about" },
+                { label: "Shop Owner Portal", to: "/login" },
+                { label: "Merchant FAQ", href: "#faq" },
+              ].map((item, i) => (
+                <li key={i}>
+                  {item.to ? (
+                    <Link to={item.to} className={`transition-colors hover:text-brandRed flex items-center gap-1.5 ${item.bold ? "font-bold text-brandRed" : ""}`}>
+                      <ArrowRight size={11} className="text-brandRed" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ) : (
+                    <a href={item.href} className="transition-colors hover:text-brandRed">
+                      {item.label}
+                    </a>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Col 3: Student Entrepreneurship */}
+          {/* Students */}
           <div>
-            <h4 className="text-[14px] font-bold uppercase tracking-wider text-textPrimary">
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#191616]">
               Student Program
             </h4>
-            <ul className="mt-4 space-y-2.5 text-[13px] text-textSecondary">
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed flex items-center gap-1.5 font-semibold text-brandRed">
-                  <Award size={14} />
-                  <span>Join as Entrepreneur</span>
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="transition-colors hover:text-brandRed">
-                  Earn Margin Profits
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="transition-colors hover:text-brandRed">
-                  Certificates &amp; Awards
-                </a>
-              </li>
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed">
-                  Campus Ambassador Hub
-                </a>
-              </li>
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed">
-                  Student Success Stories
-                </a>
-              </li>
+            <ul className="mt-3 space-y-2 text-[12px] text-[#8b8282]">
+              {[
+                { label: "Join as Entrepreneur", href: "#enquiry", icon: Award },
+                { label: "Ecosystem Overview", href: "#about" },
+                { label: "Campus Deals", href: "#freebuff" },
+                { label: "Student FAQ", href: "#faq" },
+              ].map((item, i) => (
+                <li key={i}>
+                  <a href={item.href} className={`transition-colors hover:text-brandRed flex items-center gap-1.5 ${i === 0 ? "font-bold text-brandRed" : ""}`}>
+                    {item.icon && <item.icon size={12} />}
+                    <span>{item.label}</span>
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Col 4: Customer & Guarantees */}
-          <div className="max-560:col-span-2">
-            <h4 className="text-[14px] font-bold uppercase tracking-wider text-textPrimary">
-              Customer Promises
+          {/* Shoppers */}
+          <div>
+            <h4 className="text-[12px] font-bold uppercase tracking-wider text-[#191616]">
+              For Shoppers
             </h4>
-            <ul className="mt-4 space-y-2.5 text-[13px] text-textSecondary">
-              <li>
-                <a href="#products" className="transition-colors hover:text-brandRed">
-                  Delivery in Hours
-                </a>
-              </li>
-              <li>
-                <a href="#products" className="transition-colors hover:text-brandRed font-medium text-emerald-600">
-                  ₹0 Shipping Fee Guarantee
-                </a>
-              </li>
-              <li>
-                <a href="#shops" className="transition-colors hover:text-brandRed">
-                  100% Verified Local Shops
-                </a>
-              </li>
-              <li>
-                <a href="#about" className="transition-colors hover:text-brandRed">
-                  7-Day Easy Return Policy
-                </a>
-              </li>
-              <li>
-                <a href="#enquiry" className="transition-colors hover:text-brandRed">
-                  Help &amp; 24/7 Support
-                </a>
-              </li>
+            <ul className="mt-3 space-y-2 text-[12px] text-[#8b8282]">
+              {[
+                { label: "Browse Campus Deals", href: "#deals" },
+                { label: "Campus Partner Shops", href: "#shops" },
+                { label: "Download Mobile App", href: "#home" },
+                { label: "Customer Support", href: "#enquiry" },
+              ].map((item, i) => (
+                <li key={i}>
+                  <a href={item.href} className="transition-colors hover:text-brandRed">
+                    {item.label}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
       </div>
 
-      {/* Bottom Sub-footer */}
-      <div className="border-t border-[#f0f0f0] bg-white py-6">
-        <div className="mx-auto flex w-[min(1280px,calc(100%_-_48px))] flex-col items-center justify-between gap-4 text-[12px] text-[#777] sm:flex-row max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)]">
-          <p className="m-0 text-center sm:text-left">
-            © {new Date().getFullYear()} SeroFast Technologies Pvt. Ltd. All rights reserved.
-          </p>
-
-          <div className="flex items-center gap-1 text-center font-medium text-[#555]">
-            <span>Crafted with</span>
-            <Heart size={14} className="fill-brandRed text-brandRed" />
-            <span>for Local Indian Shops &amp; Student Entrepreneurs</span>
+      {/* Bottom Bar */}
+      <div className="border-t border-slate-100 bg-[#fafafa]">
+        <div className="mx-auto flex flex-col items-center justify-between gap-2 px-5 py-4 sm:flex-row sm:px-0 max-w-[1320px]">
+          <div className="flex items-center gap-1 text-[11px] text-[#aaa]">
+            <span>© 2026 SeroFast. Built with</span>
+            <Heart size={11} className="text-brandRed" fill="currentColor" />
+            <span>in Bangalore, India.</span>
           </div>
-
-          <div className="flex items-center gap-5">
-            <a href="#about" className="transition-colors hover:text-brandRed">Privacy</a>
-            <a href="#about" className="transition-colors hover:text-brandRed">Terms</a>
-            <a href="#about" className="transition-colors hover:text-brandRed">Merchant Policy</a>
+          <div className="flex items-center gap-3 text-[11px] text-[#aaa]">
+            <a href="#" className="transition-colors hover:text-brandRed">Privacy</a>
+            <span className="text-slate-200">·</span>
+            <a href="#" className="transition-colors hover:text-brandRed">Terms</a>
+            <span className="text-slate-200">·</span>
+            <a href="#" className="transition-colors hover:text-brandRed">Support</a>
           </div>
         </div>
       </div>
