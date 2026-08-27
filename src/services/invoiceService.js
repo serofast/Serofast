@@ -4,7 +4,7 @@
  * and dispatch from serofastinfo@gmail.com.
  */
 
-import { supabase } from "../lib/supabase";
+import { supabase, sendNotification } from "../lib/supabase";
 
 export const OFFICIAL_SUPPORT_EMAIL = "serofastinfo@gmail.com";
 
@@ -229,14 +229,15 @@ export async function sendInvoiceEmail(invoiceData) {
     // 1. Record in Supabase notifications table if available
     if (supabase) {
       try {
-        const notifPayload = {
+        await sendNotification({
           recipient_role: "shop_owner",
+          recipient_id: invoiceData?.recipient?.email || "all",
           title: `Store Activation Fee Paid (₹${invoiceData.totalAmount})`,
           message: `Invoice #${invoiceData.invoiceNumber} has been generated. Payment ID: ${invoiceData.payment.paymentId}. Your shop is activated.`,
           type: "system",
           action_label: "View Invoice",
-        };
-        await supabase.from("notifications").insert([notifPayload]);
+          action_link: "/shop-owner/dashboard",
+        });
       } catch {}
     }
 

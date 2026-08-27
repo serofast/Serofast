@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { convertToWebP } from "../utils/imageOptimizer";
 
 // Read Supabase environment credentials cleanly
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://hjmwhsjkoyrkcwxhyedz.supabase.co";
@@ -29,35 +30,48 @@ function fileToDataUrl(file) {
   });
 }
 
-/* ── Image Upload (Supabase Storage Bucket) ──────────────── */
+/* ── Image Upload (Supabase Storage Bucket with Auto-WebP Conversion) ─ */
 
-export async function uploadShopAsset(file, folder = "logos", shopIdentifier = "") {
-  if (!file) return null;
-  if (typeof file === "string") return file; // already a URL
+export async function uploadShopAsset(fileOrBlob, folder = "logos", shopIdentifier = "") {
+  if (!fileOrBlob) return null;
+  if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("http")) return fileOrBlob; // already a remote URL
 
-  if (supabase) {
-    try {
-      const ext = file.name?.split(".").pop() || "png";
+  try {
+    const webpResult = await convertToWebP(
+      fileOrBlob,
+      0.92,
+      folder === "covers" || folder === "banners" ? 2048 : 1024
+    );
+    const optimizedFile = webpResult.file;
+
+    if (supabase) {
       const shopFolder = shopIdentifier
         ? String(shopIdentifier).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "general"
         : "general";
-      const path = `shops/${shopFolder}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = `shops/${shopFolder}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
 
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
-        .upload(path, file, { cacheControl: "3600", upsert: true });
+        .upload(path, optimizedFile, {
+          contentType: "image/webp",
+          cacheControl: "31536000",
+          upsert: true,
+        });
 
       if (!error && data) {
         const { data: url } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
         if (url?.publicUrl) return url.publicUrl;
       }
-    } catch {
-      // Graceful fallback to persistent Data URL
     }
+
+    // High quality WebP Data URL fallback
+    return webpResult.dataUrl;
+  } catch (err) {
+    console.warn("Asset upload error:", err);
   }
 
-  // Persistent Data URL fallback so user's image is preserved
-  const dataUrl = await fileToDataUrl(file);
+  // Persistent fallback
+  const dataUrl = await fileToDataUrl(fileOrBlob);
   if (dataUrl) return dataUrl;
 
   return folder === "logos"
@@ -391,6 +405,10 @@ export async function fetchOwnerProfile() {
 export async function saveOnboardingDraft(stepNumber, formData) {
   if (!formData) return;
 
+  // Compute step completion progress (20%, 40%, 60%, 80%, 100%)
+  const stepInt = typeof stepNumber === "number" ? stepNumber : 1;
+  const progressPercent = Math.min(100, Math.round((stepInt / 5) * 100));
+
   // 1. Persist in local storage under specific user key
   let currentOwnerObj = null;
   try {
@@ -400,7 +418,8 @@ export async function saveOnboardingDraft(stepNumber, formData) {
 
   const userKey = currentOwnerObj?.email || currentOwnerObj?.id || "default";
   try {
-    localStorage.setItem(`serofast_create_shop_draft_${userKey}`, JSON.stringify(formData));
+    const enrichedData = { ...formData, setup_progress: progressPercent, last_step: stepInt };
+    localStorage.setItem(`serofast_create_shop_draft_${userKey}`, JSON.stringify(enrichedData));
   } catch {}
 
   // 2. Persist in Supabase public.shop_owners and public.shops
@@ -427,7 +446,7 @@ export async function saveOnboardingDraft(stepNumber, formData) {
       const mergedOwner = { ...currentOwnerObj, ...ownerUpdates };
       localStorage.setItem("serofast_current_owner", JSON.stringify(mergedOwner));
 
-      // Also upsert/update draft in public.shops if shopName or payment is present
+      // 3. Real-time Save to public.shops Draft Record
       const ownerEmail = formData.email || currentOwnerObj.email;
       const ownerId = currentOwnerObj.id;
 
@@ -447,8 +466,22 @@ export async function saveOnboardingDraft(stepNumber, formData) {
           .map((s) => String(s).trim())
           .join(", ");
 
+        // Auto-upload Logo and Cover files to Supabase Storage in WebP format
+        let draftAvatarUrl = formData.logo || existingShop?.avatar_url || "";
+        let draftCoverUrl = formData.cover || existingShop?.cover_url || "";
+
+        if (formData.logoFile) {
+          const uploadedLogo = await uploadShopAsset(formData.logoFile, "logos", formData.shopName);
+          if (uploadedLogo) draftAvatarUrl = uploadedLogo;
+        }
+
+        if (formData.coverFile) {
+          const uploadedCover = await uploadShopAsset(formData.coverFile, "covers", formData.shopName);
+          if (uploadedCover) draftCoverUrl = uploadedCover;
+        }
+
         const shopFields = {
-          name: formData.shopName || existingShop?.name || "Draft Shop",
+          name: formData.shopName || existingShop?.name || "Draft Campus Shop",
           tagline: formData.tagline || existingShop?.tagline || "",
           description: formData.description || existingShop?.description || "",
           address: fullAddress || existingShop?.address || "",
@@ -456,6 +489,10 @@ export async function saveOnboardingDraft(stepNumber, formData) {
           owner_name: formData.ownerName || currentOwnerObj.full_name || "",
           owner_email: ownerEmail,
           owner_phone: formData.phone || currentOwnerObj.phone || "",
+          setup_progress: progressPercent,
+          status: existingShop?.status === "active" ? "active" : (formData.is_paid ? "pending_review" : "draft"),
+          avatar_url: draftAvatarUrl,
+          cover_url: draftCoverUrl,
           updated_at: new Date().toISOString(),
         };
 
@@ -468,9 +505,24 @@ export async function saveOnboardingDraft(stepNumber, formData) {
 
         if (existingShop) {
           await supabase.from("shops").update(shopFields).eq("id", existingShop.id);
+        } else if (formData.shopName || formData.ownerName || ownerEmail) {
+          // Insert initial draft row
+          const slugBase = (formData.shopName || "shop").toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 30);
+          const shopIdSlug = `${slugBase}-${Date.now().toString(36)}`;
+          const insertPayload = {
+            ...shopFields,
+            shop_id: shopIdSlug,
+            created_at: new Date().toISOString(),
+          };
+          if (ownerId && isValidUuid(ownerId)) {
+            insertPayload.owner_id = ownerId;
+          }
+          await supabase.from("shops").insert([insertPayload]);
         }
       }
-    } catch {}
+    } catch (err) {
+      console.warn("Error saving onboarding draft:", err);
+    }
   }
 }
 

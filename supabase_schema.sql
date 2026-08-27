@@ -262,21 +262,34 @@ CREATE TABLE IF NOT EXISTS public.coupons (
 -- 13. NOTIFICATIONS TABLE (Multi-tenant Role-Based Real-time Notifications)
 CREATE TABLE IF NOT EXISTS public.notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  recipient_role text NOT NULL DEFAULT 'shop_owner'::text, -- 'shop_owner', 'user', 'admin'
-  recipient_id text,                                      -- specific user/owner ID or email, NULL = broadcast to all in role
-  shop_id uuid,                                           -- associated shop id if applicable
+  recipient_role text NOT NULL DEFAULT 'shop_owner'::text,
+  recipient_id text,
+  shop_id uuid,
   title text NOT NULL,
   message text NOT NULL,
-  type text NOT NULL DEFAULT 'system'::text,              -- 'order', 'payout', 'promoter', 'system', 'alert'
+  type text NOT NULL DEFAULT 'system'::text,
   is_read boolean NOT NULL DEFAULT false,
   action_link text,
   action_label text,
   details jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT notifications_pkey PRIMARY KEY (id),
-  CONSTRAINT notifications_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE,
-  CONSTRAINT notifications_recipient_role_check CHECK (recipient_role = ANY (ARRAY['shop_owner'::text, 'user'::text, 'admin'::text]))
+  CONSTRAINT notifications_pkey PRIMARY KEY (id)
 );
+
+-- Ensure all columns exist even if table was created in an earlier migration
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS recipient_role text NOT NULL DEFAULT 'shop_owner'::text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS recipient_id text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS shop_id uuid;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS title text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS message text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS body text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'system'::text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS is_read boolean NOT NULL DEFAULT false;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_link text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_route text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_label text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS details jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS created_at timestamp with time zone NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS notifications_recipient_role_idx ON public.notifications (recipient_role);
 CREATE INDEX IF NOT EXISTS notifications_recipient_id_idx ON public.notifications (recipient_id);

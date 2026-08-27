@@ -234,60 +234,60 @@ export default function ShopOwnerPayoutsPage() {
       </div>
 
       {/* Top 4 KPI Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* Metric 1: Total Completed Sales */}
-        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3">
+        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-4 sm:p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3 min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider truncate">
               Total Completed Sales
             </span>
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-50 text-brandRed shrink-0">
               <TrendingUp size={18} />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-[26px] font-normal text-slate-900 tracking-tight">
+            <div className="text-xl sm:text-2xl font-normal text-slate-900 tracking-tight truncate">
               ₹{stats.totalSalesAmount.toLocaleString("en-IN")}
             </div>
-            <p className="text-[11px] text-slate-500 font-normal mt-1 flex items-center gap-1">
-              <CheckCircle2 size={12} className="text-emerald-500" />
+            <p className="text-[11px] text-slate-500 font-normal mt-1 flex items-center gap-1 truncate">
+              <CheckCircle2 size={12} className="text-emerald-500 shrink-0" />
               <span>{stats.completedOrdersCount} orders delivered</span>
             </p>
           </div>
         </div>
 
         {/* Metric 2: Total Dresses Sold */}
-        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3">
+        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-4 sm:p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3 min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider truncate">
               Dresses Sold
             </span>
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-blue-50 text-blue-600">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-blue-50 text-blue-600 shrink-0">
               <Package size={18} />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-[26px] font-normal text-slate-900 tracking-tight">
-              {stats.totalDressesSold} <span className="text-sm font-normal text-slate-500">Units</span>
+            <div className="text-xl sm:text-2xl font-normal text-slate-900 tracking-tight truncate">
+              {stats.totalDressesSold} <span className="text-xs font-normal text-slate-500">Units</span>
             </div>
-            <p className="text-[11px] text-brandRed font-medium mt-1">
+            <p className="text-[11px] text-brandRed font-medium mt-1 truncate">
               ₹30 earned per dress
             </p>
           </div>
         </div>
 
         {/* Metric 3: Total Accumulated Earnings */}
-        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3">
+        <div className="rounded-[30px] bg-white border border-[#F3E5E5] p-4 sm:p-5 shadow-[-4px_5px_10px_rgba(211,47,47,0.16)] flex flex-col justify-between space-y-3 min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider truncate">
               Total Earnings
             </span>
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-50 text-brandRed shrink-0">
               <Wallet size={18} />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-[26px] font-normal text-brandRed tracking-tight">
+            <div className="text-xl sm:text-2xl font-normal text-brandRed tracking-tight truncate">
               ₹{stats.totalEarnings.toLocaleString("en-IN")}
             </div>
             <p className="text-[11px] text-slate-500 font-normal mt-1 truncate">
@@ -297,22 +297,22 @@ export default function ShopOwnerPayoutsPage() {
         </div>
 
         {/* Metric 4: Available for Withdrawal */}
-        <div className="rounded-[30px] bg-gradient-to-br from-brandRed to-red-600 text-white p-5 shadow-[0_10px_24px_rgba(211,47,47,0.3)] flex flex-col justify-between space-y-3">
+        <div className="rounded-[30px] bg-gradient-to-br from-brandRed to-red-600 text-white p-4 sm:p-5 shadow-[0_10px_24px_rgba(211,47,47,0.3)] flex flex-col justify-between space-y-3 min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-medium text-white/90 uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-white/90 uppercase tracking-wider truncate">
               Available to Withdraw
             </span>
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-white/20 text-white backdrop-blur-xs">
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-white/20 text-white backdrop-blur-xs shrink-0">
               <Wallet size={18} />
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-[28px] font-normal text-white tracking-tight">
+            <div className="text-xl sm:text-2xl font-normal text-white tracking-tight truncate">
               ₹{stats.availableAmount.toLocaleString("en-IN")}
             </div>
-            <p className="text-[11px] text-white/85 font-normal mt-1 flex items-center justify-between">
-              <span>Withdrawn: ₹{stats.totalWithdrawn.toLocaleString("en-IN")}</span>
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold">
+            <p className="text-[11px] text-white/85 font-normal mt-1 flex items-center justify-between gap-1">
+              <span className="truncate">Withdrawn: ₹{stats.totalWithdrawn.toLocaleString("en-IN")}</span>
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-bold shrink-0">
                 Min ₹100
               </span>
             </p>
