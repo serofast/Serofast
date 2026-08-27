@@ -136,7 +136,7 @@ export function generateInvoiceHtml(invoice) {
         <h1>SEROFAST</h1>
         <p>Official Payment Receipt &amp; Tax Invoice</p>
       </div>
-      <div class="badge-paid">✓ PAID ₹${invoice.totalAmount}</div>
+      <div class="badge-paid">PAID ₹${invoice.totalAmount}</div>
     </div>
 
     <div class="content">

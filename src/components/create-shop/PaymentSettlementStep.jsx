@@ -175,7 +175,7 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
               </div>
 
               <span className="self-start sm:self-auto rounded-full bg-emerald-600 px-3.5 py-1 text-xs font-bold text-white uppercase tracking-wider">
-                ✓ Verified
+                Verified
               </span>
             </div>
 
@@ -252,7 +252,6 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
             {/* Left: What you get */}
             <div className="lg:col-span-7 space-y-4">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200 px-3 py-1 text-xs font-bold text-brandRed">
-                <Sparkles size={13} />
                 <span>One-Time Lifetime Store Activation</span>
               </div>
 

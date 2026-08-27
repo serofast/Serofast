@@ -163,7 +163,7 @@ export default function ShopOwnerOrdersPage() {
                           : "bg-amber-50 border border-amber-200 text-amber-800"
                       }`}
                     >
-                      ● {isShipped ? "Shipped" : "Ready to Notify"}
+                      {isShipped ? "Shipped" : "Ready to Notify"}
                     </span>
                   </div>
                 </div>

@@ -281,7 +281,7 @@ export default function ShopOwnerLayout() {
         </aside>
 
         {/* Main Content Viewport — Expanded Width for Widescreen Desktop View */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-[1440px] mx-auto pb-24 md:pb-8 min-w-0 overflow-x-hidden">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-[1440px] mx-auto pb-14 sm:pb-8 md:pb-8 min-w-0 overflow-x-hidden">
           {!hasShop ? (
             <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-6 px-4 font-sans font-sansation">
               {/* Flutter-styled Create Your Shop First Card */}

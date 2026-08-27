@@ -2,11 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import {
   CheckCircle2,
   Wallet,
-  Sparkles,
   CreditCard,
   TrendingUp,
   Package,
-  Coins,
   AlertCircle,
   RefreshCw,
   X,
@@ -272,8 +270,8 @@ export default function ShopOwnerPayoutsPage() {
             <div className="text-2xl sm:text-[26px] font-normal text-slate-900 tracking-tight">
               {stats.totalDressesSold} <span className="text-sm font-normal text-slate-500">Units</span>
             </div>
-            <p className="text-[11px] text-brandRed font-medium mt-1 flex items-center gap-1">
-              <Sparkles size={12} /> ₹30 earned per dress
+            <p className="text-[11px] text-brandRed font-medium mt-1">
+              ₹30 earned per dress
             </p>
           </div>
         </div>
@@ -284,8 +282,8 @@ export default function ShopOwnerPayoutsPage() {
             <span className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
               Total Earnings
             </span>
-            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-amber-50 text-amber-600">
-              <Coins size={18} />
+            <div className="grid h-9 w-9 place-items-center rounded-2xl bg-rose-50 text-brandRed">
+              <Wallet size={18} />
             </div>
           </div>
           <div>
@@ -389,7 +387,7 @@ export default function ShopOwnerPayoutsPage() {
           <div>
             <h3 className="text-base font-semibold text-slate-900">Withdrawal History</h3>
             <p className="text-xs text-slate-500 font-normal mt-0.5">
-              Live settlement records connected to public.withdrawals table
+              Live settlement records connected to database
             </p>
           </div>
           <span className="text-xs font-medium text-slate-500">
@@ -429,7 +427,7 @@ export default function ShopOwnerPayoutsPage() {
                     <td className="py-3.5 px-3 font-mono text-slate-800">{w.upiId}</td>
                     <td className="py-3.5 px-3">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                           w.status === "Completed" || w.status === "Processed"
                             ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
                             : w.status === "Processing"
@@ -439,7 +437,7 @@ export default function ShopOwnerPayoutsPage() {
                             : "bg-rose-50 border border-rose-200 text-rose-700"
                         }`}
                       >
-                        ● {w.status}
+                        {w.status}
                       </span>
                     </td>
                     <td className="py-3.5 px-3 text-right font-mono text-[11px] text-slate-400">
@@ -557,7 +555,7 @@ export default function ShopOwnerPayoutsPage() {
               {/* Security note */}
               <div className="rounded-xl bg-slate-50 p-3 border border-slate-100 flex items-center gap-2 text-[11px] text-slate-500 font-normal">
                 <Lock size={14} className="text-slate-400 shrink-0" />
-                <span>Protected by Razorpay 256-Bit Payouts Gateway • 0% Transfer Fee</span>
+                <span>Protected by Razorpay 256-Bit Gateway | 0% Transfer Fee</span>
               </div>
 
               {/* Action buttons */}

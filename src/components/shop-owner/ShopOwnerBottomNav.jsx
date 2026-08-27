@@ -6,8 +6,11 @@ import {
   CreditCard,
   Settings,
 } from "lucide-react";
+import useScrollDirection from "../../hooks/useScrollDirection";
 
 export default function ShopOwnerBottomNav({ pendingOrdersCount = 0 }) {
+  const isVisible = useScrollDirection(8);
+
   const navItems = [
     { label: "Overview", path: "/shop-owner/dashboard", icon: LayoutDashboard },
     { label: "Products", path: "/shop-owner/inventory", icon: Package },
@@ -22,7 +25,13 @@ export default function ShopOwnerBottomNav({ pendingOrdersCount = 0 }) {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[51] rounded-t-[20px] border-t border-[#E5E7EB] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.04)] font-sans font-sansation pb-[env(safe-area-inset-bottom)]">
+    <nav
+      className={`md:hidden fixed bottom-0 left-0 right-0 z-[51] rounded-t-[20px] border-t border-[#E5E7EB] bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] font-sans font-sansation pb-[env(safe-area-inset-bottom)] will-change-transform transition-transform duration-350 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+        isVisible
+          ? "translate-y-0"
+          : "translate-y-[120%] pointer-events-none"
+      }`}
+    >
       <div className="mx-auto flex h-[60px] items-center justify-around px-3 max-w-md">
         {navItems.map((item) => {
           const Icon = item.icon;

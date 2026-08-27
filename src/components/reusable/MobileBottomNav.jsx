@@ -1,8 +1,10 @@
 import { Home, Sparkles, PlusCircle, LayoutDashboard, UserRound } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import useScrollDirection from "../../hooks/useScrollDirection";
 
 export default function MobileBottomNav() {
   const location = useLocation();
+  const isVisible = useScrollDirection(8);
 
   const navItems = [
     {
@@ -37,7 +39,11 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="hidden max-560:fixed max-560:inset-x-0 max-560:bottom-0 max-560:z-[100] max-560:flex max-560:h-[60px] max-560:items-center max-560:justify-around max-560:rounded-t-[20px] max-560:border-t max-560:border-[#E5E7EB] max-560:bg-white max-560:px-3 max-560:pb-[max(4px,env(safe-area-inset-bottom))] max-560:shadow-[0_-4px_16px_rgba(0,0,0,0.04)] font-sans font-sansation"
+      className={`hidden max-560:fixed max-560:inset-x-0 max-560:bottom-0 max-560:z-[100] max-560:flex max-560:h-[60px] max-560:items-center max-560:justify-around max-560:rounded-t-[20px] max-560:border-t max-560:border-[#E5E7EB] max-560:bg-white max-560:px-3 max-560:pb-[max(4px,env(safe-area-inset-bottom))] max-560:shadow-[0_-4px_16px_rgba(0,0,0,0.06)] font-sans font-sansation will-change-transform transition-transform duration-350 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+        isVisible
+          ? "max-560:translate-y-0"
+          : "max-560:translate-y-[120%] pointer-events-none"
+      }`}
       aria-label="Shop Owner Mobile navigation"
     >
       {navItems.map((item) => {
