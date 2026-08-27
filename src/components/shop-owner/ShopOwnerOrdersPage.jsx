@@ -12,8 +12,17 @@ export default function ShopOwnerOrdersPage() {
   useEffect(() => {
     let sId = null;
     try {
+      const storedOwner = localStorage.getItem("serofast_current_owner");
+      const ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
       const active = localStorage.getItem("serofast_active_shop");
-      if (active) sId = JSON.parse(active).id;
+      if (active && ownerObj) {
+        const parsed = JSON.parse(active);
+        const isMatch =
+          (parsed.owner_id && ownerObj.id && String(parsed.owner_id) === String(ownerObj.id)) ||
+          (parsed.owner_email && ownerObj.email && parsed.owner_email.toLowerCase() === ownerObj.email.toLowerCase());
+
+        if (isMatch) sId = parsed.id;
+      }
     } catch (e) {
       console.warn(e);
     }
@@ -154,7 +163,7 @@ export default function ShopOwnerOrdersPage() {
                           : "bg-amber-50 border border-amber-200 text-amber-800"
                       }`}
                     >
-                      ● {isShipped ? "Shipped" : "Ready to Notify"}
+                      {isShipped ? "Shipped" : "Ready to Notify"}
                     </span>
                   </div>
                 </div>

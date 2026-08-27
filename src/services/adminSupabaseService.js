@@ -177,6 +177,13 @@ export async function saveAdminWarehouseProduct(productData) {
       ? productData.images
       : (primaryImage ? [{ id: "IMG-1", url: primaryImage, isPrimary: true }] : []);
 
+    const occationValue = productData.occation || productData.occasion || "";
+    const rawSizes = Array.isArray(productData.sizes)
+      ? productData.sizes
+      : typeof productData.sizes === "string" && productData.sizes.trim()
+        ? productData.sizes.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+
     const payload = {
       title: productData.title || productData.name,
       category: productData.category || productData.categoryName || "General",
@@ -190,7 +197,8 @@ export async function saveAdminWarehouseProduct(productData) {
       material: productData.material || "",
       fit: productData.fit || "",
       care: productData.care || "",
-      sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
+      occation: occationValue,
+      sizes: rawSizes,
       description: productData.description || "",
       warehouse_stock: Number(productData.warehouse_stock ?? productData.stock) || 0,
       sku: productData.sku || `SF-${Date.now().toString(36).toUpperCase()}`,
@@ -223,7 +231,8 @@ export async function saveAdminWarehouseProduct(productData) {
         material: productData.material || "",
         fit: productData.fit || "",
         care: productData.care || "",
-        sizes: Array.isArray(productData.sizes) ? productData.sizes : [],
+        occation: occationValue,
+        sizes: rawSizes,
         description: productData.description || "",
         warehouse_stock: Number(productData.warehouse_stock ?? productData.stock) || 0,
         sku: productData.sku || `SF-${Date.now().toString(36).toUpperCase()}`,
@@ -258,7 +267,8 @@ export async function saveAdminWarehouseProduct(productData) {
         material: productData.material || "",
         fit: productData.fit || "",
         care: productData.care || "",
-        sizes: productData.sizes || [],
+        occation: occationValue,
+        sizes: rawSizes,
         sections: productData.sections || [],
         images: imagesList,
       };

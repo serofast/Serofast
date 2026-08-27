@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AlertCircle, ArrowRight, X } from "lucide-react";
 
@@ -9,7 +9,7 @@ import SellerInfoStep from "./SellerInfoStep";
 import ProductSelectionStep from "./ProductSelectionStep";
 import PaymentSettlementStep from "./PaymentSettlementStep";
 import LaunchReviewStep from "./LaunchReviewStep";
-import { createShopInSupabase } from "../../lib/supabase";
+import { createShopInSupabase, loadOnboardingDraft, saveOnboardingDraft } from "../../lib/supabase";
 
 const STEP_PATHS = {
   1: "/create-shop",
@@ -47,51 +47,55 @@ const initialForm = {
   logo: null,
   cover: null,
   selectedProducts: [],
+  is_paid: false,
+  payment_id: null,
+  payment_status: "unpaid",
+  onboarding_fee: 50,
+  invoice_number: null,
+  invoice_data: null,
 };
 
 export default function CreateShopPage({ onClose, onComplete }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const step = PATH_TO_STEP[location.pathname] || 1;
+  const rawStep = PATH_TO_STEP[location.pathname] || 1;
   const [form, setForm] = useState(initialForm);
   const [showExitModal, setShowExitModal] = useState(false);
 
+  // Security guard: If user navigates to Step 5 without completing Step 4 payment, send back to Step 4
+  const step = rawStep === 5 && !form.is_paid ? 4 : rawStep;
+
+  // Real-time Database Rehydration: Restores all entered fields and payment verification from Supabase on refresh
   useEffect(() => {
-    try {
-      const activeShopStr = localStorage.getItem("serofast_active_shop");
-      const ownerStr = localStorage.getItem("serofast_current_owner");
-      const patch = {};
-
-      if (ownerStr) {
-        const owner = JSON.parse(ownerStr);
-        if (owner.full_name) patch.ownerName = owner.full_name;
-        if (owner.phone) patch.phone = owner.phone;
-        if (owner.email) patch.email = owner.email;
-        if (owner.category) patch.category = owner.category;
+    (async () => {
+      try {
+        const draft = await loadOnboardingDraft();
+        if (draft && Object.keys(draft).length > 0) {
+          setForm((c) => ({ ...c, ...draft }));
+        }
+      } catch (err) {
+        console.warn("Draft load error", err);
       }
-
-      if (activeShopStr) {
-        const shop = JSON.parse(activeShopStr);
-        if (shop.name) patch.shopName = shop.name;
-        if (shop.tagline) patch.tagline = shop.tagline;
-        if (shop.description) patch.description = shop.description;
-        if (shop.address) patch.address = shop.address;
-        if (shop.cover_url) patch.cover = shop.cover_url;
-        if (shop.avatar_url) patch.logo = shop.avatar_url;
-        if (shop.owner_name) patch.ownerName = shop.owner_name;
-        if (shop.owner_phone) patch.phone = shop.owner_phone;
-        if (shop.owner_email) patch.email = shop.owner_email;
-      }
-
-      if (Object.keys(patch).length > 0) {
-        setForm((c) => ({ ...c, ...patch }));
-      }
-    } catch {}
+    })();
   }, []);
 
-  const updateForm = (patch) => setForm((c) => ({ ...c, ...patch }));
-  const next = () => navigate(STEP_PATHS[Math.min(5, step + 1)]);
-  const back = () => navigate(STEP_PATHS[Math.max(1, step - 1)]);
+  const updateForm = (patch) => {
+    setForm((c) => {
+      const updated = { ...c, ...patch };
+      saveOnboardingDraft(step, updated);
+      return updated;
+    });
+  };
+
+  const next = () => {
+    saveOnboardingDraft(step, form);
+    navigate(STEP_PATHS[Math.min(5, step + 1)]);
+  };
+
+  const back = () => {
+    saveOnboardingDraft(step, form);
+    navigate(STEP_PATHS[Math.max(1, step - 1)]);
+  };
 
   const handleOpenExitModal = () => {
     setShowExitModal(true);
@@ -126,7 +130,7 @@ export default function CreateShopPage({ onClose, onComplete }) {
           ) : step === 3 ? (
             <ProductSelectionStep form={form} updateForm={updateForm} onNext={next} onBack={back} />
           ) : step === 4 ? (
-            <PaymentSettlementStep onNext={next} onBack={back} />
+            <PaymentSettlementStep form={form} updateForm={updateForm} onNext={next} onBack={back} />
           ) : (
             <LaunchReviewStep form={form} onBack={back} onLaunch={handleLaunchShop} />
           )}

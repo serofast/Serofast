@@ -101,6 +101,21 @@ const DEFAULT_CARE = [
   "Avoid direct heat / moisture",
 ];
 
+const DEFAULT_OCCASIONS = [
+  "Casual Wear",
+  "Party Wear",
+  "Formal / Office",
+  "Festive / Wedding",
+  "Daily Wear",
+  "College / Campus",
+  "Sports / Activewear",
+  "Travel / Vacation",
+  "Streetwear",
+  "Lounge / Nightwear",
+  "Ethnic / Traditional",
+  "Special Occasion",
+];
+
 const DEFAULT_SIZES = [
   "Free Size",
   "XS",
@@ -140,7 +155,9 @@ function createDraft(product, categories) {
     const rawSections = product.sections || [];
     const rawSizes = Array.isArray(product.sizes)
       ? product.sizes
-      : product.size ? [product.size] : [];
+      : typeof product.sizes === "string" && product.sizes.trim()
+        ? product.sizes.split(",").map((s) => s.trim()).filter(Boolean)
+        : product.size ? [product.size] : [];
 
     const rawCutPrice =
       product["Price(will be cutted)"] ??
@@ -161,6 +178,7 @@ function createDraft(product, categories) {
       material: product.material || "",
       fit: product.fit || "",
       care: product.care || "",
+      occation: product.occation || product.occasion || "",
       sizes: rawSizes,
       cut_price: rawCutPrice,
       store_price: rawStorePrice,
@@ -177,6 +195,7 @@ function createDraft(product, categories) {
     material: "",
     fit: "",
     care: "",
+    occation: "",
     sizes: [],
     cut_price: "",
     store_price: "",
@@ -628,12 +647,23 @@ export default function ProductForm({ product, categories = [], products = [], o
         </div>
       </Section>
 
-      {/* 4. PRODUCT SPECIFICATIONS (MATERIAL, FIT, CARE, SIZES) */}
+      {/* 4. PRODUCT SPECIFICATIONS (MATERIAL, FIT, CARE, OCCASION, SIZES) */}
       <Section
-        title="4. Specifications & Sizing"
-        description="Specify fabric material, fit cut, care instructions, and available sizes. Admin can select from standard options or type custom values."
+        title="4. Specifications, Occasion & Sizing"
+        description="Specify fabric material, fit cut, wash care instructions, styling occasion, and available sizes. Select from standard options or type custom values."
       >
         <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Occasion" helper="Select or type custom occasion">
+            <CreatableDropdown
+              value={draft.occation}
+              onChange={(val) => update("occation", val)}
+              options={DEFAULT_OCCASIONS}
+              placeholder="Select or type occasion (e.g. Casual Wear, Party, Festive)..."
+              allowCustom={true}
+              ariaLabel="Occasion"
+            />
+          </FormField>
+
           <FormField label="Material / Fabric" helper="Select or type custom material">
             <CreatableDropdown
               value={draft.material}
@@ -667,17 +697,19 @@ export default function ProductForm({ product, categories = [], products = [], o
             />
           </FormField>
 
-          <FormField label="Available Sizes" helper="Select or type custom sizes">
-            <CreatableDropdown
-              value={draft.sizes}
-              onChange={(val) => update("sizes", val)}
-              options={DEFAULT_SIZES}
-              placeholder="Select or type sizes (e.g. M, L, XL, Free Size)..."
-              multiple={true}
-              allowCustom={true}
-              ariaLabel="Available Sizes"
-            />
-          </FormField>
+          <div className="sm:col-span-2">
+            <FormField label="Available Sizes (Multiple Choice)" helper="Select multiple or type custom sizes (e.g. S, M, L, XL or paste comma-separated)">
+              <CreatableDropdown
+                value={draft.sizes}
+                onChange={(val) => update("sizes", val)}
+                options={DEFAULT_SIZES}
+                placeholder="Select or type sizes (e.g. S, M, L, XL, Free Size)..."
+                multiple={true}
+                allowCustom={true}
+                ariaLabel="Available Sizes"
+              />
+            </FormField>
+          </div>
         </div>
       </Section>
 

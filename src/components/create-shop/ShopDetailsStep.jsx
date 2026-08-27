@@ -10,6 +10,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { categories, subCategories } from "./data";
+import { convertToWebP } from "../../utils/imageOptimizer";
 
 const inputBase =
   "h-11 lg:h-12 w-full rounded-lg border bg-lightSurface px-4 text-sm text-textPrimary outline-none transition focus:border-brandRed focus:ring-2 focus:ring-brandRed/10";
@@ -17,7 +18,7 @@ const inputBase =
 const inputValid = `${inputBase} border-[#d9d9d9]`;
 const inputInvalid = `${inputBase} border-brandRed bg-promoHighlight`;
 
-const MAX_UPLOAD_MB = 2;
+const MAX_UPLOAD_MB = 10;
 
 function UploadBox({ kind, label, hint, value, error, onFile, onRemove, inputRef }) {
   return (
@@ -98,31 +99,31 @@ export default function ShopDetailsStep({ form, updateForm, onNext, onBack }) {
     setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
   };
 
-  const readFile = (file, kind) => {
+  const readFile = async (file, kind) => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       setUploadError((cur) => ({
         ...cur,
-        [kind]: "Please upload an image file (JPG, PNG).",
+        [kind]: "Please upload an image file (JPG, PNG, WebP).",
       }));
       return;
     }
 
-    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
-      setUploadError((cur) => ({
-        ...cur,
-        [kind]: `Image must be smaller than ${MAX_UPLOAD_MB}MB.`,
-      }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      updateForm({ [kind]: { url: reader.result, name: file.name } });
+    try {
+      const webpResult = await convertToWebP(file, 0.92, kind === "cover" ? 2048 : 1024);
+      updateForm({
+        [kind]: { url: webpResult.dataUrl, name: webpResult.file.name, file: webpResult.file },
+      });
       setUploadError((cur) => ({ ...cur, [kind]: "" }));
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateForm({ [kind]: { url: reader.result, name: file.name } });
+        setUploadError((cur) => ({ ...cur, [kind]: "" }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleFileChange = (kind) => (event) => {
@@ -362,7 +363,7 @@ export default function ShopDetailsStep({ form, updateForm, onNext, onBack }) {
 
             <div role="radiogroup" aria-label="Entry charge" className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {[
-                { value: "standard", price: "₹50", label: "Standard Entry Fee" },
+                { value: "standard", price: "₹49", label: "Standard Entry Fee" },
                 { value: "offer", price: "₹0", label: "Limited Time Offer" },
               ].map((option) => {
                 const active = form.entryFee === option.value;

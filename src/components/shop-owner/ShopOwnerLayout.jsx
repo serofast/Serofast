@@ -24,15 +24,6 @@ export default function ShopOwnerLayout() {
   const [unreadNotifsCount, setUnreadNotifsCount] = useState(0);
   const navigate = useNavigate();
 
-  const [activeShop, setActiveShop] = useState(() => {
-    try {
-      const stored = localStorage.getItem("serofast_active_shop");
-      return stored ? JSON.parse(stored) : null;
-    } catch (e) {
-      return null;
-    }
-  });
-
   const [currentOwner, setCurrentOwner] = useState(() => {
     try {
       const stored = localStorage.getItem("serofast_current_owner");
@@ -42,26 +33,65 @@ export default function ShopOwnerLayout() {
     }
   });
 
+  const [activeShop, setActiveShop] = useState(() => {
+    try {
+      const storedOwner = localStorage.getItem("serofast_current_owner");
+      const ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
+      const stored = localStorage.getItem("serofast_active_shop");
+      const shopObj = stored ? JSON.parse(stored) : null;
+
+      if (ownerObj && shopObj) {
+        const isMatch =
+          (shopObj.owner_id && ownerObj.id && String(shopObj.owner_id) === String(ownerObj.id)) ||
+          (shopObj.owner_email && ownerObj.email && shopObj.owner_email.toLowerCase() === ownerObj.email.toLowerCase());
+
+        if (isMatch) return shopObj;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   useEffect(() => {
     const syncShopState = async () => {
       try {
-        const storedShop = localStorage.getItem("serofast_active_shop");
-        let shopObj = storedShop ? JSON.parse(storedShop) : null;
-        if (shopObj) {
-          setActiveShop(shopObj);
-        }
-
         const storedOwner = localStorage.getItem("serofast_current_owner");
         let ownerObj = storedOwner ? JSON.parse(storedOwner) : null;
         if (ownerObj) setCurrentOwner(ownerObj);
 
+        const storedShop = localStorage.getItem("serofast_active_shop");
+        let shopObj = storedShop ? JSON.parse(storedShop) : null;
+
+        // Verify shop ownership
+        if (ownerObj && shopObj) {
+          const isMatch =
+            (shopObj.owner_id && ownerObj.id && String(shopObj.owner_id) === String(ownerObj.id)) ||
+            (shopObj.owner_email && ownerObj.email && shopObj.owner_email.toLowerCase() === ownerObj.email.toLowerCase());
+
+          if (isMatch) {
+            setActiveShop(shopObj);
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+            shopObj = null;
+            setActiveShop(null);
+          }
+        } else if (!ownerObj) {
+          localStorage.removeItem("serofast_active_shop");
+          shopObj = null;
+          setActiveShop(null);
+        }
+
         // If owner is present but activeShop is not loaded, attempt to re-hydrate from Supabase
-        if (ownerObj?.id && (!shopObj || !activeShop)) {
+        if (ownerObj?.id && !shopObj) {
           const { shop } = await fetchShopDetails(null, ownerObj.id);
           if (shop) {
             shopObj = shop;
             setActiveShop(shop);
             localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+            setActiveShop(null);
           }
         }
 
@@ -201,8 +231,8 @@ export default function ShopOwnerLayout() {
       {/* Main Layout Body */}
       <div className="flex flex-1 w-full">
         {/* Desktop Sidebar — Expanded Buttons for Great UI/UX */}
-        <aside className="hidden md:block w-64 border-r border-[#E5E7EB] bg-white min-h-[calc(100vh-56px)] shrink-0">
-          <div className="flex h-full flex-col justify-between p-4 sticky top-14">
+        <aside className="hidden md:block w-64 border-r border-[#E5E7EB] bg-white sticky top-14 h-[calc(100vh-56px)] shrink-0 overflow-y-auto self-start z-30">
+          <div className="flex h-full flex-col justify-between p-4">
             <div className="space-y-5">
               {/* Store Profile Card */}
               <div className="rounded-[24px] border border-[#F3E5E5] bg-[#FAF8F5] p-3.5 flex items-center gap-3">
@@ -251,7 +281,7 @@ export default function ShopOwnerLayout() {
         </aside>
 
         {/* Main Content Viewport — Expanded Width for Widescreen Desktop View */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-[1440px] mx-auto pb-24 md:pb-8 min-w-0 overflow-x-hidden">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full max-w-[1440px] mx-auto pb-14 sm:pb-8 md:pb-8 min-w-0 overflow-x-hidden">
           {!hasShop ? (
             <div className="flex min-h-[70vh] w-full flex-col items-center justify-center py-6 px-4 font-sans font-sansation">
               {/* Flutter-styled Create Your Shop First Card */}

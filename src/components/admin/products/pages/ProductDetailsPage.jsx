@@ -234,9 +234,14 @@ function Overview({ product, sections, storePrice, cutPrice, hasDiscount, discou
     ["Material / Fabric", product.material || "—"],
     ["Fit", product.fit || "—"],
     ["Care Instructions", product.care || "—"],
+    ["Occasion", product.occation || product.occasion || "—"],
     [
       "Available Sizes",
-      Array.isArray(product.sizes) && product.sizes.length ? product.sizes.join(", ") : "—",
+      Array.isArray(product.sizes) && product.sizes.length
+        ? product.sizes.join(", ")
+        : typeof product.sizes === "string" && product.sizes.trim()
+          ? product.sizes
+          : "—",
     ],
     ["Store Price (User Will Buy)", currency.format(storePrice)],
     [

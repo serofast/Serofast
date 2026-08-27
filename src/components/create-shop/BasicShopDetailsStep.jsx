@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, ImagePlus, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ImagePlus, CheckCircle2, Loader2 } from "lucide-react";
 import { fetchOwnerProfile } from "../../lib/supabase";
+import { convertToWebP } from "../../utils/imageOptimizer";
 import {
   AppFormCard,
   AppFormField,
@@ -20,6 +21,8 @@ const categoryOptions = [
 
 export default function BasicShopDetailsStep({ form, updateForm, onNext }) {
   const [errors, setErrors] = useState({});
+  const [optimizingLogo, setOptimizingLogo] = useState(false);
+  const [optimizingCover, setOptimizingCover] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -39,18 +42,36 @@ export default function BasicShopDetailsStep({ form, updateForm, onNext }) {
     return Object.keys(errs).length === 0;
   };
 
-  const handleLogoChange = (e) => {
+  const handleLogoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const previewUrl = URL.createObjectURL(file);
-    updateForm({ logo: previewUrl, logoFile: file });
+    setOptimizingLogo(true);
+    try {
+      // Auto-convert to WebP format for high quality & lightning-fast loading
+      const webpResult = await convertToWebP(file, 0.92, 1024);
+      updateForm({ logo: webpResult.dataUrl, logoFile: webpResult.file });
+    } catch {
+      const previewUrl = URL.createObjectURL(file);
+      updateForm({ logo: previewUrl, logoFile: file });
+    } finally {
+      setOptimizingLogo(false);
+    }
   };
 
-  const handleCoverChange = (e) => {
+  const handleCoverChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const previewUrl = URL.createObjectURL(file);
-    updateForm({ cover: previewUrl, coverFile: file });
+    setOptimizingCover(true);
+    try {
+      // Auto-convert to WebP format for high quality & lightning-fast loading
+      const webpResult = await convertToWebP(file, 0.92, 2048);
+      updateForm({ cover: webpResult.dataUrl, coverFile: webpResult.file });
+    } catch {
+      const previewUrl = URL.createObjectURL(file);
+      updateForm({ cover: previewUrl, coverFile: file });
+    } finally {
+      setOptimizingCover(false);
+    }
   };
 
   return (

@@ -107,8 +107,13 @@ export default function CreatableDropdown({
   function handleCreateNew() {
     if (!searchTrimmed) return;
     if (multiple) {
-      if (!selectedValues.includes(searchTrimmed)) {
-        onChange([...selectedValues, searchTrimmed]);
+      const itemsToAdd = searchTrimmed
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0 && !selectedValues.includes(item));
+
+      if (itemsToAdd.length > 0) {
+        onChange([...selectedValues, ...itemsToAdd]);
       }
     } else {
       onChange(searchTrimmed);

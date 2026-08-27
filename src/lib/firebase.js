@@ -137,7 +137,7 @@ export function validatePasswordStrength(password) {
 
 // ============================================================================
 // FIREBASE AUTH WRAPPER FUNCTIONS (STRICT REAL FIREBASE AUTH)
-// ============================================================================
+import { humanizeError } from "../utils/humanizer";
 
 export async function firebaseSignIn(email, password) {
   // 1. Check brute force lockout
@@ -147,7 +147,7 @@ export async function firebaseSignIn(email, password) {
   }
 
   if (!authInstance) {
-    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+    throw new Error("Authentication service is temporarily unavailable. Please try again in a moment.");
   }
 
   try {
@@ -161,17 +161,13 @@ export async function firebaseSignIn(email, password) {
     try {
       const methods = await fetchSignInMethodsForEmail(authInstance, email);
       if (methods.includes("google.com") && !methods.includes("password")) {
-        throw new Error("This account was registered using Google Sign-In. Please click 'Continue with Google' below to log in.");
+        throw new Error("This account was registered using Google Sign-In. Please click 'Continue with Google' to sign in.");
       }
     } catch (e) {
       if (e.message?.includes("Google Sign-In")) throw e;
     }
 
-    let msg = "Incorrect login credentials. Please check your email and password.";
-    if (error.code === "auth/too-many-requests") {
-      msg = "Access temporarily disabled due to many failed attempts. Try again later.";
-    }
-    throw new Error(msg);
+    throw new Error(humanizeError(error, "Incorrect email or password. Please double-check your credentials and try again."));
   }
 }
 
@@ -182,7 +178,7 @@ export async function firebaseSignUp(email, password) {
   }
 
   if (!authInstance) {
-    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+    throw new Error("Authentication service is temporarily unavailable. Please try again in a moment.");
   }
 
   try {
@@ -190,19 +186,13 @@ export async function firebaseSignUp(email, password) {
     const token = await userCredential.user.getIdToken();
     return { user: userCredential.user, token };
   } catch (error) {
-    let msg = error.message;
-    if (error.code === "auth/email-already-in-use") {
-      msg = "This email is already registered. Please login instead.";
-    } else if (error.code === "auth/weak-password") {
-      msg = "Password is too weak. Choose a stronger password.";
-    }
-    throw new Error(msg);
+    throw new Error(humanizeError(error, "We couldn't create your account right now. Please try again."));
   }
 }
 
 export async function firebaseGoogleSignIn() {
   if (!authInstance || !googleProviderInstance) {
-    throw new Error("Firebase API key missing. Please enter VITE_FIREBASE_API_KEY in your .env file.");
+    throw new Error("Authentication service is temporarily unavailable. Please try again in a moment.");
   }
 
   try {
@@ -210,7 +200,7 @@ export async function firebaseGoogleSignIn() {
     const token = await result.user.getIdToken();
     return { user: result.user, token };
   } catch (error) {
-    throw new Error(error.message || "Google Sign-In failed.");
+    throw new Error(humanizeError(error, "Google sign-in was closed or cancelled. Please try again."));
   }
 }
 

@@ -30,7 +30,12 @@ export function useProducts(productId = null) {
             material: p.material || "",
             fit: p.fit || "",
             care: p.care || "",
-            sizes: Array.isArray(p.sizes) ? p.sizes : [],
+            occation: p.occation || p.occasion || "",
+            sizes: Array.isArray(p.sizes)
+              ? p.sizes
+              : typeof p.sizes === "string" && p.sizes.trim()
+                ? p.sizes.split(",").map((s) => s.trim()).filter(Boolean)
+                : [],
             store_price: Number(p.store_price ?? p.retail_price ?? p.base_price ?? p.price) || 0,
             cut_price: Number(p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price ?? p.retail_price) || 0,
             "Price(will be cutted)": Number(p["Price(will be cutted)"] ?? p.cut_price ?? p.base_price ?? p.retail_price) || 0,

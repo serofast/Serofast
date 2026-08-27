@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS public.shop_owners (
   upi_id text,
   user_id uuid NULL,
   is_shop_created boolean NULL DEFAULT false,
+  is_paid boolean NOT NULL DEFAULT false,
+  payment_id text NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
   CONSTRAINT shop_owners_pkey PRIMARY KEY (id),
@@ -51,6 +53,10 @@ CREATE TABLE IF NOT EXISTS public.shops (
   owner_name text NULL,
   owner_email text NULL,
   owner_phone text NULL,
+  is_paid boolean NOT NULL DEFAULT false,
+  payment_id text NULL,
+  payment_status text NOT NULL DEFAULT 'unpaid'::text,
+  onboarding_amount numeric(10, 2) NOT NULL DEFAULT 49.00,
   status text NOT NULL DEFAULT 'active'::text,
   setup_progress integer NOT NULL DEFAULT 100,
   created_at timestamp with time zone NULL DEFAULT now(),
@@ -83,6 +89,7 @@ CREATE TABLE IF NOT EXISTS public.warehouse_products (
   fit text NULL,
   care text NULL,
   sizes text[] DEFAULT ARRAY[]::text[],
+  occation text NULL,
   description text NULL,
   warehouse_stock integer DEFAULT 1,
   sku text NULL,
@@ -255,26 +262,63 @@ CREATE TABLE IF NOT EXISTS public.coupons (
 -- 13. NOTIFICATIONS TABLE (Multi-tenant Role-Based Real-time Notifications)
 CREATE TABLE IF NOT EXISTS public.notifications (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  recipient_role text NOT NULL DEFAULT 'shop_owner'::text, -- 'shop_owner', 'user', 'admin'
-  recipient_id text,                                      -- specific user/owner ID or email, NULL = broadcast to all in role
-  shop_id uuid,                                           -- associated shop id if applicable
+  recipient_role text NOT NULL DEFAULT 'shop_owner'::text,
+  recipient_id text,
+  shop_id uuid,
   title text NOT NULL,
   message text NOT NULL,
-  type text NOT NULL DEFAULT 'system'::text,              -- 'order', 'payout', 'promoter', 'system', 'alert'
+  type text NOT NULL DEFAULT 'system'::text,
   is_read boolean NOT NULL DEFAULT false,
   action_link text,
   action_label text,
   details jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT notifications_pkey PRIMARY KEY (id),
-  CONSTRAINT notifications_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE,
-  CONSTRAINT notifications_recipient_role_check CHECK (recipient_role = ANY (ARRAY['shop_owner'::text, 'user'::text, 'admin'::text]))
+  CONSTRAINT notifications_pkey PRIMARY KEY (id)
 );
+
+-- Ensure all columns exist even if table was created in an earlier migration
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS recipient_role text NOT NULL DEFAULT 'shop_owner'::text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS recipient_id text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS shop_id uuid;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS title text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS message text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS body text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS type text NOT NULL DEFAULT 'system'::text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS is_read boolean NOT NULL DEFAULT false;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_link text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_route text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS action_label text;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS details jsonb DEFAULT '{}'::jsonb;
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS created_at timestamp with time zone NOT NULL DEFAULT now();
 
 CREATE INDEX IF NOT EXISTS notifications_recipient_role_idx ON public.notifications (recipient_role);
 CREATE INDEX IF NOT EXISTS notifications_recipient_id_idx ON public.notifications (recipient_id);
 CREATE INDEX IF NOT EXISTS notifications_shop_id_idx ON public.notifications (shop_id);
 CREATE INDEX IF NOT EXISTS notifications_created_at_idx ON public.notifications (created_at DESC);
+
+-- 16. WITHDRAWALS TABLE (Shop Owner Payouts & Settlements)
+CREATE TABLE IF NOT EXISTS public.withdrawals (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  payout_number text NOT NULL,
+  shop_id uuid NULL,
+  owner_id uuid NULL,
+  amount numeric(10, 2) NOT NULL DEFAULT 0.00,
+  payout_method text DEFAULT 'Razorpay UPI'::text,
+  account_details jsonb DEFAULT '{}'::jsonb,
+  status text NOT NULL DEFAULT 'Completed'::text,
+  rejection_reason text NULL,
+  transaction_ref text NULL,
+  processed_at timestamp with time zone NULL DEFAULT now(),
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  CONSTRAINT withdrawals_pkey PRIMARY KEY (id),
+  CONSTRAINT withdrawals_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id) ON DELETE CASCADE,
+  CONSTRAINT withdrawals_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES public.shop_owners(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS withdrawals_shop_id_idx ON public.withdrawals(shop_id);
+CREATE INDEX IF NOT EXISTS withdrawals_owner_id_idx ON public.withdrawals(owner_id);
+CREATE INDEX IF NOT EXISTS withdrawals_created_at_idx ON public.withdrawals(created_at DESC);
 
 -- ROW LEVEL SECURITY (RLS) POLICIES
 ALTER TABLE public.shop_owners ENABLE ROW LEVEL SECURITY;
@@ -285,6 +329,7 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.withdrawals ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow public read warehouse_products" ON public.warehouse_products;
 DROP POLICY IF EXISTS "Allow public read shops" ON public.shops;
@@ -293,6 +338,7 @@ DROP POLICY IF EXISTS "Allow full access shop_owners" ON public.shop_owners;
 DROP POLICY IF EXISTS "Allow full access shops" ON public.shops;
 DROP POLICY IF EXISTS "Allow full access orders" ON public.orders;
 DROP POLICY IF EXISTS "Allow full access notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Allow full access withdrawals" ON public.withdrawals;
 
 CREATE POLICY "Allow public read warehouse_products" ON public.warehouse_products FOR
 SELECT USING (true);
@@ -304,8 +350,10 @@ CREATE POLICY "Allow full access shop_owners" ON public.shop_owners FOR ALL USIN
 CREATE POLICY "Allow full access shops" ON public.shops FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access orders" ON public.orders FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow full access notifications" ON public.notifications FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow full access withdrawals" ON public.withdrawals FOR ALL USING (true) WITH CHECK (true);
 
 GRANT ALL ON public.notifications TO anon, authenticated, service_role;
+GRANT ALL ON public.withdrawals TO anon, authenticated, service_role;
 
 -- SUPABASE STORAGE BUCKET FOR SHOP ASSETS (LOGOS & COVERS)
 INSERT INTO storage.buckets (id, name, public)

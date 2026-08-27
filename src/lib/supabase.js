@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { convertToWebP } from "../utils/imageOptimizer";
 
 // Read Supabase environment credentials cleanly
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://hjmwhsjkoyrkcwxhyedz.supabase.co";
@@ -29,35 +30,48 @@ function fileToDataUrl(file) {
   });
 }
 
-/* ── Image Upload (Supabase Storage Bucket) ──────────────── */
+/* ── Image Upload (Supabase Storage Bucket with Auto-WebP Conversion) ─ */
 
-export async function uploadShopAsset(file, folder = "logos", shopIdentifier = "") {
-  if (!file) return null;
-  if (typeof file === "string") return file; // already a URL
+export async function uploadShopAsset(fileOrBlob, folder = "logos", shopIdentifier = "") {
+  if (!fileOrBlob) return null;
+  if (typeof fileOrBlob === "string" && fileOrBlob.startsWith("http")) return fileOrBlob; // already a remote URL
 
-  if (supabase) {
-    try {
-      const ext = file.name?.split(".").pop() || "png";
+  try {
+    const webpResult = await convertToWebP(
+      fileOrBlob,
+      0.92,
+      folder === "covers" || folder === "banners" ? 2048 : 1024
+    );
+    const optimizedFile = webpResult.file;
+
+    if (supabase) {
       const shopFolder = shopIdentifier
         ? String(shopIdentifier).toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "general"
         : "general";
-      const path = `shops/${shopFolder}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = `shops/${shopFolder}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
 
       const { data, error } = await supabase.storage
         .from(STORAGE_BUCKET)
-        .upload(path, file, { cacheControl: "3600", upsert: true });
+        .upload(path, optimizedFile, {
+          contentType: "image/webp",
+          cacheControl: "31536000",
+          upsert: true,
+        });
 
       if (!error && data) {
         const { data: url } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
         if (url?.publicUrl) return url.publicUrl;
       }
-    } catch {
-      // Graceful fallback to persistent Data URL
     }
+
+    // High quality WebP Data URL fallback
+    return webpResult.dataUrl;
+  } catch (err) {
+    console.warn("Asset upload error:", err);
   }
 
-  // Persistent Data URL fallback so user's image is preserved
-  const dataUrl = await fileToDataUrl(file);
+  // Persistent fallback
+  const dataUrl = await fileToDataUrl(fileOrBlob);
   if (dataUrl) return dataUrl;
 
   return folder === "logos"
@@ -146,10 +160,16 @@ export async function registerShopOwner(ownerData) {
 
         if (!updateError && updated) {
           localStorage.setItem("serofast_current_owner", JSON.stringify(updated));
+          if (shopObj) {
+            localStorage.setItem("serofast_active_shop", JSON.stringify(shopObj));
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+          }
           return updated;
         }
       } else {
-        // If creating new owner, check if an existing shop has owner_phone
+        // If creating new owner, check if an existing shop has owner_phone or belongs to this email
+        let matchedShop = null;
         try {
           const { data: shop } = await supabase
             .from("shops")
@@ -158,6 +178,7 @@ export async function registerShopOwner(ownerData) {
             .maybeSingle();
 
           if (shop) {
+            matchedShop = shop;
             payload.is_shop_created = true;
             if (shop.owner_phone?.trim() && !payload.phone) {
               payload.phone = shop.owner_phone.trim();
@@ -173,6 +194,11 @@ export async function registerShopOwner(ownerData) {
 
         if (!createError && created) {
           localStorage.setItem("serofast_current_owner", JSON.stringify(created));
+          if (matchedShop) {
+            localStorage.setItem("serofast_active_shop", JSON.stringify(matchedShop));
+          } else {
+            localStorage.removeItem("serofast_active_shop");
+          }
           return created;
         }
       }
@@ -183,6 +209,7 @@ export async function registerShopOwner(ownerData) {
 
   const fallback = { id: ownerData.id || `owner-${Date.now()}`, ...payload };
   localStorage.setItem("serofast_current_owner", JSON.stringify(fallback));
+  localStorage.removeItem("serofast_active_shop");
   return fallback;
 }
 
@@ -288,6 +315,7 @@ export async function loginShopOwner(credentials) {
           localStorage.setItem("serofast_active_shop", JSON.stringify(shop));
           return { owner: ownerWithStatus, shop };
         }
+        localStorage.removeItem("serofast_active_shop");
         return { owner: ownerWithStatus, shop: null };
       }
     } catch {
@@ -302,7 +330,19 @@ export async function loginShopOwner(credentials) {
     const storedOwner = localStorage.getItem("serofast_current_owner");
     if (storedOwner) owner = JSON.parse(storedOwner);
     const storedShop = localStorage.getItem("serofast_active_shop");
-    if (storedShop) shop = JSON.parse(storedShop);
+    if (storedShop && owner) {
+      const parsed = JSON.parse(storedShop);
+      const isMatch =
+        (parsed.owner_id && owner.id && String(parsed.owner_id) === String(owner.id)) ||
+        (parsed.owner_email && owner.email && parsed.owner_email.toLowerCase() === owner.email.toLowerCase());
+      if (isMatch) {
+        shop = parsed;
+      } else {
+        localStorage.removeItem("serofast_active_shop");
+      }
+    } else {
+      localStorage.removeItem("serofast_active_shop");
+    }
 
     if (owner && shop) {
       const effectivePhone = owner.phone?.trim() || shop.owner_phone?.trim() || "";
@@ -358,6 +398,221 @@ export async function fetchOwnerProfile() {
     // Graceful fallback
   }
   return null;
+}
+
+/* ── Save Onboarding Progress / Draft to Supabase & Storage ─ */
+
+export async function saveOnboardingDraft(stepNumber, formData) {
+  if (!formData) return;
+
+  // Compute step completion progress (20%, 40%, 60%, 80%, 100%)
+  const stepInt = typeof stepNumber === "number" ? stepNumber : 1;
+  const progressPercent = Math.min(100, Math.round((stepInt / 5) * 100));
+
+  // 1. Persist in local storage under specific user key
+  let currentOwnerObj = null;
+  try {
+    const stored = localStorage.getItem("serofast_current_owner");
+    if (stored) currentOwnerObj = JSON.parse(stored);
+  } catch {}
+
+  const userKey = currentOwnerObj?.email || currentOwnerObj?.id || "default";
+  try {
+    const enrichedData = { ...formData, setup_progress: progressPercent, last_step: stepInt };
+    localStorage.setItem(`serofast_create_shop_draft_${userKey}`, JSON.stringify(enrichedData));
+  } catch {}
+
+  // 2. Persist in Supabase public.shop_owners and public.shops
+  if (supabase && currentOwnerObj) {
+    try {
+      const ownerUpdates = {};
+      if (formData.ownerName) ownerUpdates.full_name = formData.ownerName;
+      if (formData.phone) ownerUpdates.phone = formData.phone;
+      if (formData.email) ownerUpdates.email = formData.email;
+      if (formData.category) ownerUpdates.category = formData.category;
+      if (formData.is_paid) {
+        ownerUpdates.is_paid = true;
+        if (formData.payment_id) ownerUpdates.payment_id = formData.payment_id;
+      }
+      ownerUpdates.updated_at = new Date().toISOString();
+
+      if (currentOwnerObj.id && isValidUuid(currentOwnerObj.id)) {
+        await supabase.from("shop_owners").update(ownerUpdates).eq("id", currentOwnerObj.id);
+      } else if (currentOwnerObj.email) {
+        await supabase.from("shop_owners").update(ownerUpdates).eq("email", currentOwnerObj.email);
+      }
+
+      // Update currentOwnerObj in localStorage
+      const mergedOwner = { ...currentOwnerObj, ...ownerUpdates };
+      localStorage.setItem("serofast_current_owner", JSON.stringify(mergedOwner));
+
+      // 3. Real-time Save to public.shops Draft Record
+      const ownerEmail = formData.email || currentOwnerObj.email;
+      const ownerId = currentOwnerObj.id;
+
+      if (ownerEmail || (ownerId && isValidUuid(ownerId))) {
+        let shopQuery = supabase.from("shops").select("*");
+        if (ownerEmail && ownerId && isValidUuid(ownerId)) {
+          shopQuery = shopQuery.or(`owner_email.eq.${ownerEmail},owner_id.eq.${ownerId}`);
+        } else if (ownerEmail) {
+          shopQuery = shopQuery.eq("owner_email", ownerEmail);
+        } else {
+          shopQuery = shopQuery.eq("owner_id", ownerId);
+        }
+        const { data: existingShop } = await shopQuery.maybeSingle();
+
+        const fullAddress = [formData.address, formData.city, formData.pincode]
+          .filter(Boolean)
+          .map((s) => String(s).trim())
+          .join(", ");
+
+        // Auto-upload Logo and Cover files to Supabase Storage in WebP format
+        let draftAvatarUrl = formData.logo || existingShop?.avatar_url || "";
+        let draftCoverUrl = formData.cover || existingShop?.cover_url || "";
+
+        if (formData.logoFile) {
+          const uploadedLogo = await uploadShopAsset(formData.logoFile, "logos", formData.shopName);
+          if (uploadedLogo) draftAvatarUrl = uploadedLogo;
+        }
+
+        if (formData.coverFile) {
+          const uploadedCover = await uploadShopAsset(formData.coverFile, "covers", formData.shopName);
+          if (uploadedCover) draftCoverUrl = uploadedCover;
+        }
+
+        const shopFields = {
+          name: formData.shopName || existingShop?.name || "Draft Campus Shop",
+          tagline: formData.tagline || existingShop?.tagline || "",
+          description: formData.description || existingShop?.description || "",
+          address: fullAddress || existingShop?.address || "",
+          category_id: (formData.category || existingShop?.category_id || "fashion").toLowerCase(),
+          owner_name: formData.ownerName || currentOwnerObj.full_name || "",
+          owner_email: ownerEmail,
+          owner_phone: formData.phone || currentOwnerObj.phone || "",
+          setup_progress: progressPercent,
+          status: existingShop?.status === "active" ? "active" : (formData.is_paid ? "pending_review" : "draft"),
+          avatar_url: draftAvatarUrl,
+          cover_url: draftCoverUrl,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (formData.is_paid) {
+          shopFields.is_paid = true;
+          shopFields.payment_id = formData.payment_id;
+          shopFields.payment_status = "paid";
+          shopFields.onboarding_amount = 49.00;
+        }
+
+        if (existingShop) {
+          await supabase.from("shops").update(shopFields).eq("id", existingShop.id);
+        } else if (formData.shopName || formData.ownerName || ownerEmail) {
+          // Insert initial draft row
+          const slugBase = (formData.shopName || "shop").toLowerCase().replace(/[^a-z0-9]/g, "-").slice(0, 30);
+          const shopIdSlug = `${slugBase}-${Date.now().toString(36)}`;
+          const insertPayload = {
+            ...shopFields,
+            shop_id: shopIdSlug,
+            created_at: new Date().toISOString(),
+          };
+          if (ownerId && isValidUuid(ownerId)) {
+            insertPayload.owner_id = ownerId;
+          }
+          await supabase.from("shops").insert([insertPayload]);
+        }
+      }
+    } catch (err) {
+      console.warn("Error saving onboarding draft:", err);
+    }
+  }
+}
+
+/* ── Load Onboarding Progress / Draft from Supabase & Storage ─ */
+
+export async function loadOnboardingDraft() {
+  let ownerObj = null;
+  try {
+    const stored = localStorage.getItem("serofast_current_owner");
+    if (stored) ownerObj = JSON.parse(stored);
+  } catch {}
+
+  const userKey = ownerObj?.email || ownerObj?.id || "default";
+  let localDraft = null;
+  try {
+    const dStr = localStorage.getItem(`serofast_create_shop_draft_${userKey}`);
+    if (dStr) localDraft = JSON.parse(dStr);
+  } catch {}
+
+  const draft = { ...(localDraft || {}) };
+
+  // Rehydrate directly from Supabase public.shop_owners and public.shops
+  if (supabase && ownerObj) {
+    try {
+      // 1. Fetch live owner profile
+      let ownerQuery = supabase.from("shop_owners").select("*");
+      if (ownerObj.id && isValidUuid(ownerObj.id)) {
+        ownerQuery = ownerQuery.eq("id", ownerObj.id);
+      } else if (ownerObj.email) {
+        ownerQuery = ownerQuery.eq("email", ownerObj.email);
+      }
+      const { data: dbOwner } = await ownerQuery.maybeSingle();
+
+      if (dbOwner) {
+        if (dbOwner.full_name && !draft.ownerName) draft.ownerName = dbOwner.full_name;
+        if (dbOwner.phone && !draft.phone) draft.phone = dbOwner.phone;
+        if (dbOwner.email && !draft.email) draft.email = dbOwner.email;
+        if (dbOwner.category && !draft.category) draft.category = dbOwner.category;
+        if (dbOwner.is_paid) {
+          draft.is_paid = true;
+          if (dbOwner.payment_id) draft.payment_id = dbOwner.payment_id;
+        }
+        localStorage.setItem("serofast_current_owner", JSON.stringify({ ...ownerObj, ...dbOwner }));
+      }
+
+      // 2. Fetch live shop profile
+      const email = dbOwner?.email || ownerObj.email;
+      const ownerId = dbOwner?.id || ownerObj.id;
+      let shopQuery = supabase.from("shops").select("*");
+      if (email && ownerId && isValidUuid(ownerId)) {
+        shopQuery = shopQuery.or(`owner_email.eq.${email},owner_id.eq.${ownerId}`);
+      } else if (email) {
+        shopQuery = shopQuery.eq("owner_email", email);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        shopQuery = shopQuery.eq("owner_id", ownerId);
+      }
+      const { data: dbShop } = await shopQuery.maybeSingle();
+
+      if (dbShop) {
+        if (dbShop.name && !draft.shopName) draft.shopName = dbShop.name;
+        if (dbShop.tagline && !draft.tagline) draft.tagline = dbShop.tagline;
+        if (dbShop.description && !draft.description) draft.description = dbShop.description;
+        if (dbShop.address && !draft.address) draft.address = dbShop.address;
+        if (dbShop.cover_url && !draft.cover) draft.cover = dbShop.cover_url;
+        if (dbShop.avatar_url && !draft.logo) draft.logo = dbShop.avatar_url;
+        if (dbShop.owner_phone && !draft.phone) draft.phone = dbShop.owner_phone;
+        if (dbShop.owner_name && !draft.ownerName) draft.ownerName = dbShop.owner_name;
+        if (dbShop.owner_email && !draft.email) draft.email = dbShop.owner_email;
+        if (dbShop.is_paid) {
+          draft.is_paid = true;
+          draft.payment_id = dbShop.payment_id || draft.payment_id;
+          draft.payment_status = "paid";
+        }
+      }
+    } catch {}
+  }
+
+  // Ensure ownerName, email, and phone are populated from ownerObj if still empty
+  if (ownerObj) {
+    if (!draft.ownerName && ownerObj.full_name) draft.ownerName = ownerObj.full_name;
+    if (!draft.email && ownerObj.email) draft.email = ownerObj.email;
+    if (!draft.phone && ownerObj.phone) draft.phone = ownerObj.phone;
+    if (!draft.category && ownerObj.category) draft.category = ownerObj.category;
+    if (ownerObj.is_paid) {
+      draft.is_paid = true;
+      if (ownerObj.payment_id) draft.payment_id = ownerObj.payment_id;
+    }
+  }
+
+  return draft;
 }
 
 /* ── Fetch Warehouse Products (Admin Catalog) ───────────── */
@@ -419,6 +674,11 @@ export async function createShopInSupabase(shopData) {
   const ownerEmail = shopData.email || currentOwnerObj?.email || "";
   const ownerPhone = shopData.phone || currentOwnerObj?.phone || "";
 
+  // 1. Strict Payment Security Check: Store cannot be created without verified ₹49 payment
+  if (!shopData.is_paid || !shopData.payment_id) {
+    throw new Error("Store activation requires completing the ₹49 onboarding payment.");
+  }
+
   // Format shop address (location, city, pincode separated by commas)
   const fullAddress = [shopData.address, shopData.city, shopData.pincode]
     .filter(Boolean)
@@ -426,7 +686,6 @@ export async function createShopInSupabase(shopData) {
     .join(", ");
 
   const payload = {
-    id,
     shop_id: shopIdSlug,
     name: shopName,
     tagline: shopData.tagline || "",
@@ -439,18 +698,28 @@ export async function createShopInSupabase(shopData) {
     owner_name: ownerName,
     owner_email: ownerEmail,
     owner_phone: ownerPhone,
+    is_paid: true,
+    payment_id: shopData.payment_id,
+    payment_status: "paid",
+    onboarding_amount: 49.00,
     created_at: new Date().toISOString(),
   };
+
+  if (shopData.id && isValidUuid(shopData.id)) {
+    payload.id = shopData.id;
+  }
 
   if (ownerId && isValidUuid(ownerId)) {
     payload.owner_id = ownerId;
   }
 
-  // Update phone, full_name, email & set is_shop_created = true in public.shop_owners table
+  // Update phone, full_name, email, is_paid & set is_shop_created = true in public.shop_owners table
   if (supabase) {
     try {
       const ownerUpdate = {
         is_shop_created: true,
+        is_paid: true,
+        payment_id: shopData.payment_id,
         updated_at: new Date().toISOString(),
       };
       if (ownerPhone) ownerUpdate.phone = ownerPhone;
@@ -468,16 +737,36 @@ export async function createShopInSupabase(shopData) {
           .update(ownerUpdate)
           .eq("email", ownerEmail);
       }
+
+      // Record transaction
+      try {
+        const txNumber = `TXN-ONBOARD-${Date.now()}`;
+        await supabase.from("transactions").insert([
+          {
+            transaction_number: txNumber,
+            type: "Seller Onboarding",
+            gross_amount: 49.00,
+            platform_fee: 0.00,
+            net_amount: 49.00,
+            payment_method: "Razorpay Online",
+            status: "Success",
+            gateway_ref_id: shopData.payment_id,
+            created_at: new Date().toISOString(),
+          },
+        ]);
+      } catch {}
     } catch {
       // Graceful fallback
     }
   }
 
-  // Update local current owner state with is_shop_created: true and updated phone number
+  // Update local current owner state with is_shop_created: true, is_paid: true and updated phone number
   if (currentOwnerObj) {
     const updatedOwner = {
       ...currentOwnerObj,
       is_shop_created: true,
+      is_paid: true,
+      payment_id: shopData.payment_id,
       phone: ownerPhone || currentOwnerObj.phone,
       full_name: ownerName || currentOwnerObj.full_name,
     };
@@ -581,6 +870,7 @@ export async function fetchShopProducts(shopId) {
             material: wp.material,
             fit: wp.fit,
             care: wp.care,
+            occation: wp.occation || wp.occasion || "",
             sizes: wp.sizes,
           };
         });
@@ -655,7 +945,20 @@ export async function fetchShopDetails(shopId, ownerId) {
   if (!shopData) {
     try {
       const storedShop = localStorage.getItem("serofast_active_shop");
-      if (storedShop) shopData = JSON.parse(storedShop);
+      if (storedShop) {
+        const parsed = JSON.parse(storedShop);
+        const ownerEmail = ownerData?.email?.toLowerCase();
+        const ownerUid = ownerId || ownerData?.id;
+        const isMatch =
+          (ownerUid && parsed.owner_id && String(parsed.owner_id) === String(ownerUid)) ||
+          (ownerEmail && parsed.owner_email && parsed.owner_email.toLowerCase() === ownerEmail);
+
+        if (isMatch) {
+          shopData = parsed;
+        } else {
+          localStorage.removeItem("serofast_active_shop");
+        }
+      }
     } catch {}
   }
   if (!ownerData) {
@@ -832,6 +1135,286 @@ export async function updateOwnerUpiId(ownerId, upiId) {
       localStorage.setItem("serofast_current_owner", JSON.stringify(owner));
     }
   } catch {}
+}
+
+/* ── Shop Owner Payouts, Sales & Withdrawals (₹30/dress & ₹100 Min Withdrawal) ── */
+
+export async function fetchShopPayoutStats(shopId, ownerId) {
+  let totalSalesAmount = 0;
+  let completedOrdersCount = 0;
+  let totalDressesSold = 0;
+  let totalWithdrawn = 0;
+
+  // 1. Fetch Orders from Supabase or localStorage
+  let ordersList = [];
+  if (supabase && shopId && isValidUuid(shopId)) {
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("shop_id", shopId)
+        .order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) ordersList = data;
+    } catch {}
+  }
+
+  if (!ordersList.length) {
+    try {
+      const stored = localStorage.getItem(`serofast_orders_${shopId}`) || localStorage.getItem("serofast_active_shop");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) ordersList = parsed;
+        else if (parsed?.orders) ordersList = parsed.orders;
+      }
+    } catch {}
+  }
+
+  // Calculate completed sales & dress units sold
+  ordersList.forEach((order) => {
+    const status = String(order.status || order.order_status || "").toLowerCase();
+    const isCancelled = status === "cancelled" || status === "rejected";
+    if (!isCancelled) {
+      completedOrdersCount += 1;
+      totalSalesAmount += Number(order.total_amount || order.totalAmount || 0);
+
+      const items = order.order_items || order.items || [];
+      if (items.length > 0) {
+        items.forEach((item) => {
+          totalDressesSold += Math.max(1, Number(item.quantity || item.qty || 1));
+        });
+      } else {
+        totalDressesSold += 1;
+      }
+    }
+  });
+
+  // Shop owner earns 30rs per dress/item sold
+  const ratePerDress = 30;
+  const minWithdrawal = 100;
+  const totalEarnings = totalDressesSold * ratePerDress;
+
+  // 2. Fetch withdrawals from Supabase
+  let withdrawalsList = [];
+  if (supabase && (shopId || ownerId)) {
+    try {
+      let query = supabase.from("withdrawals").select("*");
+      if (shopId && isValidUuid(shopId) && ownerId && isValidUuid(ownerId)) {
+        query = query.or(`shop_id.eq.${shopId},owner_id.eq.${ownerId}`);
+      } else if (shopId && isValidUuid(shopId)) {
+        query = query.eq("shop_id", shopId);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        query = query.eq("owner_id", ownerId);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) withdrawalsList = data;
+    } catch {}
+  }
+
+  if (!withdrawalsList.length) {
+    try {
+      const stored = localStorage.getItem(`serofast_withdrawals_${shopId || ownerId}`);
+      if (stored) withdrawalsList = JSON.parse(stored);
+    } catch {}
+  }
+
+  withdrawalsList.forEach((w) => {
+    const st = String(w.status || "").toLowerCase();
+    if (st !== "rejected" && st !== "cancelled" && st !== "failed") {
+      totalWithdrawn += Number(w.amount || 0);
+    }
+  });
+
+  const availableAmount = Math.max(0, totalEarnings - totalWithdrawn);
+
+  return {
+    totalSalesAmount,
+    completedOrdersCount,
+    totalDressesSold,
+    ratePerDress,
+    totalEarnings,
+    totalWithdrawn,
+    availableAmount,
+    minWithdrawal,
+    canWithdraw: availableAmount >= minWithdrawal,
+    withdrawals: withdrawalsList.map((w) => ({
+      id: w.id,
+      payoutNumber: w.payout_number || `PO-${w.id?.slice(0, 8)}`,
+      amount: Number(w.amount || 0),
+      status: w.status || "Completed",
+      method: w.payout_method || "Razorpay UPI",
+      upiId: w.account_details?.upi_id || w.upi_id || "Direct UPI",
+      transactionRef: w.transaction_ref || `RZP-${w.id?.slice(0, 8)}`,
+      createdAt: w.created_at,
+      date: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    })),
+  };
+}
+
+export async function fetchShopWithdrawals(shopId, ownerId) {
+  if (supabase && (shopId || ownerId)) {
+    try {
+      let query = supabase.from("withdrawals").select("*");
+      if (shopId && isValidUuid(shopId) && ownerId && isValidUuid(ownerId)) {
+        query = query.or(`shop_id.eq.${shopId},owner_id.eq.${ownerId}`);
+      } else if (shopId && isValidUuid(shopId)) {
+        query = query.eq("shop_id", shopId);
+      } else if (ownerId && isValidUuid(ownerId)) {
+        query = query.eq("owner_id", ownerId);
+      }
+      const { data, error } = await query.order("created_at", { ascending: false });
+      if (!error && data) {
+        return data.map((w) => ({
+          id: w.id,
+          payoutNumber: w.payout_number || `PO-${w.id?.slice(0, 8)}`,
+          amount: Number(w.amount || 0),
+          status: w.status || "Completed",
+          method: w.payout_method || "Razorpay UPI",
+          upiId: w.account_details?.upi_id || w.upi_id || "Direct UPI",
+          transactionRef: w.transaction_ref || `RZP-${w.id?.slice(0, 8)}`,
+          createdAt: w.created_at,
+          date: new Date(w.created_at || Date.now()).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        }));
+      }
+    } catch {}
+  }
+
+  try {
+    const stored = localStorage.getItem(`serofast_withdrawals_${shopId || ownerId}`);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+
+  return [];
+}
+
+export async function requestShopWithdrawal({ shopId, ownerId, amount, upiId, payoutMethod = "Razorpay UPI" }) {
+  const numAmount = Number(amount);
+  if (!numAmount || numAmount < 100) {
+    throw new Error("Minimum withdrawal amount is ₹100.");
+  }
+  if (!upiId || !String(upiId).trim()) {
+    throw new Error("A valid UPI ID is required for Razorpay settlement.");
+  }
+
+  const cleanUpi = String(upiId).trim();
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randSuffix = Math.floor(1000 + Math.random() * 9000);
+  const payoutNumber = `PO-${dateStr}-${randSuffix}`;
+  const txnRef = `RZP-PAYOUT-${Date.now().toString(36).toUpperCase()}`;
+
+  const payload = {
+    payout_number: payoutNumber,
+    amount: numAmount,
+    payout_method: payoutMethod || "Razorpay UPI",
+    account_details: { upi_id: cleanUpi, gateway: "Razorpay Payouts" },
+    status: "Completed", // Instant Razorpay direct payout settlement
+    transaction_ref: txnRef,
+    processed_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (shopId && isValidUuid(shopId)) payload.shop_id = shopId;
+  if (ownerId && isValidUuid(ownerId)) payload.owner_id = ownerId;
+
+  let insertedRow = null;
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("withdrawals")
+        .insert([payload])
+        .select()
+        .single();
+      if (!error && data) {
+        insertedRow = data;
+      }
+    } catch {}
+
+    // Record notification
+    try {
+      await sendNotification({
+        recipient_role: "shop_owner",
+        recipient_id: ownerId || "all",
+        shop_id: shopId,
+        title: "Razorpay Payout Processed",
+        message: `₹${numAmount.toLocaleString("en-IN")} has been sent to your UPI address (${cleanUpi}) via Razorpay. Ref: ${txnRef}`,
+        type: "payout",
+        action_route: "/shop-owner/payouts",
+        action_label: "View Payout",
+        details: { payout_number: payoutNumber, amount: numAmount, upi_id: cleanUpi, transaction_ref: txnRef },
+      });
+    } catch {}
+  }
+
+  if (!insertedRow) {
+    insertedRow = { id: `with_${Date.now()}`, ...payload };
+  }
+
+  const mappedRow = {
+    id: insertedRow.id,
+    payoutNumber: insertedRow.payout_number || payoutNumber,
+    amount: numAmount,
+    status: insertedRow.status || "Completed",
+    method: insertedRow.payout_method || "Razorpay UPI",
+    upiId: cleanUpi,
+    transactionRef: insertedRow.transaction_ref || txnRef,
+    createdAt: insertedRow.created_at,
+    date: new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+  };
+
+  // Cache in localStorage
+  try {
+    const key = `serofast_withdrawals_${shopId || ownerId}`;
+    const stored = localStorage.getItem(key);
+    const list = stored ? JSON.parse(stored) : [];
+    localStorage.setItem(key, JSON.stringify([mappedRow, ...list]));
+  } catch {}
+
+  return mappedRow;
+}
+
+export function subscribeToShopPayouts(shopId, ownerId, onUpdate) {
+  if (!supabase) return () => {};
+
+  try {
+    const channelName = `shop_payouts_${shopId || ownerId || "all"}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "withdrawals" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "shop_owners" }, () => {
+        if (onUpdate) onUpdate();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch {
+    return () => {};
+  }
 }
 
 /* ── Realtime Role-Based Notifications (User, Shop Owner, Admin) ── */

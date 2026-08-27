@@ -49,6 +49,7 @@ function normalizeProduct(values, current, categories) {
     material: values.material || "",
     fit: values.fit || "",
     care: values.care || "",
+    occation: values.occation || values.occasion || "",
     sizes: values.sizes || [],
     base_price: Number(values.base_price || values.retail_price || values.price) || 0,
     retail_price: Number(values.retail_price ?? values.price) || 0,
