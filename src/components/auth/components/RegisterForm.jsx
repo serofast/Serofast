@@ -5,6 +5,7 @@ import { shopCategories } from "../data";
 import { firebaseSignUp, firebaseGoogleSignIn } from "../../../lib/firebase";
 import { registerShopOwner } from "../../../lib/supabase";
 import { AppFormField, AppFormSelect, AppFormButton } from "../../reusable/form";
+import { humanizeError } from "../../../utils/humanizer";
 
 export default function RegisterForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -59,7 +60,7 @@ export default function RegisterForm() {
       }, 900);
     } catch (err) {
       setIsLoading(false);
-      setAuthError(err.message || "Registration failed. Please try again.");
+      setAuthError(humanizeError(err, "We couldn't set up your account right now. Please try again."));
     }
   };
 
@@ -82,7 +83,7 @@ export default function RegisterForm() {
       }, 900);
     } catch (err) {
       setIsLoading(false);
-      setAuthError(err.message || "Google Sign-In failed.");
+      setAuthError(humanizeError(err, "Google sign-in could not be completed. Please try again."));
     }
   };
 
@@ -96,7 +97,7 @@ export default function RegisterForm() {
           Account Created
         </h2>
         <p className="mx-auto mt-1.5 max-w-xs text-sm text-slate-500 font-normal">
-          Registered in Firebase Auth &amp; saved to shop_owners table...
+          Setting up your seller portal...
         </p>
       </div>
     );

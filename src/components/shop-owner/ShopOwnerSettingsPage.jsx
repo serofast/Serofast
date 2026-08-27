@@ -21,8 +21,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AppFormCard, AppFormField, AppFormButton } from "../reusable/form";
 import { AppSuccessModal, AppErrorModal } from "../reusable";
+import { humanizeError } from "../../utils/humanizer";
 import { fetchShopDetails, updateShopDetails, uploadShopAsset } from "../../lib/supabase";
 
 export default function ShopOwnerSettingsPage() {
@@ -179,8 +179,7 @@ export default function ShopOwnerSettingsPage() {
 
       setSaved(true);
     } catch (err) {
-      console.error(err);
-      setErrorMessage("Failed to update store settings. Please try again.");
+      setErrorMessage(humanizeError(err, "We couldn't update your store settings right now. Please try again."));
     } finally {
       setIsSaving(false);
     }
@@ -210,7 +209,7 @@ export default function ShopOwnerSettingsPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20 text-slate-400 gap-3">
           <Loader2 className="animate-spin text-brandRed" size={32} />
-          <span className="text-xs">Loading shop registration details from Supabase...</span>
+          <span className="text-xs">Loading store details...</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

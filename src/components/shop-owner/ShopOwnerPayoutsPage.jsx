@@ -15,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { AppSuccessModal } from "../reusable";
+import { humanizeError } from "../../utils/humanizer";
 import {
   fetchOwnerUpiId,
   updateOwnerUpiId,
@@ -186,7 +187,7 @@ export default function ShopOwnerPayoutsPage() {
       // Re-fetch latest stats
       await loadData(true);
     } catch (err) {
-      setWithdrawError(err?.message || "Failed to process withdrawal. Please try again.");
+      setWithdrawError(humanizeError(err, "We couldn't process your withdrawal right now. Please double-check your UPI ID and try again."));
     } finally {
       setWithdrawing(false);
     }

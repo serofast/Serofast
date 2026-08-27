@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { firebaseSignIn, firebaseGoogleSignIn } from "../../../lib/firebase";
 import { loginShopOwner, registerShopOwner } from "../../../lib/supabase";
 import { AppFormField, AppFormButton } from "../../reusable/form";
+import { humanizeError } from "../../../utils/humanizer";
 
 export default function LoginForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -56,7 +57,7 @@ export default function LoginForm() {
       }, 800);
     } catch (err) {
       setIsLoading(false);
-      setAuthError(err.message || "Failed to log in. Please check your credentials.");
+      setAuthError(humanizeError(err, "We couldn't sign you in. Please check your email and password."));
     }
   };
 
@@ -78,7 +79,7 @@ export default function LoginForm() {
       }, 800);
     } catch (err) {
       setIsLoading(false);
-      setAuthError(err.message || "Google Sign-In failed.");
+      setAuthError(humanizeError(err, "Google sign-in could not be completed. Please try again."));
     }
   };
 

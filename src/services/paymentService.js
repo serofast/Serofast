@@ -4,6 +4,8 @@
  * and verified receipt metadata handling for the ₹49 Onboarding Fee.
  */
 
+import { humanizeError } from "../utils/humanizer";
+
 const RAZORPAY_SDK_URL = "https://checkout.razorpay.com/v1/checkout.js";
 export const ONBOARDING_FEE_INR = 49;
 export const ONBOARDING_FEE_PAISE = ONBOARDING_FEE_INR * 100; // 4900 paise = ₹49.00
@@ -28,55 +30,43 @@ export function loadRazorpayScript() {
 }
 
 /**
- * Initiates the ₹49 Store Activation payment via Razorpay.
- *
- * @param {Object} params
- * @param {string} params.shopName - Name of the store being registered
- * @param {string} params.ownerName - Name of the shop owner
- * @param {string} params.email - Contact email
- * @param {string} params.phone - Contact phone number
- * @param {Function} params.onSuccess - Callback on payment success with paymentId
- * @param {Function} params.onFailure - Callback on payment failure or dismissal
+ * Initiates the ₹49 store activation payment via Razorpay.
  */
 export async function initiateOnboardingPayment({
-  shopName = "Campus Store",
-  ownerName = "Shop Owner",
-  email = "",
-  phone = "",
-  onSuccess = () => {},
-  onFailure = () => {},
+  shopName,
+  ownerName,
+  email,
+  phone,
+  onSuccess,
+  onFailure,
 }) {
   const isLoaded = await loadRazorpayScript();
   if (!isLoaded) {
     onFailure({
-      message: "Unable to load Razorpay payment gateway. Please check your internet connection.",
+      message: "Unable to load secure payment gateway. Please check your internet connection and try again.",
     });
     return;
   }
 
-  // Public Key ID only (Secret key must NEVER be on frontend)
-  const keyId =
-    import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_serofast_onboarding";
-
-  const isMockKey = keyId === "rzp_test_serofast_onboarding";
+  const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_placeholder";
+  const isMockKey = razorpayKey === "rzp_test_placeholder" || razorpayKey.startsWith("rzp_test_demo");
 
   const options = {
-    key: keyId,
+    key: razorpayKey,
     amount: ONBOARDING_FEE_PAISE,
     currency: "INR",
     name: "SeroFast Technologies",
-    description: `Lifetime Seller Activation Fee for ${shopName}`,
-    image: "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=120&q=80",
+    description: `Lifetime Store Activation Fee - ${shopName || "Campus Store"}`,
+    image: "https://images.unsplash.com/photo-1534452203293-494d7ddbf7e0?auto=format&fit=crop&w=128&q=80",
     prefill: {
-      name: ownerName,
-      email: email || "seller@serofast.com",
-      contact: phone || "9876543210",
+      name: ownerName || "Shop Owner",
+      email: email || "",
+      contact: phone || "",
     },
     notes: {
-      purpose: "Shop Owner Onboarding Fee",
-      store_name: shopName,
-      amount_inr: "49",
-      official_support: "serofastinfo@gmail.com",
+      purpose: "store_onboarding_fee",
+      shop_name: shopName || "",
+      fee_amount: "49.00",
     },
     theme: {
       color: "#D32F2F", // SeroFast Brand Red
@@ -85,7 +75,7 @@ export async function initiateOnboardingPayment({
       ondismiss: function () {
         onFailure({
           cancelled: true,
-          message: "Payment was cancelled. Shop activation requires ₹49 payment to proceed.",
+          message: "Payment was closed. Complete the ₹49 activation fee whenever you are ready.",
         });
       },
     },
@@ -100,7 +90,7 @@ export async function initiateOnboardingPayment({
           paidAt: new Date().toISOString(),
         });
       } else {
-        onFailure({ message: "Invalid payment response received from gateway." });
+        onFailure({ message: "We didn't receive a valid confirmation from the gateway. Please try again." });
       }
     },
   };
@@ -109,7 +99,7 @@ export async function initiateOnboardingPayment({
     const rzp = new window.Razorpay(options);
     rzp.on("payment.failed", function (response) {
       onFailure({
-        message: response.error?.description || "Payment failed. Please try again.",
+        message: humanizeError(response.error?.description, "Payment could not be completed. Please try another UPI app or card."),
         code: response.error?.code,
       });
     });
@@ -128,7 +118,7 @@ export async function initiateOnboardingPayment({
         isDemo: true,
       });
     } else {
-      onFailure({ message: "Error opening payment window." });
+      onFailure({ message: humanizeError(err, "We couldn't open the payment window right now. Please try again.") });
     }
   }
 }

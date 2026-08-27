@@ -5,7 +5,6 @@ import {
   MapPin,
   CheckCircle2,
   Store,
-  Sparkles,
   ShieldCheck,
   Printer,
   Download,
@@ -19,6 +18,7 @@ import {
   generateInvoiceData,
   OFFICIAL_SUPPORT_EMAIL,
 } from "../../services/invoiceService";
+import { humanizeError } from "../../utils/humanizer";
 
 export default function LaunchReviewStep({ form, onBack, onLaunch }) {
   const [submitting, setSubmitting] = useState(false);
@@ -55,7 +55,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
       await onLaunch();
       setLaunched(true);
     } catch (err) {
-      setLaunchError(err?.message || "Failed to create shop. Please try again.");
+      setLaunchError(humanizeError(err, "We couldn't create your shop right now. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -88,7 +88,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Your shop is live!</h1>
           <p className="mt-2 text-xs sm:text-sm text-slate-500 font-normal max-w-xs mx-auto">
             <strong className="text-slate-900">{form.shopName || "Your Shop"}</strong> is now
-            registered on SeroFast and verified in the database.
+            live on SeroFast and ready to receive campus orders.
           </p>
         </div>
 
@@ -115,7 +115,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
           </div>
           <div className="flex justify-between py-1.5">
             <span className="text-slate-500">Activation Status</span>
-            <span className="text-emerald-600 font-bold">✓ Paid (₹50) &amp; Verified</span>
+            <span className="text-emerald-600 font-bold">Paid (₹49) &amp; Verified</span>
           </div>
         </div>
 
@@ -134,8 +134,8 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
     <div className="space-y-7 font-sans w-full max-w-full lg:max-w-5xl mx-auto animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-amber-100 text-amber-600">
-          <Sparkles size={22} />
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-100 text-brandRed">
+          <Store size={22} />
         </div>
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-slate-900">Review &amp; launch</h2>
@@ -159,7 +159,7 @@ export default function LaunchReviewStep({ form, onBack, onLaunch }) {
             <ShieldCheck size={20} className="text-emerald-600 shrink-0" />
             <div>
               <span className="font-bold text-emerald-950 block">
-                ₹50 Onboarding Fee Verified (ID: {form.payment_id})
+                ₹49 Onboarding Fee Verified (ID: {form.payment_id})
               </span>
               <span className="text-[11px] text-emerald-700 block">
                 Official tax invoice issued from {OFFICIAL_SUPPORT_EMAIL} to {form.email}

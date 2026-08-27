@@ -3,14 +3,12 @@ import {
   ArrowLeft,
   ArrowRight,
   ShieldCheck,
-  Zap,
   Wallet,
   CheckCircle2,
   Lock,
   Receipt,
   Printer,
   Download,
-  Sparkles,
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -267,13 +265,13 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
 
               {/* Benefit Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
-                <div className="flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-xs text-slate-700 font-medium">
-                  <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
-                  <span>0% Commission (Keep 100%)</span>
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 px-3.5 py-2.5 text-xs text-slate-700 font-medium">
+                  <span>0% Commission</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Keep 100%</span>
                 </div>
-                <div className="flex items-center gap-2 rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-xs text-slate-700 font-medium">
-                  <Zap size={16} className="text-brandRed shrink-0" />
-                  <span>Instant UPI Auto-Settlement</span>
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 px-3.5 py-2.5 text-xs text-slate-700 font-medium">
+                  <span>Instant UPI</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">Auto-Settlement</span>
                 </div>
               </div>
             </div>
@@ -291,8 +289,8 @@ export default function PaymentSettlementStep({ form = {}, updateForm = () => {}
                 </div>
 
                 <div className="text-[11px] text-slate-500 space-y-1">
-                  <p className="flex items-center justify-center gap-1 text-emerald-700 font-medium">
-                    <CheckCircle2 size={12} /> Includes Platform GST &amp; Verification
+                  <p className="text-emerald-700 font-medium">
+                    Includes Platform GST &amp; Verification
                   </p>
                   <p>Tax invoice emailed from {OFFICIAL_SUPPORT_EMAIL}</p>
                 </div>

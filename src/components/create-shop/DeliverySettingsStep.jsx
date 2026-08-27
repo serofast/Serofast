@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, Truck, Clock, MapPin, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Truck, Clock, MapPin, CheckCircle2 } from "lucide-react";
 
 export default function DeliverySettingsStep({ onNext, onBack }) {
   return (
