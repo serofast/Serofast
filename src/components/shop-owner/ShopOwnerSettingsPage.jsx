@@ -21,7 +21,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { AppSuccessModal, AppErrorModal } from "../reusable";
+import {
+  AppSuccessModal,
+  AppErrorModal,
+  AppFormCard,
+  AppFormField,
+  AppFormButton,
+} from "../reusable";
 import { humanizeError } from "../../utils/humanizer";
 import { fetchShopDetails, updateShopDetails, uploadShopAsset } from "../../lib/supabase";
 
