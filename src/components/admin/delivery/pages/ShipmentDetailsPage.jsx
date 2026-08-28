@@ -17,6 +17,7 @@ import {
   Check,
   RefreshCw,
   User,
+  QrCode,
 } from "lucide-react";
 import { Card, StatusBadge, Toast } from "../../shared/ui";
 import {
@@ -48,6 +49,7 @@ export default function ShipmentDetailsPage() {
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isHandoverSlipOpen, setIsHandoverSlipOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
   const [toast, setToast] = useState("");
@@ -449,19 +451,146 @@ export default function ShipmentDetailsPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedStatus(record.status || "ORDER_PLACED");
-                setIsStatusModalOpen(true);
-              }}
-              className="w-full h-11 rounded-xl bg-brandRed text-white text-xs font-bold hover:brightness-110 shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
-            >
-              <Edit2 size={14} /> Change Delivery Status
-            </button>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsHandoverSlipOpen(true)}
+                className="w-full h-11 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <QrCode size={14} /> View Delivery Runner Slip
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedStatus(record.status || "ORDER_PLACED");
+                  setIsStatusModalOpen(true);
+                }}
+                className="w-full h-11 rounded-xl bg-brandRed text-white text-xs font-bold hover:brightness-110 shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Edit2 size={14} /> Change Delivery Status
+              </button>
+            </div>
           </Card>
         </div>
       </div>
+
+      {/* ── Delivery Runner Digital Handover Slip Modal ─────────────────── */}
+      {isHandoverSlipOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4 animate-fade-in print:p-0">
+          <div className="w-full max-w-lg bg-white rounded-[28px] p-6 shadow-2xl border border-slate-100 space-y-5 max-h-[90vh] overflow-y-auto">
+            {/* Slip Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Package className="text-brandRed" size={20} />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Runner Handover Manifest
+                  </h3>
+                  <span className="text-[10.5px] font-mono text-slate-400">
+                    Order #{record.order_number || record.id} · AWB: {record.tracking_number}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHandoverSlipOpen(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer print:hidden"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Customer Drop Location & Contact Banner */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900">{record.customer_name || "Hostel Resident"}</span>
+                <a
+                  href={`tel:${record.customer_phone || ""}`}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-brandRed bg-red-50 px-2.5 py-1 rounded-full hover:bg-red-100 print:hidden"
+                >
+                  <Phone size={12} /> Call Customer
+                </a>
+              </div>
+              <p className="text-xs text-slate-600 flex items-start gap-1.5">
+                <MapPin size={14} className="text-brandRed shrink-0 mt-0.5" />
+                <span>{record.delivery_address || "Main Campus Hostel"}</span>
+              </p>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium">Payment Collection:</span>
+                <span className={`font-extrabold ${record.orders?.payment_method === "COD" ? "text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md" : "text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md"}`}>
+                  {record.orders?.payment_method === "COD" ? `Collect ₹${record.total_amount} (COD)` : `Prepaid via ${record.orders?.payment_method || "UPI"} (₹${record.total_amount})`}
+                </span>
+              </div>
+            </div>
+
+            {/* Product Verification Checklist */}
+            <div>
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center justify-between">
+                <span>Items in Parcel to Hand Over ({orderItems.length})</span>
+                <span className="text-[10px] text-slate-400 normal-case">Verify each item before handing</span>
+              </h4>
+
+              <div className="space-y-2">
+                {orderItems.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-white hover:bg-slate-50/60 transition gap-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 shrink-0 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden grid place-items-center">
+                        {item.product_image ? (
+                          <img src={item.product_image} alt={item.product_title} className="h-full w-full object-cover" />
+                        ) : (
+                          <Package size={16} className="text-slate-400" />
+                        )}
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-bold text-slate-900">{item.product_title || "Apparel Item"}</p>
+                        <p className="text-[11px] text-slate-500">
+                          Size: <strong className="text-slate-800">{item.size || "M"}</strong> · Color: <strong className="text-slate-800">{item.color || "Standard"}</strong> · Qty: <strong className="text-brandRed">{item.quantity}</strong>
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-900 shrink-0">
+                      ₹{item.total_price || (Number(item.unit_price || 0) * Number(item.quantity || 1))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Runner Actions */}
+            <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-3 print:hidden">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer"
+              >
+                Print Slip
+              </button>
+
+              {record.status !== "DELIVERED" ? (
+                <button
+                  type="button"
+                  disabled={savingStatus}
+                  onClick={async () => {
+                    await handleQuickStatusChange("DELIVERED");
+                    setIsHandoverSlipOpen(false);
+                  }}
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Check size={14} /> Confirm Handover & Mark Delivered
+                </button>
+              ) : (
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl flex items-center gap-1">
+                  <ShieldCheck size={14} /> Handover Completed
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Edit Status Modal ───────────────────────────────────────────── */}
       {isStatusModalOpen && (

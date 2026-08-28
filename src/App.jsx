@@ -37,6 +37,7 @@ import {
 
 import { AdminRoutes } from "./components/admin";
 import HomePage from "./components/HomePage";
+import OrderTrackingPage from "./components/orders/OrderTrackingPage";
 
 import { shops, products, freeBuffDeals } from "./data/landing";
 
@@ -343,6 +344,11 @@ export default function App() {
 
       {/* Legacy Seller Route Redirects */}
       <Route path="/seller/*" element={<Navigate to="/shop-owner/dashboard" replace />} />
+
+      {/* Customer Real-Time Order Tracking Routes */}
+      <Route path="/track" element={<OrderTrackingPage />} />
+      <Route path="/track/:orderId" element={<OrderTrackingPage />} />
+      <Route path="/orders/track/:orderId" element={<OrderTrackingPage />} />
 
       {/* Platform Administration Portal Routes */}
       <Route path="/admin/*" element={<AdminRoutes />} />
