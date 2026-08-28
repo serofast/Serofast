@@ -15,6 +15,7 @@ import {
   Sparkles,
   Store,
   Ticket,
+  Truck,
   Users,
   X,
   Zap,
