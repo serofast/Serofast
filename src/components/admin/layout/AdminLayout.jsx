@@ -4,6 +4,7 @@ import { Menu, Search, Bell, LogOut, X } from "lucide-react";
 import Icon from "../shared/legacyIcon";
 import { nav } from "../data";
 import { Logo } from "../../reusable";
+import { logoutAdmin } from "../../../services/adminAuthService";
 
 function SidebarItem({ item, close }) {
   const location = useLocation();
@@ -117,8 +118,11 @@ export default function AdminLayout({ children }) {
         <div className="border-t border-[#E5E7EB] pt-4">
           <button
             type="button"
-            onClick={() => navigate("/")}
-            className="flex w-full items-center gap-3 rounded-[30px] px-4 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+            onClick={() => {
+              logoutAdmin();
+              navigate("/");
+            }}
+            className="flex w-full items-center gap-3 rounded-[30px] px-4 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-brandRed transition cursor-pointer"
           >
             <LogOut size={17} />
             Exit Admin

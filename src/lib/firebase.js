@@ -136,12 +136,43 @@ export function validatePasswordStrength(password) {
 }
 
 // ============================================================================
+// GOOGLE AUTH TRACKING FOR SEAMLESS ACCOUNT DETECTION
+// ============================================================================
+
+const GOOGLE_EMAILS_KEY = "serofast_google_auth_emails";
+
+export function rememberGoogleAuthEmail(email) {
+  if (!email) return;
+  try {
+    const norm = email.trim().toLowerCase();
+    const list = JSON.parse(localStorage.getItem(GOOGLE_EMAILS_KEY) || "[]");
+    if (!list.includes(norm)) {
+      list.push(norm);
+      localStorage.setItem(GOOGLE_EMAILS_KEY, JSON.stringify(list));
+    }
+  } catch {}
+}
+
+export function isKnownGoogleAuthEmail(email) {
+  if (!email) return false;
+  try {
+    const norm = email.trim().toLowerCase();
+    const list = JSON.parse(localStorage.getItem(GOOGLE_EMAILS_KEY) || "[]");
+    return list.includes(norm);
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
 // FIREBASE AUTH WRAPPER FUNCTIONS (STRICT REAL FIREBASE AUTH)
 import { humanizeError } from "../utils/humanizer";
 
 export async function firebaseSignIn(email, password) {
+  const normEmail = (email || "").trim().toLowerCase();
+
   // 1. Check brute force lockout
-  const lockout = checkBruteForceLockout(email);
+  const lockout = checkBruteForceLockout(normEmail);
   if (lockout.isLocked) {
     throw new Error(lockout.message);
   }
@@ -151,20 +182,28 @@ export async function firebaseSignIn(email, password) {
   }
 
   try {
-    const userCredential = await signInWithEmailAndPassword(authInstance, email, password);
-    clearFailedAttempts(email);
+    const userCredential = await signInWithEmailAndPassword(authInstance, normEmail, password);
+    clearFailedAttempts(normEmail);
     const token = await userCredential.user.getIdToken();
     return { user: userCredential.user, token };
   } catch (error) {
-    recordFailedAttempt(email);
+    recordFailedAttempt(normEmail);
+
+    // 2. Check if this email was previously signed in with Google
+    if (isKnownGoogleAuthEmail(normEmail)) {
+      throw new Error("This account was created using Google Sign-In and does not have a separate password. Please click 'Continue with Google' to sign in.");
+    }
 
     try {
-      const methods = await fetchSignInMethodsForEmail(authInstance, email);
-      if (methods.includes("google.com") && !methods.includes("password")) {
-        throw new Error("This account was registered using Google Sign-In. Please click 'Continue with Google' to sign in.");
+      if (typeof fetchSignInMethodsForEmail === "function") {
+        const methods = await fetchSignInMethodsForEmail(authInstance, normEmail);
+        if (methods.includes("google.com") && !methods.includes("password")) {
+          rememberGoogleAuthEmail(normEmail);
+          throw new Error("This account was created using Google Sign-In and does not have a separate password. Please click 'Continue with Google' to sign in.");
+        }
       }
     } catch (e) {
-      if (e.message?.includes("Google Sign-In")) throw e;
+      if (e.message?.includes("Google Sign-In") || e.message?.includes("Continue with Google")) throw e;
     }
 
     throw new Error(humanizeError(error, "Incorrect email or password. Please double-check your credentials and try again."));
@@ -197,6 +236,9 @@ export async function firebaseGoogleSignIn() {
 
   try {
     const result = await signInWithPopup(authInstance, googleProviderInstance);
+    if (result.user?.email) {
+      rememberGoogleAuthEmail(result.user.email);
+    }
     const token = await result.user.getIdToken();
     return { user: result.user, token };
   } catch (error) {

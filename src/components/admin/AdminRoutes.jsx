@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from './layout/AdminLayout';
+import AdminProtectedRoute from './auth/AdminProtectedRoute';
 import DashboardPage from './dashboard/pages/DashboardPage';
 import ShopsPage from './shops/pages/ShopsPage';
 import ShopDetailsPage from './shops/pages/ShopDetailsPage';
@@ -44,9 +45,10 @@ import SettingsPage from './system/settings/pages/SettingsPage';
 
 export default function AdminRoutes() {
   return (
-    <AdminLayout>
-      <Routes>
-        <Route index element={<DashboardPage />} />
+    <AdminProtectedRoute>
+      <AdminLayout>
+        <Routes>
+          <Route index element={<DashboardPage />} />
         <Route path="shops" element={<ShopsPage />} />
         <Route path="shops/approvals" element={<Navigate to="/admin/shops" replace />} />
         <Route path="shops/:shopId" element={<ShopDetailsPage />} />
@@ -108,7 +110,9 @@ export default function AdminRoutes() {
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
-      </Routes>
-    </AdminLayout>
+        </Routes>
+      </AdminLayout>
+    </AdminProtectedRoute>
   );
 }
+
