@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Truck,
@@ -13,6 +13,9 @@ import {
   X,
   Check,
   Save,
+  Bell,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import {
   fetchAdminDeliveries,
@@ -40,6 +43,37 @@ const STATUS_OPTIONS = [
   { value: "CANCELLED", label: "CANCELLED (Cancelled)", color: "text-rose-700 bg-rose-50" },
 ];
 
+/**
+ * Web Audio API synthesized order chime (no external audio assets required)
+ */
+function playOrderChime() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    notes.forEach((freq, index) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + index * 0.1);
+
+      gain.gain.setValueAtTime(0, ctx.currentTime + index * 0.1);
+      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + index * 0.1 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.1 + 0.35);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime + index * 0.1);
+      osc.stop(ctx.currentTime + index * 0.1 + 0.4);
+    });
+  } catch (e) {
+    console.warn("Audio chime notice:", e);
+  }
+}
+
 export default function ShipmentsPage() {
   const navigate = useNavigate();
   const [deliveries, setDeliveries] = useState([]);
@@ -48,16 +82,34 @@ export default function ShipmentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [toast, setToast] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [incomingOrderAlert, setIncomingOrderAlert] = useState(null);
+  const initialLoadRef = useRef(true);
+  const prevCountRef = useRef(0);
 
   // Status edit modal state
   const [editingItem, setEditingItem] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
 
-  async function loadData() {
+  async function loadData(isRealtimeUpdate = false) {
     try {
       const data = await fetchAdminDeliveries();
-      setDeliveries(data || []);
+      const list = data || [];
+
+      if (isRealtimeUpdate && !initialLoadRef.current) {
+        if (list.length > prevCountRef.current) {
+          const newest = list[0];
+          if (newest) {
+            setIncomingOrderAlert(newest);
+            if (isAudioEnabled) playOrderChime();
+          }
+        }
+      }
+
+      setDeliveries(list);
+      prevCountRef.current = list.length;
+      initialLoadRef.current = false;
     } catch (e) {
       console.warn("Failed to load deliveries:", e);
     } finally {
@@ -69,10 +121,10 @@ export default function ShipmentsPage() {
     loadData();
     // ── Live Supabase WebSocket Subscription ──────────────────────────────
     const unsub = subscribeToRealtimeDeliveries(() => {
-      loadData();
+      loadData(true);
     });
     return () => unsub();
-  }, []);
+  }, [isAudioEnabled]);
 
   const counts = useMemo(() => {
     const map = { ALL: deliveries.length };
@@ -168,18 +220,79 @@ export default function ShipmentsPage() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            setLoading(true);
-            loadData();
-          }}
-          className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
-        >
-          <RefreshCw size={14} className={loading ? "animate-spin text-brandRed" : ""} />
-          Refresh Live State
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setIsAudioEnabled(!isAudioEnabled);
+              if (!isAudioEnabled) playOrderChime();
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-[30px] border text-xs font-semibold transition shadow-2xs cursor-pointer ${
+              isAudioEnabled
+                ? "bg-red-50 border-red-200 text-brandRed hover:bg-red-100"
+                : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+            }`}
+            title="Toggle Live Audio Chime for Incoming Mobile App Orders"
+          >
+            {isAudioEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
+            <span>{isAudioEnabled ? "Chime On" : "Chime Off"}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              loadData();
+            }}
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[30px] border border-[#E5E7EB] bg-white text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+          >
+            <RefreshCw size={14} className={loading ? "animate-spin text-brandRed" : ""} />
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {/* ── Incoming Mobile App Order Floating Alert Banner ─────────────── */}
+      {incomingOrderAlert && (
+        <div className="p-4 rounded-[22px] bg-gradient-to-r from-red-600 to-rose-700 text-white shadow-xl flex items-center justify-between gap-4 animate-bounce-short">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+              <Bell size={20} className="animate-wiggle" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider bg-white text-brandRed px-2 py-0.5 rounded-md">
+                  New Mobile Order!
+                </span>
+                <span className="text-xs font-bold font-mono">#{incomingOrderAlert.order_number || incomingOrderAlert.id}</span>
+              </div>
+              <p className="text-xs text-white/90 mt-0.5">
+                Recipient: <strong>{incomingOrderAlert.customer_name}</strong> · Drop: {incomingOrderAlert.delivery_address} · Total: <strong>₹{incomingOrderAlert.total_amount}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`/admin/delivery/${encodeURIComponent(incomingOrderAlert.order_id || incomingOrderAlert.id)}`);
+                setIncomingOrderAlert(null);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-white text-brandRed text-xs font-extrabold hover:bg-red-50 transition cursor-pointer shadow-xs"
+            >
+              Pack Now &rarr;
+            </button>
+            <button
+              type="button"
+              onClick={() => setIncomingOrderAlert(null)}
+              className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── KPI Stat Strip ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
