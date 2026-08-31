@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -51,7 +51,7 @@ import {
   AppTeaserModal,
 } from "./reusable";
 
-// Sample live simulated campus stores running on SeroFast Central Hub with categories & quotes
+// Sample live simulated campus stores running on SeroFast Central Hub with strict brand palette
 const VERIFIED_CAMPUS_MERCHANTS = [
   {
     id: "m-1",
@@ -326,16 +326,15 @@ export default function HomePage() {
 
       <main>
         {/* =========================================================================
-            1. REDESIGNED ULTRA-SMOOTH HERO SECTION
+            1. HERO SECTION: HARMONIOUS BRAND COLOR SYSTEM
            ========================================================================= */}
-        <section className="relative overflow-hidden border-b border-[#EBE3DC] bg-gradient-to-b from-[#FFF4EE] via-[#FAF8F5] to-[#FAF8F5] pt-8 pb-20 lg:pt-14 lg:pb-28">
-          {/* Subtle Ambient Radial Lighting */}
-          <div className="pointer-events-none absolute -left-40 top-0 h-[600px] w-[600px] rounded-full bg-brandRed/[0.08] blur-[150px]" />
-          <div className="pointer-events-none absolute -right-32 top-10 h-[550px] w-[550px] rounded-full bg-amber-500/[0.06] blur-[160px]" />
-          <div className="pointer-events-none absolute left-1/3 top-1/2 h-[350px] w-[350px] -translate-y-1/2 rounded-full bg-rose-400/[0.04] blur-[130px]" />
+        <section className="relative overflow-hidden border-b border-[#EBE3DC] bg-gradient-to-b from-[#FFF5F2] via-[#FAF8F5] to-[#FAF8F5] pt-8 pb-20 lg:pt-14 lg:pb-28">
+          {/* Subtle Ambient Radial Lighting in Brand Red Tones */}
+          <div className="pointer-events-none absolute -left-40 top-0 h-[600px] w-[600px] rounded-full bg-brandRed/[0.06] blur-[150px]" />
+          <div className="pointer-events-none absolute -right-32 top-10 h-[550px] w-[550px] rounded-full bg-brandRed/[0.04] blur-[160px]" />
 
           <div className="relative mx-auto w-[min(1320px,calc(100%_-_32px))]">
-            {/* Top Shimmering Badge Row */}
+            {/* Top Badge Row */}
             <ScrollReveal variant="fade-down" duration={600}>
               <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
                 <div className="inline-flex items-center gap-2.5 rounded-full border border-brandRed/20 bg-white/95 px-4 py-2 text-xs font-extrabold text-brandRed shadow-sm backdrop-blur-md transition-transform hover:scale-[1.02]">
@@ -344,21 +343,20 @@ export default function HomePage() {
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brandRed"></span>
                   </span>
                   <span>0% Commission Merchant Commerce Engine</span>
-                  <span className="hidden sm:inline-block text-[#8C7A72]">•</span>
-                  <span className="hidden sm:inline-block text-[#5A504B] font-bold">
+                  <span className="hidden sm:inline-block text-[#8b8282]">•</span>
+                  <span className="hidden sm:inline-block text-[#4f4a4a] font-bold">
                     ₹50 One-Time Setup
                   </span>
                 </div>
 
-                {/* Quick Track link */}
-                <Link
-                  to="/track"
-                  className="group inline-flex items-center gap-2 rounded-full border border-[#E2D6CD] bg-white/80 px-4 py-2 text-xs font-bold text-[#6B5E57] shadow-sm transition-all duration-300 hover:border-brandRed hover:text-brandRed hover:bg-white"
-                >
-                  <Truck size={14} className="text-brandRed" />
-                  <span>Track Customer Order</span>
-                  <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
-                </Link>
+                {/* Live Campus Hub Status Indicator */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#E5E7EB] bg-white/90 px-3.5 py-1.5 text-xs font-bold text-[#4f4a4a] shadow-sm">
+                  <span className="flex h-2 w-2 relative shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                  </span>
+                  <span>Campus Central Warehouse: Live Dispatch</span>
+                </div>
               </div>
             </ScrollReveal>
 
@@ -369,12 +367,12 @@ export default function HomePage() {
                 <h1 className="text-[clamp(2.7rem,6vw,4.9rem)] font-extrabold leading-[1.01] tracking-[-0.04em] text-[#191616]">
                   Digitize your shop.
                   <br />
-                  <span className="bg-gradient-to-r from-brandRed via-red-600 to-amber-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-brandRed via-brandRedDark to-brandRed bg-clip-text text-transparent">
                     Keep 100% of profit.
                   </span>
                 </h1>
 
-                <p className="mt-6 text-base leading-relaxed text-[#5A504B] sm:text-lg">
+                <p className="mt-6 text-base leading-relaxed text-[#4f4a4a] sm:text-lg">
                   Stop losing 20-30% on food & commerce aggregator apps. List your
                   store on SeroFast for a one-time ₹50 setup. Our Central Campus
                   Warehouse handles packing, student runner dispatch in under 30
@@ -394,7 +392,7 @@ export default function HomePage() {
 
                   <a
                     href="#calculator"
-                    className="inline-flex h-13 items-center justify-center gap-2.5 rounded-xl border border-[#DCD0C7] bg-white/90 px-6 text-sm font-bold text-[#191616] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brandRed hover:text-brandRed"
+                    className="inline-flex h-13 items-center justify-center gap-2.5 rounded-xl border border-[#E5E7EB] bg-white/90 px-6 text-sm font-bold text-[#191616] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brandRed hover:text-brandRed"
                   >
                     <Percent size={17} className="text-brandRed" />
                     <span>Calculate Your ROI Savings</span>
@@ -402,9 +400,9 @@ export default function HomePage() {
                 </div>
 
                 {/* 3 Core Trust Badges */}
-                <div className="mt-10 grid grid-cols-3 gap-3 border-t border-[#E8DDD5] pt-6 sm:gap-6">
+                <div className="mt-10 grid grid-cols-3 gap-3 border-t border-[#EBE3DC] pt-6 sm:gap-6">
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8C7A72]">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8b8282]">
                       <Percent size={14} className="text-brandRed" />
                       <span>Commission</span>
                     </div>
@@ -414,8 +412,8 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8C7A72]">
-                      <Zap size={14} className="text-amber-500" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8b8282]">
+                      <Zap size={14} className="text-brandRed" />
                       <span>Campus Delivery</span>
                     </div>
                     <span className="mt-1 text-lg font-black text-[#191616] sm:text-xl">
@@ -424,8 +422,8 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex flex-col">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8C7A72]">
-                      <Wallet size={14} className="text-emerald-600" />
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8b8282]">
+                      <Wallet size={14} className="text-emerald-700" />
                       <span>Payout Rails</span>
                     </div>
                     <span className="mt-1 text-lg font-black text-[#191616] sm:text-xl">
@@ -438,15 +436,15 @@ export default function HomePage() {
               {/* Right Column: High-Tech Interactive Merchant Dashboard Console + Floating Chips */}
               <ScrollReveal variant="scale-up" duration={750} delay={150} className="relative">
                 {/* Floating Chip 1: Instant UPI Payout (Top Left) */}
-                <div className="animate-float-slow absolute -top-5 -left-4 z-20 hidden sm:flex items-center gap-2.5 rounded-2xl border border-emerald-200/80 bg-white/95 px-3.5 py-2.5 text-xs font-extrabold text-[#191616] shadow-xl backdrop-blur-md">
-                  <div className="grid h-7 w-7 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
+                <div className="animate-float-slow absolute -top-5 -left-4 z-20 hidden sm:flex items-center gap-2.5 rounded-2xl border border-emerald-200 bg-white/95 px-3.5 py-2.5 text-xs font-extrabold text-[#191616] shadow-xl backdrop-blur-md">
+                  <div className="grid h-7 w-7 place-items-center rounded-xl bg-emerald-50 text-emerald-700">
                     <CheckCircle2 size={16} />
                   </div>
                   <div>
                     <p className="text-[11px] font-bold text-[#191616]">
                       +₹1,249 UPI Settled
                     </p>
-                    <p className="text-[9px] text-emerald-600 font-extrabold">
+                    <p className="text-[9px] text-emerald-700 font-extrabold">
                       0% Platform Deductions
                     </p>
                   </div>
@@ -461,24 +459,24 @@ export default function HomePage() {
                     <p className="text-[11px] font-bold text-[#191616]">
                       Central Hub Dispatched
                     </p>
-                    <p className="text-[9px] text-[#8C7A72]">
+                    <p className="text-[9px] text-[#8b8282]">
                       Runner assigned • ETA 14m
                     </p>
                   </div>
                 </div>
 
                 {/* Ambient glow backing */}
-                <div className="absolute -inset-3 rounded-3xl bg-gradient-to-tr from-brandRed/20 via-amber-500/15 to-transparent blur-2xl" />
+                <div className="absolute -inset-3 rounded-3xl bg-gradient-to-tr from-brandRed/15 via-brandRed/5 to-transparent blur-2xl" />
 
                 {/* Dashboard Console Frame */}
-                <div className="relative overflow-hidden rounded-2xl border border-[#D9CBC0] bg-[#1E1B18] text-white shadow-2xl transition-all duration-300">
+                <div className="relative overflow-hidden rounded-2xl border border-[#E5E7EB] bg-[#191616] text-white shadow-2xl transition-all duration-300">
                   {/* Dashboard Header Bar */}
-                  <div className="flex items-center justify-between border-b border-white/10 bg-[#151311] px-5 py-3.5">
+                  <div className="flex items-center justify-between border-b border-white/10 bg-[#121010] px-5 py-3.5">
                     <div className="flex items-center gap-2.5">
                       <div className="flex gap-1.5">
-                        <span className="h-3 w-3 rounded-full bg-rose-500/80" />
-                        <span className="h-3 w-3 rounded-full bg-amber-500/80" />
-                        <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                        <span className="h-3 w-3 rounded-full bg-brandRed" />
+                        <span className="h-3 w-3 rounded-full bg-white/20" />
+                        <span className="h-3 w-3 rounded-full bg-emerald-500" />
                       </div>
                       <span className="ml-2 font-mono text-[11px] text-white/50">
                         serofast.merchant.engine://v2.8
@@ -515,14 +513,14 @@ export default function HomePage() {
                       <span className="text-[10px] uppercase font-bold tracking-wider text-white/50">
                         Warehouse SLA
                       </span>
-                      <p className="text-base font-black text-amber-300 sm:text-lg">
+                      <p className="text-base font-black text-brandRed sm:text-lg">
                         18 Mins Avg
                       </p>
                     </div>
                   </div>
 
                   {/* Dashboard Nav Tabs */}
-                  <div className="flex border-b border-white/10 bg-[#151311] px-4 pt-2">
+                  <div className="flex border-b border-white/10 bg-[#121010] px-4 pt-2">
                     <button
                       type="button"
                       onClick={() => setDashboardTab("orders")}
@@ -623,7 +621,7 @@ export default function HomePage() {
                             ₹8,490.00
                           </p>
                           <p className="text-xs text-white/60">
-                            100% credited to HDFC Bank A/C ending in **4920
+                            100% credited to registered merchant bank A/C
                           </p>
                         </div>
 
@@ -638,7 +636,7 @@ export default function HomePage() {
                           </div>
                           <div className="flex justify-between">
                             <span>Settlement Speed</span>
-                            <span className="font-bold text-amber-300">Instant Real-Time</span>
+                            <span className="font-bold text-emerald-400">Instant Real-Time</span>
                           </div>
                         </div>
                       </div>
@@ -646,7 +644,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Dashboard Bottom Footer */}
-                  <div className="flex items-center justify-between border-t border-white/10 bg-[#151311] px-5 py-3 text-xs">
+                  <div className="flex items-center justify-between border-t border-white/10 bg-[#121010] px-5 py-3 text-xs">
                     <span className="text-white/60">
                       Ready to start receiving campus orders?
                     </span>
@@ -667,38 +665,34 @@ export default function HomePage() {
         {/* =========================================================================
             2. PLATFORM TRUST & METRICS MARQUEE
            ========================================================================= */}
-        <section className="border-y border-[#EBE3DC] bg-[#FFFBF8] py-4 overflow-hidden">
+        <section className="border-y border-[#EBE3DC] bg-[#FAF8F5] py-4 overflow-hidden">
           <div className="mx-auto flex w-[min(1320px,calc(100%_-_32px))] flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-xs font-black text-[#191616]">
               <Percent size={16} className="text-brandRed" />
               <span>0% Commission (Merchants Keep 100%)</span>
             </div>
-            <div className="hidden h-4 w-px bg-[#E2D6CD] sm:block" />
+            <div className="hidden h-4 w-px bg-[#E5E7EB] sm:block" />
             <div className="flex items-center gap-2 text-xs font-black text-[#191616]">
-              <Coins size={16} className="text-amber-600" />
+              <Coins size={16} className="text-brandRed" />
               <span>₹50 Nominal Lifetime Store Activation</span>
             </div>
-            <div className="hidden h-4 w-px bg-[#E2D6CD] sm:block" />
+            <div className="hidden h-4 w-px bg-[#E5E7EB] sm:block" />
             <div className="flex items-center gap-2 text-xs font-black text-[#191616]">
-              <Package size={16} className="text-emerald-600" />
+              <Package size={16} className="text-emerald-700" />
               <span>Central Warehouse Automated Packing</span>
             </div>
-            <div className="hidden h-4 w-px bg-[#E2D6CD] md:block" />
+            <div className="hidden h-4 w-px bg-[#E5E7EB] md:block" />
             <div className="flex items-center gap-2 text-xs font-black text-[#191616]">
-              <Zap size={16} className="text-blue-600" />
+              <Zap size={16} className="text-brandRed" />
               <span>&lt; 30 Mins Student Runner Dispatch</span>
             </div>
           </div>
         </section>
 
         {/* =========================================================================
-            3. REDESIGNED INTERACTIVE 0% COMMISSION ROI & PROFIT SIMULATOR
+            3. INTERACTIVE 0% COMMISSION ROI & PROFIT SIMULATOR (BRAND COLOR THEME)
            ========================================================================= */}
-        <section id="calculator" className="relative py-16 lg:py-24 overflow-hidden">
-          {/* Subtle Ambient Backing */}
-          <div className="pointer-events-none absolute -left-20 top-20 h-72 w-72 rounded-full bg-brandRed/[0.05] blur-[120px]" />
-          <div className="pointer-events-none absolute -right-20 bottom-10 h-72 w-72 rounded-full bg-emerald-500/[0.05] blur-[120px]" />
-
+        <section id="calculator" className="relative py-16 lg:py-24 overflow-hidden bg-white border-b border-[#EBE3DC]">
           <div className="relative mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={700} className="mx-auto max-w-3xl text-center">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-brandRed shadow-sm">
@@ -708,7 +702,7 @@ export default function HomePage() {
               <h2 className="mt-4 text-[clamp(2.1rem,4.2vw,3.3rem)] font-extrabold leading-tight tracking-[-0.03em] text-[#191616]">
                 Calculate Exact Profits Kept with 0% Commission
               </h2>
-              <p className="mt-3 text-base text-[#6B5E57] max-w-2xl mx-auto">
+              <p className="mt-3 text-base text-[#4f4a4a] max-w-2xl mx-auto">
                 Compare SeroFast&apos;s ₹50 activation against traditional 18-30% food and retail aggregators. Select your estimated monthly volume or pick a quick preset.
               </p>
 
@@ -727,7 +721,7 @@ export default function HomePage() {
                     className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer ${
                       monthlyRevenue === preset.val
                         ? "bg-brandRed text-white shadow-md shadow-brandRed/20 scale-105"
-                        : "bg-white border border-[#E2D6CD] text-[#6B5E57] hover:border-brandRed hover:text-brandRed"
+                        : "bg-[#FAF8F5] border border-[#E5E7EB] text-[#4f4a4a] hover:border-brandRed hover:text-brandRed"
                     }`}
                   >
                     {preset.label}
@@ -738,7 +732,7 @@ export default function HomePage() {
 
             {/* Interactive Calculator Bento Grid */}
             <ScrollReveal variant="scale-up" duration={750} delay={150}>
-              <div className="mt-10 overflow-hidden rounded-3xl border border-[#E8DDD5] bg-white p-6 shadow-2xl sm:p-10 lg:p-12 bento-glow-card">
+              <div className="mt-10 overflow-hidden rounded-3xl border border-[#EBE3DC] bg-[#FAF8F5] p-6 shadow-xl sm:p-10 lg:p-12 bento-glow-card">
                 <div className="grid gap-10 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
                   {/* Left Column: Sliders & Live Comparison Bar Graph */}
                   <div>
@@ -747,9 +741,9 @@ export default function HomePage() {
                     </h3>
 
                     {/* Revenue Slider */}
-                    <div className="mt-6 rounded-2xl border border-[#E8DDD5] bg-[#FAF8F5] p-6 shadow-inner">
+                    <div className="mt-6 rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#8C7A72]">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#8b8282]">
                           Estimated Monthly Sales
                         </span>
                         <span className="text-2xl font-black text-[#191616]">
@@ -764,10 +758,10 @@ export default function HomePage() {
                         step="10000"
                         value={monthlyRevenue}
                         onChange={(e) => setMonthlyRevenue(Number(e.target.value))}
-                        className="mt-6 h-2.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-brandRed"
+                        className="mt-6 h-2.5 w-full cursor-pointer appearance-none rounded-lg bg-[#E5E7EB] accent-brandRed"
                       />
 
-                      <div className="mt-3 flex justify-between text-[11px] font-bold text-[#8C7A72]">
+                      <div className="mt-3 flex justify-between text-[11px] font-bold text-[#8b8282]">
                         <span>₹20,000 / mo</span>
                         <span>₹5,00,000 / mo</span>
                         <span>₹10,00,000 / mo</span>
@@ -775,12 +769,12 @@ export default function HomePage() {
                     </div>
 
                     {/* Commission Rate Slider */}
-                    <div className="mt-4 rounded-2xl border border-[#E8DDD5] bg-[#FAF8F5] p-6 shadow-inner">
+                    <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#8C7A72]">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#8b8282]">
                           Aggregator Commission Cut (%)
                         </span>
-                        <span className="text-xl font-black text-rose-600">
+                        <span className="text-xl font-black text-brandRed">
                           {aggregatorCommissionRate}%
                         </span>
                       </div>
@@ -794,10 +788,10 @@ export default function HomePage() {
                         onChange={(e) =>
                           setAggregatorCommissionRate(Number(e.target.value))
                         }
-                        className="mt-5 h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-rose-600"
+                        className="mt-5 h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#E5E7EB] accent-brandRed"
                       />
 
-                      <div className="mt-2 flex justify-between text-[11px] font-bold text-[#8C7A72]">
+                      <div className="mt-2 flex justify-between text-[11px] font-bold text-[#8b8282]">
                         <span>15% Low</span>
                         <span>22% Typical Retail/Food</span>
                         <span>30% High</span>
@@ -805,15 +799,15 @@ export default function HomePage() {
                     </div>
 
                     {/* Live Visual Comparison Fill Bars */}
-                    <div className="mt-6 space-y-3 rounded-2xl border border-[#E8DDD5] bg-white p-4">
+                    <div className="mt-6 space-y-3 rounded-2xl border border-[#E5E7EB] bg-white p-4">
                       <div>
                         <div className="flex justify-between text-xs font-bold pb-1">
-                          <span className="text-[#6B5E57]">Other Apps Cut ({aggregatorCommissionRate}%):</span>
-                          <span className="text-rose-600">-₹{traditionalCommissionLostMonthly.toLocaleString("en-IN")}/mo lost</span>
+                          <span className="text-[#4f4a4a]">Other Apps Cut ({aggregatorCommissionRate}%):</span>
+                          <span className="text-brandRed">-₹{traditionalCommissionLostMonthly.toLocaleString("en-IN")}/mo lost</span>
                         </div>
-                        <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div className="h-2.5 w-full rounded-full bg-[#FAF8F5] overflow-hidden">
                           <div
-                            className="h-full bg-rose-500 rounded-full transition-all duration-500"
+                            className="h-full bg-brandRed rounded-full transition-all duration-500"
                             style={{ width: `${aggregatorCommissionRate * 3}%` }}
                           />
                         </div>
@@ -822,11 +816,11 @@ export default function HomePage() {
                       <div>
                         <div className="flex justify-between text-xs font-bold pb-1">
                           <span className="text-[#191616]">SeroFast Retained (100%):</span>
-                          <span className="text-emerald-600 font-extrabold">+₹{monthlyRevenue.toLocaleString("en-IN")}/mo kept!</span>
+                          <span className="text-emerald-700 font-extrabold">+₹{monthlyRevenue.toLocaleString("en-IN")}/mo kept!</span>
                         </div>
-                        <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div className="h-2.5 w-full rounded-full bg-[#FAF8F5] overflow-hidden">
                           <div
-                            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                            className="h-full bg-emerald-600 rounded-full transition-all duration-500"
                             style={{ width: "100%" }}
                           />
                         </div>
@@ -835,9 +829,9 @@ export default function HomePage() {
                   </div>
 
                   {/* Right Column: Comparative Results Card + Reinvestment Impact */}
-                  <div className="rounded-3xl border border-brandRed/20 bg-gradient-to-br from-[#FFF5F1] via-[#FFF0E8] to-[#FFEAE0] p-6 sm:p-8 shadow-inner">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600/10 px-3 py-1 text-xs font-extrabold text-emerald-800">
-                      <Sparkles size={13} />
+                  <div className="rounded-3xl border border-brandRed/20 bg-white p-6 sm:p-8 shadow-md">
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-extrabold text-emerald-800">
+                      <Sparkles size={13} className="text-emerald-700" />
                       <span>Projected Annual Savings</span>
                     </div>
 
@@ -851,10 +845,10 @@ export default function HomePage() {
                     </div>
 
                     {/* Comparison Breakdown Rows */}
-                    <div className="mt-6 space-y-3 border-t border-brandRed/15 pt-6 text-xs sm:text-sm">
-                      <div className="flex items-center justify-between text-[#6B5E57]">
+                    <div className="mt-6 space-y-3 border-t border-[#EBE3DC] pt-6 text-xs sm:text-sm">
+                      <div className="flex items-center justify-between text-[#4f4a4a]">
                         <span>Other Aggregator Annual Cut ({aggregatorCommissionRate}%):</span>
-                        <span className="font-bold text-rose-600">
+                        <span className="font-bold text-brandRed">
                           -₹{traditionalAnnualLost.toLocaleString("en-IN")}
                         </span>
                       </div>
@@ -864,14 +858,14 @@ export default function HomePage() {
                         <span className="text-emerald-700">₹50 (One-Time Setup)</span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[#6B5E57]">
+                      <div className="flex items-center justify-between text-[#4f4a4a]">
                         <span>Campus Central Warehouse Packing:</span>
                         <span className="font-semibold text-emerald-700">
                           100% Handled by SeroFast
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[#6B5E57]">
+                      <div className="flex items-center justify-between text-[#4f4a4a]">
                         <span>Payout Settlement:</span>
                         <span className="font-semibold text-[#191616]">
                           Instant Direct UPI
@@ -880,16 +874,16 @@ export default function HomePage() {
                     </div>
 
                     {/* What this saved money means */}
-                    <div className="mt-6 rounded-2xl border border-emerald-600/20 bg-white/80 p-3.5 text-xs text-[#5A504B] space-y-1.5">
-                      <p className="font-bold text-emerald-800 flex items-center gap-1.5">
-                        <CheckCircle2 size={14} />
+                    <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-3.5 text-xs text-[#4f4a4a] space-y-1.5">
+                      <p className="font-bold text-emerald-900 flex items-center gap-1.5">
+                        <CheckCircle2 size={14} className="text-emerald-700" />
                         <span>Reinvestment Power for Your Store:</span>
                       </p>
                       <p className="text-[11px]">
                         • Reinvest in ~{Math.max(1, Math.floor(annualNetSavings / 1500))} extra product SKUs
                       </p>
                       <p className="text-[11px]">
-                        • 100% zero debt or external commission strain
+                        • 100% zero debt or recurring platform cuts
                       </p>
                     </div>
 
@@ -910,17 +904,17 @@ export default function HomePage() {
         {/* =========================================================================
             4. HOW IT WORKS: CENTRAL WAREHOUSE & LOGISTICS (CASCADE STAGGERED REVEAL)
            ========================================================================= */}
-        <section id="fulfillment" className="border-y border-[#EBE3DC] bg-[#FFF8F4] py-16 lg:py-24">
+        <section id="fulfillment" className="border-b border-[#EBE3DC] bg-[#FAF8F5] py-16 lg:py-24">
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={700} className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-amber-800">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-brandRed">
                 <Cpu size={14} />
                 <span>The SeroFast Fulfillment Architecture</span>
               </div>
               <h2 className="mt-4 text-[clamp(2rem,4vw,3.2rem)] font-extrabold leading-tight tracking-[-0.03em] text-[#191616]">
                 How SeroFast Central Warehouse Works For You
               </h2>
-              <p className="mt-3 text-base text-[#6B5E57]">
+              <p className="mt-3 text-base text-[#4f4a4a]">
                 We eliminated city traffic and expensive dark-stores by deploying
                 hyperlocal campus micro-warehouses operated with verified
                 student runners.
@@ -945,7 +939,7 @@ export default function HomePage() {
                       className={`h-full cursor-pointer group relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-300 bento-glow-card ${
                         isActive
                           ? "border-brandRed bg-white shadow-xl -translate-y-1.5"
-                          : "border-[#E8DDD5] bg-white/70 hover:bg-white hover:border-[#DCD0C7] hover:-translate-y-1"
+                          : "border-[#E5E7EB] bg-white hover:border-[#DCD0C7] hover:-translate-y-1"
                       }`}
                     >
                       <div>
@@ -958,7 +952,7 @@ export default function HomePage() {
                             className={`grid h-10 w-10 place-items-center rounded-xl transition ${
                               isActive
                                 ? "bg-brandRed text-white"
-                                : "bg-[#FAF8F5] text-[#6B5E57] group-hover:text-brandRed"
+                                : "bg-[#FAF8F5] text-[#4f4a4a] group-hover:text-brandRed"
                             }`}
                           >
                             <Icon size={18} />
@@ -971,13 +965,13 @@ export default function HomePage() {
                         <h3 className="mt-1 text-base font-extrabold text-[#191616]">
                           {step.title}
                         </h3>
-                        <p className="mt-2 text-xs leading-relaxed text-[#6B5E57]">
+                        <p className="mt-2 text-xs leading-relaxed text-[#4f4a4a]">
                           {step.description}
                         </p>
                       </div>
 
-                      <div className="mt-6 border-t border-[#F0E8E1] pt-3 text-[11px] font-bold text-[#191616]">
-                        <span className="text-[#8C7A72]">Benefit: </span>
+                      <div className="mt-6 border-t border-[#EBE3DC] pt-3 text-[11px] font-bold text-[#191616]">
+                        <span className="text-[#8b8282]">Benefit: </span>
                         <span className="text-emerald-700">{step.highlight}</span>
                       </div>
                     </div>
@@ -991,7 +985,7 @@ export default function HomePage() {
         {/* =========================================================================
             5. REDESIGNED VERIFIED CAMPUS PARTNER STORES SHOWCASE
            ========================================================================= */}
-        <section id="merchants" className="py-16 lg:py-24 relative overflow-hidden">
+        <section id="merchants" className="py-16 lg:py-24 relative overflow-hidden bg-white border-b border-[#EBE3DC]">
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={600} className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
               <div>
@@ -1002,7 +996,7 @@ export default function HomePage() {
                 <h2 className="mt-3 text-[clamp(1.9rem,3.8vw,2.9rem)] font-extrabold leading-tight tracking-[-0.03em] text-[#191616]">
                   Thriving Merchants on SeroFast
                 </h2>
-                <p className="mt-2 max-w-[540px] text-sm text-[#6B5E57]">
+                <p className="mt-2 max-w-[540px] text-sm text-[#4f4a4a]">
                   From campus apparel brands to cafeterias and daily dorm needs,
                   merchants are keeping 100% of their retail margins.
                 </p>
@@ -1018,7 +1012,7 @@ export default function HomePage() {
                     className={`rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
                       activeMerchantCategory === cat
                         ? "bg-brandRed text-white shadow-md shadow-brandRed/20 scale-105"
-                        : "bg-white border border-[#E2D6CD] text-[#6B5E57] hover:border-brandRed hover:text-brandRed"
+                        : "bg-[#FAF8F5] border border-[#E5E7EB] text-[#4f4a4a] hover:border-brandRed hover:text-brandRed"
                     }`}
                   >
                     {cat}
@@ -1037,7 +1031,7 @@ export default function HomePage() {
                   duration={650}
                   className="h-full"
                 >
-                  <div className="h-full group flex flex-col justify-between rounded-3xl border border-[#E8DDD5] bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-2xl hover:border-brandRed/40 hover:-translate-y-2 bento-glow-card">
+                  <div className="h-full group flex flex-col justify-between rounded-3xl border border-[#E5E7EB] bg-[#FAF8F5] p-5 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-brandRed/40 hover:-translate-y-2 bento-glow-card">
                     <div>
                       {/* Top Header Row with Avatar & Status */}
                       <div className="flex items-start justify-between gap-3">
@@ -1045,7 +1039,7 @@ export default function HomePage() {
                           <img
                             src={m.avatar}
                             alt={m.name}
-                            className="h-13 w-13 rounded-2xl object-cover border border-[#E2D6CD] shadow-sm transition-transform duration-300 group-hover:scale-105"
+                            className="h-13 w-13 rounded-2xl object-cover border border-[#E5E7EB] shadow-sm transition-transform duration-300 group-hover:scale-105"
                           />
                           <div>
                             <span className="rounded-md bg-brandRed/10 px-2 py-0.5 text-[9px] font-extrabold text-brandRed uppercase tracking-wider">
@@ -1054,7 +1048,7 @@ export default function HomePage() {
                             <h3 className="mt-1 text-sm font-extrabold text-[#191616] group-hover:text-brandRed transition-colors">
                               {m.name}
                             </h3>
-                            <p className="text-[10px] text-[#8C7A72] flex items-center gap-1">
+                            <p className="text-[10px] text-[#8b8282] flex items-center gap-1">
                               <MapPin size={10} className="text-brandRed" /> {m.campus}
                             </p>
                           </div>
@@ -1062,13 +1056,13 @@ export default function HomePage() {
 
                         <span className="flex h-2 w-2 relative shrink-0">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                         </span>
                       </div>
 
                       {/* Financial Metrics Summary Pill */}
-                      <div className="mt-4 rounded-2xl border border-[#F0E8E1] bg-[#FAF8F5] p-3 text-xs space-y-1">
-                        <div className="flex items-center justify-between text-[#6B5E57]">
+                      <div className="mt-4 rounded-2xl border border-[#E5E7EB] bg-white p-3 text-xs space-y-1">
+                        <div className="flex items-center justify-between text-[#4f4a4a]">
                           <span>Monthly Sales:</span>
                           <span className="font-extrabold text-[#191616]">{m.sales}</span>
                         </div>
@@ -1076,24 +1070,24 @@ export default function HomePage() {
                           <span>0% Commission Gain:</span>
                           <span>{m.savedCommission}</span>
                         </div>
-                        <div className="flex items-center justify-between text-[#8C7A72] text-[10px]">
+                        <div className="flex items-center justify-between text-[#8b8282] text-[10px]">
                           <span>Fulfillment SLA:</span>
-                          <span className="font-semibold text-amber-700">{m.sla}</span>
+                          <span className="font-semibold text-brandRed">{m.sla}</span>
                         </div>
                       </div>
 
                       {/* Testimonial Quote Snippet */}
-                      <div className="mt-4 border-t border-[#F0E8E1] pt-3 text-[11px] text-[#5A504B] italic leading-relaxed">
+                      <div className="mt-4 border-t border-[#EBE3DC] pt-3 text-[11px] text-[#4f4a4a] italic leading-relaxed">
                         &ldquo;{m.quote}&rdquo;
-                        <p className="not-italic text-[10px] font-bold text-[#8C7A72] mt-1 text-right">
+                        <p className="not-italic text-[10px] font-bold text-[#8b8282] mt-1 text-right">
                           — {m.owner}
                         </p>
                       </div>
                     </div>
 
                     {/* Bottom Action Bar */}
-                    <div className="mt-5 border-t border-[#F0E8E1] pt-3 flex items-center justify-between text-xs">
-                      <span className="text-[11px] font-bold text-[#8C7A72]">
+                    <div className="mt-5 border-t border-[#EBE3DC] pt-3 flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-bold text-[#8b8282]">
                         ★ {m.rating} ({m.orders} orders)
                       </span>
                       <button
@@ -1111,7 +1105,7 @@ export default function HomePage() {
             </div>
 
             {/* Bottom Merchant Banner */}
-            <ScrollReveal variant="fade-up" delay={200} duration={600} className="mt-12 rounded-2xl border border-[#E8DDD5] bg-[#FFFBF8] p-5 text-center flex flex-col sm:flex-row items-center justify-between gap-4">
+            <ScrollReveal variant="fade-up" delay={200} duration={600} className="mt-12 rounded-2xl border border-[#EBE3DC] bg-[#FAF8F5] p-5 text-center flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3 text-left">
                 <div className="grid h-10 w-10 place-items-center rounded-xl bg-brandRed/10 text-brandRed font-bold">
                   <Sparkles size={18} />
@@ -1120,7 +1114,7 @@ export default function HomePage() {
                   <p className="text-xs font-extrabold text-[#191616]">
                     48+ Campus Stores Connected across 3 University Hubs
                   </p>
-                  <p className="text-[11px] text-[#8C7A72]">
+                  <p className="text-[11px] text-[#8b8282]">
                     Average merchant retention rate: 99.2% with ₹0 recurring platform cuts
                   </p>
                 </div>
@@ -1142,13 +1136,13 @@ export default function HomePage() {
            ========================================================================= */}
         <section
           id="investors"
-          className="border-y border-[#EBE3DC] bg-[#191616] py-16 text-white lg:py-24"
+          className="border-b border-[#EBE3DC] bg-[#191616] py-16 text-white lg:py-24"
         >
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={700} className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
               <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold tracking-wider uppercase text-amber-300">
-                  <Building2 size={14} />
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold tracking-wider uppercase text-white">
+                  <Building2 size={14} className="text-brandRed" />
                   <span>Strategic Investor & Expansion Deep-Dive</span>
                 </div>
                 <h2 className="mt-4 text-[clamp(2rem,4.5vw,3.4rem)] font-extrabold leading-tight tracking-[-0.03em] text-white">
@@ -1192,14 +1186,14 @@ export default function HomePage() {
                 {
                   num: "03",
                   title: "Zero Merchant Churn Moat",
-                  desc: "By offering 0% commission vs 20% on Zomato/Swiggy, SeroFast locks in exclusive product catalogs and deep retail inventory.",
-                  color: "text-amber-400 bg-amber-500/20",
+                  desc: "By offering 0% commission vs 20% on traditional aggregators, SeroFast locks in exclusive product catalogs and deep retail inventory.",
+                  color: "text-brandRed bg-brandRed/20",
                 },
                 {
                   num: "04",
                   title: "7-Day Campus Playbook",
                   desc: "Standardized micro-hub software and merchant onboarding allows rapid rollout to 500+ university campuses nationwide.",
-                  color: "text-blue-400 bg-blue-500/20",
+                  color: "text-white bg-white/20",
                 },
               ].map((pillar, idx) => (
                 <ScrollReveal
@@ -1229,11 +1223,11 @@ export default function HomePage() {
         {/* =========================================================================
             7. MULTI-CATEGORY INTERACTIVE FAQ SECTION (ACCORDION REVEAL)
            ========================================================================= */}
-        <section id="faq" className="py-16 lg:py-24">
+        <section id="faq" className="py-16 lg:py-24 bg-[#FAF8F5] border-b border-[#EBE3DC]">
           <div className="mx-auto w-[min(960px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={600} className="text-center">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#EFE8E2] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-[#6B5E57]">
-                <HelpCircle size={14} />
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-white border border-[#E5E7EB] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-[#4f4a4a]">
+                <HelpCircle size={14} className="text-brandRed" />
                 <span>Frequently Asked Questions</span>
               </div>
               <h2 className="mt-3 text-[clamp(1.8rem,3.5vw,2.6rem)] font-extrabold text-[#191616]">
@@ -1254,7 +1248,7 @@ export default function HomePage() {
                   className={`rounded-full px-4 py-1.5 text-xs font-bold transition cursor-pointer ${
                     activeFaqTab === cat
                       ? "bg-brandRed text-white shadow-md shadow-brandRed/20"
-                      : "border border-[#E2D6CD] bg-white text-[#6B5E57] hover:border-brandRed"
+                      : "border border-[#E5E7EB] bg-white text-[#4f4a4a] hover:border-brandRed hover:text-brandRed"
                   }`}
                 >
                   {cat}
@@ -1273,27 +1267,27 @@ export default function HomePage() {
                     delay={idx * 80}
                     duration={600}
                   >
-                    <div className="overflow-hidden rounded-2xl border border-[#E8DDD5] bg-white transition-all duration-300 hover:border-brandRed/30 shadow-sm">
+                    <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white transition-all duration-300 hover:border-brandRed/30 shadow-sm">
                       <button
                         type="button"
                         onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                         className="flex w-full items-center justify-between p-5 text-left text-sm font-extrabold text-[#191616] hover:text-brandRed cursor-pointer"
                       >
                         <span className="flex items-center gap-2">
-                          <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-[#8C7A72]">
+                          <span className="rounded bg-[#FAF8F5] border border-[#E5E7EB] px-2 py-0.5 text-[10px] font-bold text-[#8b8282]">
                             {faq.category}
                           </span>
                           {faq.question}
                         </span>
                         <ChevronRight
                           size={18}
-                          className={`text-[#8C7A72] transition-transform duration-300 ${
+                          className={`text-[#8b8282] transition-transform duration-300 ${
                             isOpen ? "rotate-90 text-brandRed" : ""
                           }`}
                         />
                       </button>
                       {isOpen && (
-                        <div className="border-t border-[#F0E8E1] bg-[#FFFBF8] p-5 text-xs sm:text-sm leading-relaxed text-[#6B5E57]">
+                        <div className="border-t border-[#EBE3DC] bg-[#FAF8F5] p-5 text-xs sm:text-sm leading-relaxed text-[#4f4a4a]">
                           {faq.answer}
                         </div>
                       )}
@@ -1308,18 +1302,18 @@ export default function HomePage() {
         {/* =========================================================================
             8. FINAL CONVERSION BANNER (SCALE REVEAL)
            ========================================================================= */}
-        <section className="bg-gradient-to-r from-brandRed via-red-600 to-rose-700 py-16 text-white overflow-hidden">
+        <section className="bg-gradient-to-r from-brandRed via-brandRedDark to-brandRed py-16 text-white overflow-hidden">
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal variant="scale-up" duration={750}>
               <div className="flex flex-col items-center justify-between gap-8 text-center md:flex-row md:text-left">
                 <div>
-                  <span className="rounded-full bg-white/20 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-amber-200">
+                  <span className="rounded-full bg-white/20 px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-white">
                     ₹50 One-Time Setup • 0% Commission
                   </span>
                   <h2 className="mt-3 text-[clamp(2rem,4vw,3.2rem)] font-black leading-tight">
                     Launch Your Campus Store Today.
                   </h2>
-                  <p className="mt-2 max-w-[540px] text-sm text-white/80">
+                  <p className="mt-2 max-w-[540px] text-sm text-white/90">
                     Join hundreds of local merchants scaling with SeroFast Central
                     Campus Warehouse. Keep 100% of your retail margin profits.
                   </p>
