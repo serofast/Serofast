@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Logo from "./Logo";
-import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X } from "lucide-react";
+import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X, Percent } from "lucide-react";
 import { Link } from "react-router-dom";
 import { categories } from "../../data/landing";
 
@@ -186,42 +186,41 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
       {/* Sub Navigation Bar — Desktop Only */}
       <div className="landing-subnav border-t border-slate-100 max-sm:hidden">
         <nav
-          className="mx-auto flex h-[46px] w-[min(1320px,calc(100%_-_40px))] items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] font-semibold text-[#555]"
+          className="mx-auto flex h-[46px] w-[min(1320px,calc(100%_-_40px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] font-semibold text-[#555]"
           aria-label="Section Navigation"
         >
-          {!hideFreeBuffBranding && (
-            <a href="#freebuff" className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3.5 py-1.5 text-brandRed font-bold transition hover:bg-brandRed/15">
-              <Sparkles size={12} className="text-amber-500" /> FreeBuff Deals
-            </a>
-          )}
-          {[
-            { label: "Campus Shops", href: "#shops" },
-            { label: "Profit Calculator", href: "#comparison" },
-            { label: "Platform Demo", href: "#demo" },
-            { label: "Ecosystem", href: "#about" },
-            { label: "FAQ", href: "#faq" },
-            { label: "Contact", href: "#enquiry" },
-          ].map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95"
-            >
-              {item.label}
-            </a>
-          ))}
-          <span className="mx-1 h-4 w-px bg-slate-200" />
           <div className="flex items-center gap-1">
-            {categories.slice(0, 4).map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => onOpenAppTeaser?.(category)}
-                className="shrink-0 rounded-full px-2.5 py-1 text-[11px] text-[#888] transition-all duration-200 hover:text-brandRed hover:bg-brandRed/5"
+            <a
+              href="#calculator"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3.5 py-1.5 text-brandRed font-bold transition hover:bg-brandRed/15"
+            >
+              <Percent size={13} className="text-brandRed" />
+              <span>0% Commission Calculator</span>
+            </a>
+            {[
+              { label: "Warehouse Fulfillment", href: "#fulfillment" },
+              { label: "Partner Stores", href: "#merchants" },
+              { label: "Unit Economics & Investors", href: "#investors" },
+              { label: "Merchant FAQ", href: "#faq" },
+            ].map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95"
               >
-                {category}
-              </button>
+                {item.label}
+              </a>
             ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-brandRed hover:underline"
+            >
+              <Store size={13} />
+              <span>Start Store for ₹50</span>
+            </Link>
           </div>
         </nav>
       </div>
