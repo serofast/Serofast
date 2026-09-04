@@ -247,7 +247,7 @@ export default function OrderTrackingPage() {
                   <span>Items in this Parcel ({orderItems.length})</span>
                 </h3>
                 <span className="text-xs font-bold text-slate-800">
-                  Total: ₹{order.total_amount.toLocaleString("en-IN")}
+                  Total: ₹{Number(order.total_amount || 0).toLocaleString("en-IN")}
                 </span>
               </div>
 
