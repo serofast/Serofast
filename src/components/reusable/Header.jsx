@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Logo from "./Logo";
-import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X, Percent } from "lucide-react";
+import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X, Percent, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { categories } from "../../data/landing";
 
@@ -107,6 +107,14 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
           </button>
 
           <Link
+            to="/track"
+            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/30 hover:text-brandRed"
+          >
+            <Truck size={15} className="text-brandRed" />
+            <span>Track Order</span>
+          </Link>
+
+          <Link
             to="/signup"
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-[0_4px_14px_rgba(211,47,47,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(211,47,47,0.35)] active:scale-95"
           >
@@ -163,6 +171,14 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
               <span>Mobile App</span>
               <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">NEW</span>
             </button>
+            <Link
+              to="/track"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] font-semibold text-slate-700 transition hover:border-brandRed/20"
+            >
+              <Truck size={16} className="text-brandRed" />
+              <span>Track Live Order</span>
+            </Link>
             <Link
               to="/signup"
               onClick={() => setMobileMenuOpen(false)}

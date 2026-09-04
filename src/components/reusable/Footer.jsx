@@ -130,15 +130,23 @@ export default function Footer() {
             </h4>
             <ul className="mt-3 space-y-2 text-[12px] text-[#8b8282]">
               {[
+                { label: "Track Your Order", to: "/track", bold: true },
                 { label: "Browse Campus Deals", href: "#deals" },
                 { label: "Campus Partner Shops", href: "#shops" },
                 { label: "Download Mobile App", href: "#home" },
                 { label: "Customer Support", href: "#enquiry" },
               ].map((item, i) => (
                 <li key={i}>
-                  <a href={item.href} className="transition-colors hover:text-brandRed">
-                    {item.label}
-                  </a>
+                  {item.to ? (
+                    <Link to={item.to} className={`transition-colors hover:text-brandRed flex items-center gap-1.5 ${item.bold ? "font-bold text-brandRed" : ""}`}>
+                      <ArrowRight size={11} className="text-brandRed" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ) : (
+                    <a href={item.href} className="transition-colors hover:text-brandRed">
+                      {item.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

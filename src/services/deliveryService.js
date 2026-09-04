@@ -101,18 +101,37 @@ export async function fetchAdminDeliveries() {
   return [];
 }
 
+const isValidUuid = (str) =>
+  typeof str === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
+
 /**
  * Fetches a single delivery/order details with linked line items
  */
 export async function fetchDeliveryDetails(orderIdOrNumber) {
   if (!supabase || !orderIdOrNumber) return null;
   try {
-    // 1. Fetch order by id or order_number
-    const { data: order, error: orderErr } = await supabase
-      .from("orders")
-      .select("*")
-      .or(`id.eq.${orderIdOrNumber},order_number.eq.${orderIdOrNumber}`)
-      .maybeSingle();
+    const cleanId = String(orderIdOrNumber).trim();
+    let query = supabase.from("orders").select("*");
+
+    if (isValidUuid(cleanId)) {
+      query = query.eq("id", cleanId);
+    } else {
+      query = query.or(`order_number.eq.${cleanId},tracking_number.eq.${cleanId}`);
+    }
+
+    let { data: order, error: orderErr } = await query.maybeSingle();
+
+    if (!order && cleanId.startsWith("DEL-")) {
+      const stripped = cleanId.replace(/^DEL-/, "").trim();
+      const { data: fallbackOrder } = await supabase
+        .from("orders")
+        .select("*")
+        .or(`order_number.ilike.%${stripped}%,tracking_number.ilike.%${stripped}%`)
+        .limit(1)
+        .maybeSingle();
+      if (fallbackOrder) order = fallbackOrder;
+    }
 
     if (orderErr || !order) {
       console.warn("Order detail fetch notice:", orderErr?.message);
@@ -221,12 +240,15 @@ export async function saveOrderDeliveryFull({
   }
 
   try {
-    const { data, error } = await supabase
-      .from("orders")
-      .update(orderPayload)
-      .eq("id", orderId)
-      .select()
-      .single();
+    const cleanId = String(orderId || "").trim();
+    let query = supabase.from("orders").update(orderPayload);
+    if (isValidUuid(cleanId)) {
+      query = query.eq("id", cleanId);
+    } else {
+      query = query.eq("order_number", cleanId);
+    }
+
+    const { data, error } = await query.select().single();
 
     if (!error && data) {
       await logAdminAction({
