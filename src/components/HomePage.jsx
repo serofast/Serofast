@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { freeBuffDeals, shops } from "./../data/landing";
-import { Footer, Header, MobileBottomNav, ScrollToTop, AppTeaserModal, FreeBuffClaimModal } from "./reusable";
+import { Footer, Header, ScrollToTop, AppTeaserModal, FreeBuffClaimModal } from "./reusable";
 
 const categories = [
   { label: "Free deals", icon: Gift, tone: "bg-[#ffdfd7] text-[#b72d26]" },
@@ -92,7 +92,7 @@ export default function HomePage() {
 
         <section id="owners" className="bg-brandRed py-14 text-white"><div className="mx-auto flex w-[min(1240px,calc(100%_-_32px))] flex-col justify-between gap-8 lg:flex-row lg:items-center"><div><p className="text-[11px] font-bold uppercase tracking-[.18em] text-amber-100">For the people who make the place</p><h2 className="mt-3 max-w-[650px] text-[clamp(2rem,5vw,4.6rem)] font-bold leading-[.92] tracking-[-.04em]">Turn your corner shop into the campus favourite.</h2></div><div className="max-w-[310px]"><p className="text-[14px] leading-relaxed text-white/80">Own your storefront, keep your margin, and reach students who are already nearby.</p><Link to="/signup" className="mt-5 inline-flex items-center gap-2 bg-textPrimary px-5 py-3 text-[12px] font-bold">Start selling <ArrowRight size={15} /></Link></div></div></section>
       </main>
-      <Footer /><ScrollToTop /><MobileBottomNav />
+      <Footer /><ScrollToTop />
       <FreeBuffClaimModal deal={claimDeal} isOpen={Boolean(claimDeal)} onClose={() => setClaimDeal(null)} />
       <AppTeaserModal isOpen={Boolean(teaserOpen)} onClose={() => setTeaserOpen(false)} initialItemName={teaserOpen} />
     </div>

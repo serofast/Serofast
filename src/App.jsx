@@ -18,7 +18,6 @@ import {
   Footer,
   ScrollReveal,
   ScrollToTop,
-  MobileBottomNav,
   AppTeaserModal,
 } from "./components/reusable";
 
@@ -67,7 +66,7 @@ function LandingPage() {
     : freeBuffDeals.filter((d) => d.category === selectedCategory || (selectedCategory === "Buffets" && d.tag.includes("BUFFET")));
 
   return (
-    <div className="landing-page min-h-screen overflow-x-hidden bg-[#FAF8F5] text-textPrimary max-560:pb-[68px]">
+    <div className="landing-page min-h-screen overflow-x-hidden bg-[#FAF8F5] text-textPrimary">
       <Header onOpenAppTeaser={handleOpenTeaser} />
 
       <main className="landing-main">
@@ -244,7 +243,6 @@ function LandingPage() {
       ═══════════════════════════════════════════════════ */}
       <Footer />
       <ScrollToTop />
-      <MobileBottomNav />
 
       {/* FreeBuff QR Claim Modal */}
       <FreeBuffClaimModal
