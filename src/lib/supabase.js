@@ -1169,11 +1169,12 @@ export async function fetchShopPayoutStats(shopId, ownerId) {
     } catch {}
   }
 
-  // Calculate completed sales & dress units sold
+  // Calculate completed sales & dress units sold (ONLY DELIVERED ORDERS)
   ordersList.forEach((order) => {
-    const status = String(order.status || order.order_status || "").toLowerCase();
-    const isCancelled = status === "cancelled" || status === "rejected";
-    if (!isCancelled) {
+    const rawStatus = String(order.order_status || order.status || "").trim().toUpperCase();
+    const isDelivered = rawStatus === "DELIVERED" || rawStatus === "COMPLETED";
+
+    if (isDelivered) {
       completedOrdersCount += 1;
       totalSalesAmount += Number(order.total_amount || order.totalAmount || 0);
 
@@ -1188,7 +1189,7 @@ export async function fetchShopPayoutStats(shopId, ownerId) {
     }
   });
 
-  // Shop owner earns 30rs per dress/item sold
+  // Shop owner earns 30rs per delivered dress/item sold
   const ratePerDress = 30;
   const minWithdrawal = 100;
   const totalEarnings = totalDressesSold * ratePerDress;

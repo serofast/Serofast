@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AdminLayout from './layout/AdminLayout';
+import AdminProtectedRoute from './auth/AdminProtectedRoute';
 import DashboardPage from './dashboard/pages/DashboardPage';
 import ShopsPage from './shops/pages/ShopsPage';
 import ShopDetailsPage from './shops/pages/ShopDetailsPage';
@@ -44,23 +45,24 @@ import SettingsPage from './system/settings/pages/SettingsPage';
 
 export default function AdminRoutes() {
   return (
-    <AdminLayout>
-      <Routes>
-        <Route index element={<DashboardPage />} />
+    <AdminProtectedRoute>
+      <AdminLayout>
+        <Routes>
+          <Route index element={<DashboardPage />} />
         <Route path="shops" element={<ShopsPage />} />
-        <Route path="shops/approvals" element={<Navigate to="/admin/shops" replace />} />
+        <Route path="shops/approvals" element={<ShopApprovalPage />} />
         <Route path="shops/:shopId" element={<ShopDetailsPage />} />
         <Route path="customers" element={<CustomersPage />} />
         <Route path="customers/:customerId" element={<CustomerDetailsPage />} />
         <Route path="products" element={<ProductsPage />} />
-        <Route path="products/approvals" element={<Navigate to="/admin/products" replace />} />
+        <Route path="products/approvals" element={<ProductApprovalPage />} />
         <Route path="products/new" element={<ProductFormPage />} />
         <Route path="products/:productId" element={<ProductDetailsPage />} />
         <Route path="products/:productId/edit" element={<ProductFormPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:orderId" element={<OrderDetailsPage />} />
-        <Route path="inventory" element={<Navigate to="/admin/products" replace />} />
+        <Route path="inventory" element={<InventoryPage />} />
         <Route path="returns" element={<ReturnsPage />} />
         <Route path="returns/:returnId" element={<ReturnDetailsPage />} />
         <Route path="reviews" element={<ReviewsPage />} />
@@ -108,7 +110,9 @@ export default function AdminRoutes() {
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
-      </Routes>
-    </AdminLayout>
+        </Routes>
+      </AdminLayout>
+    </AdminProtectedRoute>
   );
 }
+

@@ -4,4 +4,15 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    watch: {
+      ignored: [
+        "**/Social_commerce/**",
+        "**/.dart_tool/**",
+        "**/build/**",
+        "**/.flutter-plugins/**",
+        "**/.flutter-plugins-dependencies/**",
+      ],
+    },
+  },
 });

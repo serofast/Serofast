@@ -324,6 +324,7 @@ export default function Footer() {
             <FooterLinkColumn
               title="For Shoppers"
               links={[
+                { label: "Track Your Order", to: "/track", bold: true },
                 { label: "Browse Campus Deals", href: "#deals" },
                 { label: "Campus Partner Shops", href: "#shops" },
                 { label: "Customer Support", href: "#enquiry" },

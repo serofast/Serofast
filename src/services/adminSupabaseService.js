@@ -580,11 +580,40 @@ export async function saveAdminCommissionRule(ruleId, rate) {
 export async function fetchAdminWithdrawalsList() {
   if (!supabase) return [];
   try {
-    const { data, error } = await supabase
+    const { data: withdrawals, error } = await supabase
       .from("withdrawals")
-      .select("*, shops(name, avatar_url), shop_owners(full_name, email, phone)")
+      .select("*")
       .order("created_at", { ascending: false });
-    if (!error && data) return data;
+
+    if (error || !withdrawals) return [];
+
+    // Fetch shops and shop_owners in parallel for robust mapping
+    let shopsMap = {};
+    let ownersMap = {};
+
+    try {
+      const { data: shops } = await supabase.from("shops").select("*");
+      if (shops) {
+        shops.forEach((s) => {
+          shopsMap[s.id] = s;
+        });
+      }
+    } catch {}
+
+    try {
+      const { data: owners } = await supabase.from("shop_owners").select("*");
+      if (owners) {
+        owners.forEach((o) => {
+          ownersMap[o.id] = o;
+        });
+      }
+    } catch {}
+
+    return withdrawals.map((w) => ({
+      ...w,
+      shops: shopsMap[w.shop_id] || { name: "Merchant Shop" },
+      shop_owners: ownersMap[w.owner_id] || { full_name: "Shop Owner" },
+    }));
   } catch {}
   return [];
 }
