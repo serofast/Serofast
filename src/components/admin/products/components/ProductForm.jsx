@@ -43,7 +43,7 @@ const DEFAULT_CATEGORIES = [
   "Accessories & Jewellery",
   "Sports & Fitness",
   "Books & Stationery",
-  "Grocery",
+  "Ethnic Wear",
 ];
 
 const DEFAULT_SECTIONS = [

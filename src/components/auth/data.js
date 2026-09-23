@@ -5,9 +5,9 @@ export const roleOptions = [
 
 export const shopCategories = [
   "Fashion & Textile",
-  "Electronics",
-  "Home",
-  "Beauty",
-  "Grocery",
+  "Footwear & Sneakers",
+  "Streetwear & Casual",
+  "Accessories & Bags",
+  "Ethnic & Festive Wear",
   "Other",
 ];

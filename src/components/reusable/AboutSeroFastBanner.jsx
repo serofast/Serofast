@@ -54,7 +54,7 @@ export default function AboutSeroFastBanner() {
         "Zero investment risk — flexible hours alongside studies",
       ],
       ctaText: "Join Student Program",
-      ctaLink: "#enquiry",
+      ctaLink: "#investors",
       ctaPrimary: false,
     },
     {
@@ -72,7 +72,7 @@ export default function AboutSeroFastBanner() {
         "Hassle-free 7-day local returns with instant support",
       ],
       ctaText: "Start Shopping Local",
-      ctaLink: "#freebuff",
+      ctaLink: "#merchants",
       ctaPrimary: false,
     },
   ];

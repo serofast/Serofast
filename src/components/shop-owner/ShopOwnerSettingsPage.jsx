@@ -240,7 +240,7 @@ export default function ShopOwnerSettingsPage() {
                       icon={Tag}
                       value={category}
                       onChange={(val) => setCategory(val)}
-                      placeholder="e.g. Fashion, Electronics, Snacks"
+                      placeholder="e.g. Fashion, Streetwear, Footwear"
                     />
                   </div>
 

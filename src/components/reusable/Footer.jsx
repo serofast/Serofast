@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import {
   Store,
+  UserRound,
   GraduationCap,
-  Award,
   Truck,
   ShieldCheck,
   Mail,
@@ -21,8 +21,6 @@ import {
   Twitter,
   Linkedin,
   Youtube,
-  Smartphone,
-  Play,
 } from "lucide-react";
 
 /* ── Social link helper ──────────────────────────────────── */
@@ -121,10 +119,10 @@ export default function Footer() {
         </div>
         <div className="relative mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-4 py-5 sm:w-[min(1320px,calc(100%_-_48px))] sm:grid-cols-4 sm:py-6 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:grid-cols-2 max-560:gap-3">
           {[
-            { icon: Users, value: "4,820+", label: "Active Students" },
-            { icon: Store, value: "150+", label: "Verified Shops" },
-            { icon: Star, value: "4.8★", label: "Average Rating" },
-            { icon: Zap, value: "100%", label: "Free Delivery" },
+            { icon: Users, value: "320+", label: "Active Sellers" },
+            { icon: Store, value: "1,200+", label: "Products in Catalogue" },
+            { icon: Star, value: "4.8★", label: "Seller Rating" },
+            { icon: Zap, value: "0%", label: "Seller Commission" },
           ].map((stat, i) => (
             <div key={i} className="flex items-center justify-center gap-3 text-white max-560:justify-start">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/15 backdrop-blur-sm">
@@ -146,30 +144,29 @@ export default function Footer() {
       {/* ── Guarantees Strip ────────────────────────────────── */}
       <div className="border-b border-slate-100 bg-[#fafafa]">
         <div className="mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-4 py-6 sm:w-[min(1320px,calc(100%_-_48px))] lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-3">
-          {[
-            {
+          {[              {
               icon: Store,
               color: "bg-brandRed/10 text-brandRed",
-              title: "₹50 Shop Registration",
-              desc: "Keep 100% your margin profit",
+              title: "Free Seller Onboarding",
+              desc: "0% commission on every sale",
             },
             {
               icon: GraduationCap,
               color: "bg-blue-50 text-blue-600",
-              title: "Student Entrepreneurship",
-              desc: "Earn profits, certificates & awards",
+              title: "Student Sellers",
+              desc: "Earn from your campus network",
             },
             {
               icon: Truck,
               color: "bg-emerald-50 text-emerald-600",
-              title: "Delivered in Hours",
-              desc: "₹0 Shipping on all local orders",
+              title: "Managed Fulfilment",
+              desc: "Packing & delivery handled",
             },
             {
               icon: ShieldCheck,
               color: "bg-amber-50 text-amber-600",
-              title: "100% Trusted Shops",
-              desc: "Verified neighborhood stores",
+              title: "Central Catalogue",
+              desc: "Admin-curated products & stock",
             },
           ].map((item, i) => (
             <div
@@ -209,9 +206,10 @@ export default function Footer() {
             </Link>
 
             <p className="text-[12px] leading-relaxed text-[#8b8282] max-w-[310px]">
-              India's leading hyperlocal marketplace connecting verified
-              neighbourhood shops, empowering student entrepreneurs, and
-              delivering authentic products with ₹0 shipping fees.
+              India's student-powered commerce platform. We source and stock
+              the products, manage packing, delivery and payments — while
+              student sellers share their shop link and earn a margin on every
+              order.
             </p>
 
             {/* Contact */}
@@ -282,99 +280,96 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* ── Shop Owners ──────────────────────────────────── */}
+          {/* ── Platform ──────────────────────────────────────── */}
           <div className="lg:col-span-2">
             <FooterLinkColumn
-              title="For Shop Owners"
+              title="Platform"
               links={[
                 {
-                  label: "Start Shop for ₹50",
-                  to: "/create-shop",
+                  label: "Become a Seller",
+                  to: "/signup",
                   bold: true,
                 },
-                { label: "Keep Full Margin Profit", href: "#about" },
-                { label: "Shop Owner Portal", to: "/login" },
-                { label: "Merchant FAQ", href: "#faq" },
-                { label: "Payout Information", href: "#about" },
+                { label: "Why SeroFast", href: "#audience" },
+                { label: "How It Works", href: "#how-it-works" },
+                { label: "Platform Features", href: "#features" },
+                { label: "FAQ", href: "#faq" },
               ]}
             />
           </div>
 
-          {/* ── Student Program ──────────────────────────────── */}
+          {/* ── For Students ────────────────────────────────── */}
           <div className="lg:col-span-2">
             <FooterLinkColumn
-              title="Student Program"
+              title="For Students"
               links={[
                 {
-                  label: "Join as Entrepreneur",
-                  href: "#enquiry",
-                  icon: Award,
+                  label: "Become a Student Seller",
+                  to: "/signup",
                   bold: true,
                 },
-                { label: "Ecosystem Overview", href: "#about" },
-                { label: "Campus Deals", href: "#freebuff" },
-                { label: "Student FAQ", href: "#faq" },
-                { label: "Certificates & Awards", href: "#about" },
+                { label: "How It Works", href: "#how-it-works" },
+                { label: "Platform Features", href: "#features" },
+                { label: "FAQ", href: "#faq" },
+                { label: "Track Your Orders", to: "/track" },
               ]}
             />
           </div>
 
-          {/* ── For Shoppers ─────────────────────────────────── */}
+          {/* ── For Customers ────────────────────────────────── */}
           <div className="lg:col-span-2">
             <FooterLinkColumn
-              title="For Shoppers"
+              title="For Customers"
               links={[
                 { label: "Track Your Order", to: "/track", bold: true },
-                { label: "Browse Campus Deals", href: "#deals" },
-                { label: "Campus Partner Shops", href: "#shops" },
-                { label: "Customer Support", href: "#enquiry" },
-                { label: "How It Works", href: "#about" },
-                { label: "Delivery Info", href: "#about" },
+                { label: "How It Works", href: "#how-it-works" },
+                { label: "Platform Features", href: "#features" },
+                { label: "FAQ", href: "#faq" },
               ]}
             />
           </div>
 
-          {/* ── Get the App ──────────────────────────────────── */}
+          {/* ── Get Started ──────────────────────────────────── */}
           <div className="lg:col-span-2">
             <h4 className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#191616]">
-              Get the App
+              Get Started
             </h4>
             <div className="mt-4 space-y-2.5">
               <p className="text-[11px] leading-relaxed text-[#8b8282]">
-                Shop smarter with our campus marketplace app.
+                Create your free seller shop in minutes.
               </p>
-              <a
-                href="#"
+              <Link
+                to="/signup"
                 className="group/app flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 transition-all duration-300 hover:border-brandRed/30 hover:shadow-[0_4px_16px_rgba(211,47,47,0.08)] hover:-translate-y-0.5"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#191616] text-white">
-                  <Play size={16} />
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brandRed text-white">
+                  <Store size={16} />
                 </span>
                 <div>
                   <span className="block text-[9px] font-medium text-[#8b8282]">
-                    GET IT ON
+                    FOR SELLERS & STUDENTS
                   </span>
                   <span className="block text-[12px] font-bold text-[#191616]">
-                    Google Play
+                    Start Selling Free
                   </span>
                 </div>
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/login"
                 className="group/app flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 transition-all duration-300 hover:border-brandRed/30 hover:shadow-[0_4px_16px_rgba(211,47,47,0.08)] hover:-translate-y-0.5"
               >
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#191616] text-white">
-                  <Smartphone size={16} />
+                  <UserRound size={16} />
                 </span>
                 <div>
                   <span className="block text-[9px] font-medium text-[#8b8282]">
-                    Download on the
+                    FOR SELLERS & ADMINS
                   </span>
                   <span className="block text-[12px] font-bold text-[#191616]">
-                    App Store
+                    Portal Login
                   </span>
                 </div>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

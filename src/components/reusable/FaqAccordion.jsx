@@ -104,7 +104,7 @@ export default function FaqAccordion() {
 
         <div className="mt-6 text-center text-[12px] font-semibold text-[#8b8282]">
           Still have questions?{" "}
-          <a href="#enquiry" className="text-brandRed font-bold hover:underline">
+          <a href="#calculator" className="text-brandRed font-bold hover:underline">
             Send an enquiry to our team
           </a>
         </div>

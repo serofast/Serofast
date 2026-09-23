@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import Logo from "./Logo";
-import { Search, Smartphone, Store, UserRound, Sparkles, Menu, X, Percent, Truck } from "lucide-react";
+import { Search, Smartphone, Store, UserRound, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { categories } from "../../data/landing";
 
 export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }) {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -107,14 +106,6 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
           </button>
 
           <Link
-            to="/track"
-            className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-slate-700 transition-all duration-200 hover:-translate-y-0.5 hover:border-brandRed/30 hover:text-brandRed"
-          >
-            <Truck size={15} className="text-brandRed" />
-            <span>Track Order</span>
-          </Link>
-
-          <Link
             to="/signup"
             className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-brandRed to-rose-600 px-4 py-2 text-white shadow-[0_4px_14px_rgba(211,47,47,0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(211,47,47,0.35)] active:scale-95"
           >
@@ -172,14 +163,6 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
               <span className="ml-auto rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-700">NEW</span>
             </button>
             <Link
-              to="/track"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] font-semibold text-slate-700 transition hover:border-brandRed/20"
-            >
-              <Truck size={16} className="text-brandRed" />
-              <span>Track Live Order</span>
-            </Link>
-            <Link
               to="/signup"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brandRed to-rose-600 px-4 py-3 text-[13px] font-bold text-white shadow-sm"
@@ -199,47 +182,6 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
         </div>
       )}
 
-      {/* Sub Navigation Bar — Desktop Only */}
-      <div className="landing-subnav border-t border-slate-100 max-sm:hidden">
-        <nav
-          className="mx-auto flex h-[46px] w-[min(1320px,calc(100%_-_40px))] items-center justify-between gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-[12px] font-semibold text-[#555]"
-          aria-label="Section Navigation"
-        >
-          <div className="flex items-center gap-1">
-            <a
-              href="#calculator"
-              className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3.5 py-1.5 text-brandRed font-bold transition hover:bg-brandRed/15"
-            >
-              <Percent size={13} className="text-brandRed" />
-              <span>0% Commission Calculator</span>
-            </a>
-            {[
-              { label: "Warehouse Fulfillment", href: "#fulfillment" },
-              { label: "Partner Stores", href: "#merchants" },
-              { label: "Unit Economics & Investors", href: "#investors" },
-              { label: "Merchant FAQ", href: "#faq" },
-            ].map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="shrink-0 rounded-full px-3 py-1.5 transition-all duration-200 hover:bg-brandRed/10 hover:text-brandRed active:scale-95"
-              >
-                {item.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              to="/signup"
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-brandRed hover:underline"
-            >
-              <Store size={13} />
-              <span>Start Store for ₹50</span>
-            </Link>
-          </div>
-        </nav>
-      </div>
     </header>
   );
 }

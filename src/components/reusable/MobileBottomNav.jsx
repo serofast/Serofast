@@ -23,7 +23,7 @@ export default function MobileBottomNav() {
     },
     {
       label: "Benefits",
-      href: "#comparison",
+      href: "#audience",
       icon: Sparkles,
       isHash: true,
     },
