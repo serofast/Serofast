@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS public.shop_owners (
   full_name text NOT NULL,
   email text NOT NULL,
   phone text NOT NULL,
+  password_hash text NULL,
   category text NOT NULL DEFAULT 'Fashion'::text,
   role text NOT NULL DEFAULT 'shop_owner'::text,
   upi_id text,
@@ -33,6 +34,13 @@ CREATE TABLE IF NOT EXISTS public.shop_owners (
   CONSTRAINT shop_owners_email_key UNIQUE (email),
   CONSTRAINT shop_owners_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE
 );
+
+-- Existing deployments: add the credential column without affecting existing owners.
+ALTER TABLE public.shop_owners
+  ADD COLUMN IF NOT EXISTS password_hash text NULL;
+
+REVOKE SELECT (password_hash), INSERT (password_hash), UPDATE (password_hash)
+  ON public.shop_owners FROM anon, authenticated;
 
 CREATE UNIQUE INDEX IF NOT EXISTS shop_owners_user_id_unique ON public.shop_owners (user_id) WHERE (user_id IS NOT NULL);
 CREATE INDEX IF NOT EXISTS shop_owners_user_id_idx ON public.shop_owners (user_id);
