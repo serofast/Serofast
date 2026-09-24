@@ -274,7 +274,7 @@ export default function HomePage() {
   const heroSellers = useCountUp(320);
 
   return (
-    <div className="home-page min-h-screen bg-[#FAF8F5] text-[#191616] antialiased selection:bg-brandRed selection:text-white">
+    <div className="home-page min-h-screen bg-white text-[#191616] antialiased selection:bg-brandRed selection:text-white">
       <Header
         onOpenAppTeaser={(item) => setTeaserOpen(item || "SeroFast Suite")}
         hideFreeBuffBranding
@@ -286,7 +286,7 @@ export default function HomePage() {
            ===================================================== */}
         <section
           id="home"
-          className="relative overflow-hidden border-b border-[#EBE3DC] bg-gradient-to-b from-[#FFF5F2] via-[#FAF8F5] to-[#FAF8F5] pt-10 pb-20 lg:pt-16 lg:pb-28"
+          className="relative overflow-hidden border-b border-[#EBE3DC] bg-white pt-10 pb-20 lg:pt-16 lg:pb-28"
         >
           {/* Ambient brand glows */}
           <div className="pointer-events-none absolute -left-40 top-0 h-[600px] w-[600px] rounded-full bg-brandRed/[0.06] blur-[150px]" />
@@ -452,7 +452,7 @@ export default function HomePage() {
            ===================================================== */}
         <section
           id="audience"
-          className="border-b border-[#EBE3DC] bg-[#FAF8F5] py-16 lg:py-24"
+          className="border-b border-[#EBE3DC] bg-white py-16 lg:py-24"
         >
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal
@@ -639,7 +639,7 @@ export default function HomePage() {
                       className={`group h-full cursor-pointer relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-300 bento-glow-card ${
                         isActive
                           ? "border-brandRed bg-white shadow-xl -translate-y-1.5"
-                          : "border-[#E5E7EB] bg-[#FAF8F5]/60 hover:border-[#DCD0C7] hover:-translate-y-1"
+                          : "border-[#E5E7EB] bg-white hover:border-[#DCD0C7] hover:-translate-y-1"
                       }`}
                     >
                       <div>
@@ -697,7 +697,7 @@ export default function HomePage() {
            ===================================================== */}
         <section
           id="features"
-          className="border-b border-[#EBE3DC] bg-[#FAF8F5] py-16 lg:py-24"
+          className="border-b border-[#EBE3DC] bg-white py-16 lg:py-24"
         >
           <div className="mx-auto w-[min(1320px,calc(100%_-_32px))]">
             <ScrollReveal
@@ -751,7 +751,7 @@ export default function HomePage() {
         <section id="faq" className="border-b border-[#EBE3DC] bg-white py-16 lg:py-24">
           <div className="mx-auto w-[min(880px,calc(100%_-_32px))]">
             <ScrollReveal variant="fade-down" duration={600} className="text-center">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-[#FAF8F5] px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-[#4f4a4a]">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-3.5 py-1.5 text-xs font-extrabold uppercase tracking-wider text-[#4f4a4a]">
                 <HelpCircle size={14} className="text-brandRed" />
                 <span>Frequently Asked Questions</span>
               </div>
@@ -773,7 +773,7 @@ export default function HomePage() {
                     <div
                       className={`overflow-hidden rounded-2xl border transition-all duration-300 ${
                         isOpen
-                          ? "border-brandRed/30 bg-[#FAF8F5] shadow-md"
+                          ? "border-brandRed/30 bg-white shadow-md"
                           : "border-[#E5E7EB] bg-white hover:border-brandRed/20"
                       }`}
                     >

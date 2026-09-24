@@ -112,27 +112,23 @@ export default function Footer() {
   return (
     <footer className="w-full border-t border-slate-100 bg-white text-[#191616]">
       {/* ── Stats Trust Strip ───────────────────────────────── */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-brandRed via-rose-600 to-red-500">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/20" />
-          <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-white/10" />
-        </div>
-        <div className="relative mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-4 py-5 sm:w-[min(1320px,calc(100%_-_48px))] sm:grid-cols-4 sm:py-6 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:grid-cols-2 max-560:gap-3">
+      <div className="border-y border-brandRed/10 bg-[#FFF1F1]">
+        <div className="mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-3 py-5 sm:w-[min(1320px,calc(100%_-_48px))] sm:grid-cols-4 sm:gap-4 sm:py-6 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-2">
           {[
-            { icon: Users, value: "320+", label: "Active Sellers" },
-            { icon: Store, value: "1,200+", label: "Products in Catalogue" },
-            { icon: Star, value: "4.8★", label: "Seller Rating" },
-            { icon: Zap, value: "0%", label: "Seller Commission" },
+            { icon: Users, value: "320+", label: "Active Sellers", color: "text-brandRed" },
+            { icon: Store, value: "1,200+", label: "Products in Catalogue", color: "text-brandRed" },
+            { icon: Star, value: "4.8★", label: "Seller Rating", color: "text-amber-600" },
+            { icon: Zap, value: "0%", label: "Seller Commission", color: "text-emerald-600" },
           ].map((stat, i) => (
-            <div key={i} className="flex items-center justify-center gap-3 text-white max-560:justify-start">
-              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/15 backdrop-blur-sm">
-                <stat.icon size={16} />
+            <div key={i} className="flex items-center justify-center gap-3 rounded-2xl border border-white/80 bg-white/70 px-3 py-3 shadow-[0_4px_20px_rgba(25,22,22,0.04)] max-560:justify-start max-560:px-2.5">
+              <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white ${stat.color}`}>
+                <stat.icon size={16} strokeWidth={2.5} />
               </div>
               <div>
-                <strong className="block text-[16px] font-extrabold leading-none sm:text-[18px]">
+                <strong className="block text-[16px] font-extrabold leading-none text-[#191616] sm:text-[18px]">
                   {stat.value}
                 </strong>
-                <span className="text-[10px] font-medium text-white/80">
+                <span className="mt-1 block text-[10px] font-semibold leading-tight text-[#8b8282]">
                   {stat.label}
                 </span>
               </div>
@@ -142,7 +138,7 @@ export default function Footer() {
       </div>
 
       {/* ── Guarantees Strip ────────────────────────────────── */}
-      <div className="border-b border-slate-100 bg-[#fafafa]">
+      <div className="border-b border-slate-100 bg-white">
         <div className="mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-4 py-6 sm:w-[min(1320px,calc(100%_-_48px))] lg:grid-cols-4 max-800:w-[min(680px,calc(100%_-_28px))] max-560:w-[calc(100%_-_20px)] max-560:gap-3">
           {[              {
               icon: Store,
