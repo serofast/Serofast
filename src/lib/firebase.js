@@ -225,6 +225,7 @@ export async function firebaseSignUp(email, password) {
     const token = await userCredential.user.getIdToken();
     return { user: userCredential.user, token };
   } catch (error) {
+    console.error("Firebase Sign-Up error:", error?.code, error?.message, error);
     throw new Error(humanizeError(error, "We couldn't create your account right now. Please try again."));
   }
 }

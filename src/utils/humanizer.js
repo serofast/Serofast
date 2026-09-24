@@ -55,6 +55,9 @@ export function humanizeError(error, fallback = "Something didn't go as planned.
   if (str.includes("auth/network-request-failed")) {
     return "We're having trouble connecting to the network. Please check your internet connection and try again.";
   }
+  if (str.includes("auth/operation-not-allowed") || str.includes("operation_not_allowed")) {
+    return "Email/Password sign-up is not enabled in your Firebase Console. Please enable Email/Password under Authentication > Sign-in method.";
+  }
   if (str.includes("auth/user-disabled")) {
     return "This account is currently inactive. Please contact SeroFast support for assistance.";
   }
