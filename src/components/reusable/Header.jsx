@@ -19,9 +19,8 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
             document.documentElement.scrollHeight - document.documentElement.clientHeight;
           const currentScroll = window.scrollY;
 
-          if (totalHeight > 0) {
-            setScrollProgress((currentScroll / totalHeight) * 100);
-          }
+          const progress = totalHeight > 0 ? (currentScroll / totalHeight) * 100 : 0;
+          setScrollProgress(Math.min(100, Math.max(0, progress)));
           setIsScrolled(currentScroll > 15);
           ticking = false;
         });
@@ -50,8 +49,8 @@ export default function Header({ onOpenAppTeaser, hideFreeBuffBranding = false }
     >
       {/* Scroll Progress Bar */}
       <div
-        className="fixed top-0 left-0 z-[100] h-[3px] bg-gradient-to-r from-brandRed via-red-500 to-rose-400 shadow-[0_0_10px_rgba(210,33,37,0.5)] transition-[width] duration-100 ease-out"
-        style={{ width: `${scrollProgress}%` }}
+        className="fixed left-0 top-0 z-[100] h-[3px] w-full origin-left bg-gradient-to-r from-brandRed via-red-500 to-rose-400 shadow-[0_0_10px_rgba(210,33,37,0.5)] transition-transform duration-150 ease-out"
+        style={{ transform: `scaleX(${scrollProgress / 100})` }}
         role="progressbar"
         aria-valuenow={scrollProgress}
         aria-valuemin={0}

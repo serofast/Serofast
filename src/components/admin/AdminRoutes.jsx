@@ -11,6 +11,8 @@ import ProductsPage from './products/pages/ProductsPage';
 import ProductDetailsPage from './products/pages/ProductDetailsPage';
 import ProductApprovalPage from './products/pages/ProductApprovalPage';
 import ProductFormPage from './products/pages/ProductFormPage';
+import ProductTypePage from './products/pages/ProductTypePage';
+import ComboProductFormPage from './products/pages/ComboProductFormPage';
 import CategoriesPage from './categories/pages/CategoriesPage';
 import OrdersPage from './orders/pages/OrdersPage';
 import OrderDetailsPage from './orders/pages/OrderDetailsPage';
@@ -56,7 +58,9 @@ export default function AdminRoutes() {
         <Route path="customers/:customerId" element={<CustomerDetailsPage />} />
         <Route path="products" element={<ProductsPage />} />
         <Route path="products/approvals" element={<ProductApprovalPage />} />
-        <Route path="products/new" element={<ProductFormPage />} />
+        <Route path="products/new" element={<ProductTypePage />} />
+        <Route path="products/new/single" element={<ProductFormPage />} />
+        <Route path="products/new/combo" element={<ComboProductFormPage />} />
         <Route path="products/:productId" element={<ProductDetailsPage />} />
         <Route path="products/:productId/edit" element={<ProductFormPage />} />
         <Route path="categories" element={<CategoriesPage />} />

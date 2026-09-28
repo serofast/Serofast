@@ -462,14 +462,14 @@ export default function HomePage() {
             >
               <div className="inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wider text-brandRed">
                 <Users size={14} />
-                <span>One Platform, Two Power Roles</span>
+                <span>One Platform, More Ways to Grow</span>
               </div>
               <h2 className="mt-4 text-[clamp(2rem,4.2vw,3.2rem)] font-extrabold leading-tight tracking-[-0.03em] text-[#191616]">
-                Built for Sellers &amp; Platform Admins
+                Built for Sellers &amp; Students
               </h2>
               <p className="mt-3 text-base text-[#4f4a4a]">
-                Sellers run their own shop and earn from every order. Admins
-                control the catalogue, stock and operations from a central hub.
+                Launch your own shop, share it with your campus network and earn
+                from every order without buying stock upfront.
               </p>
             </ScrollReveal>
 
@@ -534,7 +534,7 @@ export default function HomePage() {
                 </div>
               </ScrollReveal>
 
-              {/* ── Admin card ── */}
+              {/* ── Seller growth card ── */}
               <ScrollReveal variant="fade-up" duration={700} delay={220} className="h-full">
                 <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[#EBE3DC] bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-brandRed/30 hover:shadow-xl sm:p-9 bento-glow-card">
                   <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brandRed/[0.05] blur-3xl transition-opacity duration-500 group-hover:opacity-150" />
@@ -545,26 +545,26 @@ export default function HomePage() {
                     </div>
                     <div>
                       <span className="rounded-md bg-brandRed/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-brandRed">
-                        For Platform Admins
+                        For Sellers &amp; Students
                       </span>
                       <h3 className="mt-1 text-xl font-extrabold text-[#191616]">
-                        Control the Central Hub
+                        Grow Your Campus Shop
                       </h3>
                     </div>
                   </div>
 
                   <p className="mt-4 text-sm leading-relaxed text-[#4f4a4a]">
-                    Admins run the engine: curate products, manage stock, monitor
-                    orders and process seller payouts across the platform.
+                    Reach more customers with a ready-made catalogue, simple
+                    sharing tools and support that keeps every order moving.
                   </p>
 
                   <ul className="mt-5 space-y-2.5 border-t border-[#EBE3DC] pt-5">
                     {[
-                      "Central product catalogue & pricing control",
-                      "Platform-wide order pipeline monitoring",
-                      "Seller verification & shop approvals",
-                      "Payout processing & earnings ledger",
-                      "Real-time platform analytics",
+                      "Share your shop link across your campus",
+                      "Add products from the ready-made catalogue",
+                      "Reach customers beyond your usual network",
+                      "Get packing, delivery & support handled",
+                      "Build your earnings with every order",
                     ].map((point) => (
                       <li
                         key={point}
@@ -581,10 +581,10 @@ export default function HomePage() {
 
                   <div className="mt-auto pt-7">
                     <Link
-                      to="/login"
-                      className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl border border-brandRed/30 bg-white text-[13px] font-bold text-brandRed transition-all duration-300 hover:-translate-y-0.5 hover:bg-brandRed hover:text-white hover:shadow-lg hover:shadow-brandRed/25 active:scale-[0.98]"
+                      to="/signup"
+                      className="flex h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-brandRed text-[13px] font-bold text-white shadow-lg shadow-brandRed/25 transition-all duration-300 hover:-translate-y-0.5 hover:bg-brandRedDark active:scale-[0.98]"
                     >
-                      <span>Admin Login</span>
+                      <span>Start Selling Free</span>
                       <ArrowRight
                         size={15}
                         className="transition-transform group-hover:translate-x-0.5"

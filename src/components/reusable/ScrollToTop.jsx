@@ -3,6 +3,7 @@ import { ArrowUp } from "lucide-react";
 
 export default function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     let ticking = false;
@@ -11,8 +12,12 @@ export default function ScrollToTop() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const currentScroll = window.scrollY;
+          const totalHeight =
+            document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const progress = totalHeight > 0 ? (currentScroll / totalHeight) * 100 : 0;
 
           setIsVisible(currentScroll > 320);
+          setScrollProgress(Math.min(100, Math.max(0, progress)));
           ticking = false;
         });
         ticking = true;
@@ -41,13 +46,18 @@ export default function ScrollToTop() {
       <button
         onClick={scrollToTop}
         aria-label="Scroll back to top"
-        className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-brandRed text-white shadow-[0_8px_20px_rgba(211,47,47,0.28)] transition-all duration-300 hover:scale-105 hover:bg-brandRedDark hover:shadow-[0_12px_26px_rgba(210,33,37,0.34)] active:scale-95 border-4 border-white"
+        className="group relative flex h-11 w-11 items-center justify-center rounded-full p-[3px] text-white shadow-[0_8px_20px_rgba(211,47,47,0.28)] transition-all duration-300 hover:scale-105 hover:shadow-[0_12px_26px_rgba(210,33,37,0.34)] active:scale-95"
+        style={{
+          background: `conic-gradient(from 0deg, rgb(211 47 47) ${scrollProgress}%, white ${scrollProgress}% 100%)`,
+        }}
       >
-        <ArrowUp
-          size={18}
-          strokeWidth={2.5}
-          className="relative z-[2] transition-all duration-300 group-hover:-translate-y-0.5"
-        />
+        <span className="grid h-full w-full place-items-center rounded-full bg-brandRed">
+          <ArrowUp
+            size={18}
+            strokeWidth={2.5}
+            className="relative z-[2] transition-transform duration-300 group-hover:-translate-y-0.5"
+          />
+        </span>
       </button>
     </div>
   );

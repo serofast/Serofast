@@ -93,7 +93,7 @@ export default function ProductFormPage() {
         categories={categories}
         products={products}
         onSave={save}
-        onCancel={() => navigate(product ? `/admin/products/${product.id}` : "/admin/products")}
+        onCancel={() => navigate(product ? `/admin/products/${product.id}` : "/admin/products/new")}
       />
       <Toast message={toast} onClose={() => setToast("")} />
     </div>

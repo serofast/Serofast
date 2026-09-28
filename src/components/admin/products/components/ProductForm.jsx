@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  Boxes,
   Camera,
   Check,
   CheckCircle2,
@@ -184,6 +185,10 @@ function createDraft(product, categories) {
       store_price: rawStorePrice,
       stock: product.stock ?? product.warehouse_stock ?? 1,
       images: Array.isArray(product.images) ? product.images : [],
+      comboLabel: product.comboLabel || "Combo Offer",
+      comboProductIds: Array.isArray(product.comboProductIds) ? product.comboProductIds : [],
+      offerStarts: product.offerStarts || "",
+      offerEnds: product.offerEnds || "",
     };
   }
 
@@ -201,6 +206,10 @@ function createDraft(product, categories) {
     store_price: "",
     stock: 1,
     images: [],
+    comboLabel: "Combo Offer",
+    comboProductIds: [],
+    offerStarts: "",
+    offerEnds: "",
   };
 }
 
@@ -239,7 +248,7 @@ function Section({ title, description, badge, children }) {
   );
 }
 
-export default function ProductForm({ product, categories = [], products = [], onSave, onCancel }) {
+export default function ProductForm({ product, categories = [], products = [], onSave, onCancel, comboMode = false }) {
   const [draft, setDraft] = useState(() => createDraft(product, categories));
   const [errors, setErrors] = useState({});
   const [imageUrl, setImageUrl] = useState("");
@@ -372,12 +381,35 @@ export default function ProductForm({ product, categories = [], products = [], o
   function handleFormSubmit(event, addAnother = false) {
     if (event) event.preventDefault();
     const nextErrors = validateProduct(draft, products, product?.id ?? null);
+    if (comboMode) {
+      if (draft.comboProductIds.length < 2) {
+        nextErrors.comboProductIds = "Select at least two existing products for this combo offer.";
+      }
+      if (draft.cut_price && Number(draft.store_price) >= Number(draft.cut_price)) {
+        nextErrors.store_price = "Combo price should be lower than the combined product value.";
+      }
+    }
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     onSave(draft, addAnother);
+  }
+
+  function toggleComboProduct(productId) {
+    const nextIds = draft.comboProductIds.includes(productId)
+      ? draft.comboProductIds.filter((id) => id !== productId)
+      : [...draft.comboProductIds, productId];
+    const combinedValue = products
+      .filter((item) => nextIds.includes(item.id))
+      .reduce(
+        (total, item) => total + (Number(item.store_price ?? item.retail_price ?? item.price) || 0),
+        0
+      );
+
+    update("comboProductIds", nextIds);
+    update("cut_price", combinedValue ? String(combinedValue) : "");
   }
 
   const calcDiscount = discountPercentage(draft.cut_price, draft.store_price);
@@ -398,8 +430,8 @@ export default function ProductForm({ product, categories = [], products = [], o
 
       {/* 1. PRODUCT IMAGES (FIRST AT THE TOP) */}
       <Section
-        title="1. Product Carousel Images"
-        description="Add 3 to 4 side-angle photos (Front / Cover, Side Angle, Back Perspective, Close-up). Files are stored directly in the cloud storage bucket and mapped to the product carousel."
+        title={comboMode ? "1. Combo Product Images" : "1. Product Carousel Images"}
+        description={comboMode ? "Add the cover and side-angle images shoppers will see for this combo offer. Images are stored directly in cloud storage and mapped to the product carousel." : "Add 3 to 4 side-angle photos (Front / Cover, Side Angle, Back Perspective, Close-up). Files are stored directly in the cloud storage bucket and mapped to the product carousel."}
         badge={
           draft.images.length >= 3 ? (
             <span className="text-emerald-700 font-medium">✓ {draft.images.length} Images Added</span>
@@ -585,26 +617,61 @@ export default function ProductForm({ product, categories = [], products = [], o
         description="Core name and single description for shoppers."
       >
         <div className="space-y-4">
-          <FormField label="Product Name" required error={errors.name}>
+            <FormField label={comboMode ? "Combo Offer Name" : "Product Name"} required error={errors.name}>
             <input
               value={draft.name}
               onChange={(event) => update("name", event.target.value)}
-              placeholder="e.g. Classic Oversized Denim Jacket"
+              placeholder={comboMode ? "e.g. Campus Starter Pack" : "e.g. Classic Oversized Denim Jacket"}
               className={fieldClass}
             />
           </FormField>
 
           <FormField
-            label="Product Description"
-            helper="One single description for the item"
+            label={comboMode ? "Combo Description" : "Product Description"}
+            helper={comboMode ? "Explain what shoppers get and why the combination is valuable" : "One single description for the item"}
           >
             <textarea
               value={draft.description}
               onChange={(event) => update("description", event.target.value)}
-              placeholder="Describe the product details, size fit, condition, styling tips, or any unique specifications..."
+              placeholder={comboMode ? "Explain what is included, who the offer is for, and the benefit of buying together..." : "Describe the product details, size fit, condition, styling tips, or any unique specifications..."}
               className={textAreaClass}
             />
           </FormField>
+
+          {comboMode && (
+            <div className="rounded-[22px] border border-rose-100 bg-rose-50/50 p-4">
+              <div className="flex items-start gap-2">
+                <Boxes size={16} className="mt-0.5 shrink-0 text-brandRed" />
+                <div>
+                  <p className="text-xs font-semibold text-slate-800">Products included in this combo</p>
+                  <p className="mt-0.5 text-[11px] text-slate-500">Select at least two existing catalog products. Customers will see this list as the offer contents.</p>
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {products.map((item) => {
+                  const selected = draft.comboProductIds.includes(item.id);
+                  const itemPrice = Number(item.store_price ?? item.retail_price ?? item.price) || 0;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => toggleComboProduct(item.id)}
+                      className={`flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left transition ${selected ? "border-brandRed bg-white" : "border-slate-200 bg-white/70 hover:border-brandRed/40"}`}
+                    >
+                      <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[10px] font-bold ${selected ? "bg-brandRed text-white" : "bg-slate-100 text-slate-400"}`}>
+                        {selected ? "✓" : <Boxes size={13} />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[11px] font-semibold text-slate-800">{item.name}</span>
+                        <span className="block text-[10px] text-slate-400">₹{itemPrice.toLocaleString("en-IN")}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.comboProductIds && <p className="mt-2 text-[11px] font-medium text-brandRed">{errors.comboProductIds}</p>}
+            </div>
+          )}
         </div>
       </Section>
 
@@ -650,10 +717,10 @@ export default function ProductForm({ product, categories = [], products = [], o
       {/* 4. PRODUCT SPECIFICATIONS (MATERIAL, FIT, CARE, OCCASION, SIZES) */}
       <Section
         title="4. Specifications, Occasion & Sizing"
-        description="Specify fabric material, fit cut, wash care instructions, styling occasion, and available sizes. Select from standard options or type custom values."
+        description={comboMode ? "Add shopper-facing offer details such as the occasion, bundle theme and what the customer receives." : "Specify fabric material, fit cut, wash care instructions, styling occasion, and available sizes. Select from standard options or type custom values."}
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Occasion" helper="Select or type custom occasion">
+          <FormField label={comboMode ? "Combo Occasion / Use Case" : "Occasion"} helper="Select or type custom occasion">
             <CreatableDropdown
               value={draft.occation}
               onChange={(val) => update("occation", val)}
@@ -664,12 +731,12 @@ export default function ProductForm({ product, categories = [], products = [], o
             />
           </FormField>
 
-          <FormField label="Material / Fabric" helper="Select or type custom material">
+          <FormField label={comboMode ? "Bundle Theme" : "Material / Fabric"} helper={comboMode ? "e.g. College essentials, Weekend travel" : "Select or type custom material"}>
             <CreatableDropdown
               value={draft.material}
               onChange={(val) => update("material", val)}
               options={DEFAULT_MATERIALS}
-              placeholder="e.g. 100% Cotton, Denim..."
+              placeholder={comboMode ? "e.g. College essentials, Weekend travel" : "e.g. 100% Cotton, Denim..."}
               allowCustom={true}
               ariaLabel="Material"
             />
@@ -710,19 +777,30 @@ export default function ProductForm({ product, categories = [], products = [], o
               />
             </FormField>
           </div>
+          {comboMode && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FormField label="Offer Badge" helper="Shown with the combo title">
+                <input value={draft.comboLabel} onChange={(event) => update("comboLabel", event.target.value)} placeholder="e.g. Buy together & save" className={fieldClass} />
+              </FormField>
+              <div className="rounded-[18px] bg-emerald-50 px-3.5 py-3 text-[11px] text-emerald-700">
+                <strong className="block font-semibold">Make the value obvious</strong>
+                Mention the combined value, customer savings, and what is included in the description above.
+              </div>
+            </div>
+          )}
         </div>
       </Section>
 
       {/* 5. PRICING & WAREHOUSE INVENTORY */}
       <Section
         title="5. Pricing & Warehouse Inventory"
-        description="Set the store price (the price the user will buy) and the price that will be cutted (slashed MRP for discount display)."
+        description={comboMode ? "Set the combined catalog value, discounted combo price, and the number of complete bundles available." : "Set the store price (the price the user will buy) and the price that will be cutted (slashed MRP for discount display)."}
       >
         <div className="grid gap-4 sm:grid-cols-3">
           {/* Price (will be cutted) */}
           <FormField
-            label="Price (will be cutted - ₹)"
-            helper="Original price that will be slashed / crossed out"
+            label={comboMode ? "Combined Value (₹)" : "Price (will be cutted - ₹)"}
+            helper={comboMode ? "Total value of all selected products" : "Original price that will be slashed / crossed out"}
             error={errors.cut_price}
           >
             <input
@@ -731,19 +809,20 @@ export default function ProductForm({ product, categories = [], products = [], o
               step="1"
               value={draft.cut_price}
               onChange={(event) => update("cut_price", event.target.value)}
-              placeholder="e.g. 999 (Slashed MRP)"
+              readOnly={comboMode}
+              placeholder={comboMode ? "e.g. 2499 (Combined Value)" : "e.g. 999 (Slashed MRP)"}
               className={fieldClass}
             />
           </FormField>
 
           {/* Store Price (User will buy) */}
           <FormField
-            label="Store Price (User Will Buy - ₹)"
+            label={comboMode ? "Combo Price (User Will Buy - ₹)" : "Store Price (User Will Buy - ₹)"}
             required
             helper={
               calcDiscount > 0
                 ? `${calcDiscount}% OFF (User Saves ₹${Number(draft.cut_price) - Number(draft.store_price)})`
-                : "Final price user pays to buy"
+                : comboMode ? "Special price for the complete combo" : "Final price user pays to buy"
             }
             error={errors.store_price}
           >
@@ -753,15 +832,15 @@ export default function ProductForm({ product, categories = [], products = [], o
               step="1"
               value={draft.store_price}
               onChange={(event) => update("store_price", event.target.value)}
-              placeholder="e.g. 499 (Selling Price)"
+              placeholder={comboMode ? "e.g. 1999 (Combo Price)" : "e.g. 499 (Selling Price)"}
               className={fieldClass}
             />
           </FormField>
 
           {/* Single Stock */}
           <FormField
-            label="Stock Quantity"
-            helper="1 unit default (unlisted when sold)"
+            label={comboMode ? "Complete Combo Stock" : "Stock Quantity"}
+            helper={comboMode ? "Number of complete bundles available" : "1 unit default (unlisted when sold)"}
             error={errors.stock}
           >
             <input
@@ -778,9 +857,19 @@ export default function ProductForm({ product, categories = [], products = [], o
         <div className="mt-3 flex items-center gap-2 rounded-[16px] bg-slate-50 px-3.5 py-2 text-[11px] text-slate-500">
           <HelpCircle size={13} className="shrink-0 text-slate-400" />
           <span>
-            Single-stock model: Once this item is sold (stock reaches 0), it will automatically be unlisted and hidden from customer views.
+            {comboMode ? "Combo stock represents complete bundles, not individual component units. The offer is hidden when all bundles are sold." : "Single-stock model: Once this item is sold (stock reaches 0), it will automatically be unlisted and hidden from customer views."}
           </span>
         </div>
+        {comboMode && (
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <FormField label="Offer Starts" helper="Optional shopper visibility date">
+              <input type="date" value={draft.offerStarts} onChange={(event) => update("offerStarts", event.target.value)} className={fieldClass} />
+            </FormField>
+            <FormField label="Offer Ends" helper="Optional campaign end date">
+              <input type="date" value={draft.offerEnds} onChange={(event) => update("offerEnds", event.target.value)} className={fieldClass} />
+            </FormField>
+          </div>
+        )}
       </Section>
 
       {/* FORM ACTIONS */}
@@ -798,14 +887,14 @@ export default function ProductForm({ product, categories = [], products = [], o
             onClick={(e) => handleFormSubmit(e, true)}
             className="h-11 rounded-[30px] border border-brandRed bg-rose-50/60 px-6 text-xs font-semibold text-brandRed transition-all hover:bg-rose-100 cursor-pointer"
           >
-            Save & Add Another
+            {comboMode ? "Save & Add Another Combo" : "Save & Add Another"}
           </button>
         )}
         <button
           type="submit"
           className="h-11 rounded-[30px] bg-brandRed px-8 text-xs font-semibold text-white shadow-[0_6px_20px_rgba(211,47,47,0.35)] transition-all hover:bg-brandRedDark active:scale-98 cursor-pointer"
         >
-          {product ? "Save Warehouse Product" : "Create Warehouse Product"}
+          {product ? "Save Warehouse Product" : comboMode ? "Create Combo Product" : "Create Warehouse Product"}
         </button>
       </div>
     </form>
