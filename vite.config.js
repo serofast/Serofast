@@ -12,6 +12,7 @@ export default defineConfig({
         "**/build/**",
         "**/.flutter-plugins/**",
         "**/.flutter-plugins-dependencies/**",
+        "**/serofast-interns/**",
       ],
     },
   },
