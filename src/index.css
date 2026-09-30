@@ -203,44 +203,44 @@
 
 .reveal-hidden-fade-up {
   opacity: 0;
-  transform: translate3d(0, 28px, 0);
+  transform: translate3d(0, 38px, 0);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-hidden-fade-down {
   opacity: 0;
-  transform: translate3d(0, -24px, 0);
+  transform: translate3d(0, -32px, 0);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-hidden-fade-left {
   opacity: 0;
-  transform: translate3d(-32px, 0, 0);
+  transform: translate3d(-38px, 0, 0);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-hidden-fade-right {
   opacity: 0;
-  transform: translate3d(32px, 0, 0);
+  transform: translate3d(38px, 0, 0);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-hidden-scale-up {
   opacity: 0;
-  transform: translate3d(0, 20px, 0) scale(0.95);
+  transform: translate3d(0, 28px, 0) scale(0.96);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-hidden-zoom-in {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.92);
   will-change: transform, opacity;
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .reveal-visible {

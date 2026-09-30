@@ -154,11 +154,7 @@ export default function AppFeaturesBento() {
       <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
         {/* Section Header */}
         <ScrollReveal variant="fade-down" duration={600} className="mx-auto max-w-2xl text-center">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-brandRed/20 bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-brandRed shadow-2xs">
-            <Sparkles size={12} className="text-brandRed" />
-            <span>Mobile App Architecture</span>
-          </div>
-          <h2 className="mt-2.5 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]">
+          <h2 className="mt-1 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]">
             Engineered for Campus Commerce
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-[#555] max-w-md mx-auto">

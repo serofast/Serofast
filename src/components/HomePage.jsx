@@ -6,6 +6,7 @@ import {
   MobileBottomNav,
   ScrollToTop,
   AppTeaserModal,
+  ScrollReveal,
 } from "./reusable";
 import {
   HeroSection,
@@ -32,10 +33,10 @@ export default function HomePage() {
 
   return (
     <div className="home-page min-h-screen bg-white text-[#191616] antialiased selection:bg-brandRed selection:text-white">
-      {/* Toast Notification (Clean Light styled) */}
+      {/* Toast Notification (Clean Light styled - No Green) */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-[999] flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-[#191616] shadow-xl animate-in fade-in slide-in-from-bottom-3 duration-200">
-          <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+          <CheckCircle2 size={16} className="text-brandRed shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -46,33 +47,39 @@ export default function HomePage() {
         onClose={() => setVideoModalOpen(false)}
       />
 
-      {/* Navigation Header */}
+      {/* Navigation Header with Glossy Morphism */}
       <Header
         onOpenAppTeaser={(item) => setTeaserOpen(item || "SeroFast Mobile App")}
         selectedLocation={selectedLocation}
         onLocationChange={setSelectedLocation}
       />
 
-      <main>
-        {/* 1. Hero Section (Animated elements, live stats, floating polaroids) */}
+      <main className="space-y-0">
+        {/* 1. Hero Section (Reverted: Banner, Polaroids, Our Story Video) */}
         <HeroSection onOpenVideo={() => setVideoModalOpen(true)} />
 
-        {/* 2. Marquee Content Strip (Smooth horizontal scrolling) */}
+        {/* 2. Marquee Content Strip (Smooth horizontal infinite glide) */}
         <MarqueeStrip />
 
-        {/* 3. Mobile App Showcase (Parallel scroll entrance & 3D tilt, interactive previews) */}
+        {/* 3. Mobile App Showcase (Synchronized Scroll: Phone rises from bottom & Core Commerce slides from right) */}
         <MobileAppShowcase onShowToast={showToast} />
 
-        {/* 4. Core App Capabilities Bento Grid (Fade+slide reveals, hover lift) */}
-        <AppFeaturesBento />
+        {/* 4. Core App Capabilities Bento Grid (Seamless transition & flip cards) */}
+        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
+          <AppFeaturesBento />
+        </ScrollReveal>
 
-        {/* 5. Dual Modes in One App (Mode toggle switcher, animated checklist) */}
-        <DualModeExperience />
+        {/* 5. For Students / Dual Mode Experience (No green, side-by-side) */}
+        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
+          <DualModeExperience />
+        </ScrollReveal>
 
-        {/* 6. Download App Banner (Animated counters, glow pulse rings, micro-interactions) */}
-        <DownloadAppSection
-          onOpenTeaser={(item) => setTeaserOpen(item || "App Download")}
-        />
+        {/* 6. Download App Flagship Banner (Redesigned next section, zero green) */}
+        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
+          <DownloadAppSection
+            onOpenTeaser={(item) => setTeaserOpen(item || "App Download")}
+          />
+        </ScrollReveal>
       </main>
 
       <Footer />

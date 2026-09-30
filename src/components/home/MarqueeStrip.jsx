@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const MARQUEE_ITEMS = [
-  { icon: Store, text: "Sanjay Smart Store" },
+  { icon: Store, text: "Verified Campus Stores" },
   { icon: Zap, text: "0% Platform Commission" },
   { icon: Truck, text: "45-Min Campus Delivery" },
   { icon: Wallet, text: "Instant UPI Bank Payouts" },

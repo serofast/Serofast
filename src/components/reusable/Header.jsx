@@ -13,6 +13,7 @@ import {
   Layers,
   Download,
   GraduationCap,
+  LogIn,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -76,11 +77,18 @@ export default function Header({
 
   return (
     <header
-      className={`landing-header sticky top-0 z-50 transition-all duration-200 ${
+      className={`landing-header sticky top-0 z-50 backdrop-blur-xl transition-all duration-300 ${
         isScrolled
-          ? "border-b border-[#E5E7EB] bg-white/98 shadow-[0_4px_20px_rgba(0,0,0,0.06)] backdrop-blur-md"
-          : "border-b border-[#EBE3DC]/80 bg-white"
+          ? "border-b border-white/60 bg-white/80 shadow-[0_10px_35px_rgba(0,0,0,0.06)]"
+          : "border-b border-white/45 bg-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
       }`}
+      style={{
+        background: isScrolled
+          ? "linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(255, 255, 255, 0.78) 100%)"
+          : "linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.65) 100%)",
+        backdropFilter: "blur(18px) saturate(180%)",
+        WebkitBackdropFilter: "blur(18px) saturate(180%)",
+      }}
     >
       {/* Scroll Progress Bar */}
       <div
@@ -114,10 +122,10 @@ export default function Header({
           </div>
         </Link>
 
-        {/* Center: Search Bar */}
+        {/* Center: Search Bar with Glossy Finish */}
         <form
           onSubmit={handleSearchSubmit}
-          className="group relative hidden flex-1 items-center rounded-full border border-[#D5D9D9] bg-white pl-4 pr-1 py-1 text-[#4f4a4a] transition-all duration-200 hover:border-[#999] focus-within:border-brandRed focus-within:ring-2 focus-within:ring-brandRed/20 md:flex md:max-w-[380px] lg:max-w-[420px] xl:max-w-[460px]"
+          className="group relative hidden flex-1 items-center rounded-full border border-slate-200/80 bg-white/70 backdrop-blur-md pl-4 pr-1 py-1 text-[#4f4a4a] transition-all duration-200 hover:border-slate-300 hover:bg-white/90 focus-within:border-brandRed focus-within:ring-2 focus-within:ring-brandRed/20 md:flex md:max-w-[380px] lg:max-w-[420px] xl:max-w-[460px] shadow-2xs"
         >
           <Search size={16} className="text-[#888] shrink-0" />
           <input
@@ -129,7 +137,7 @@ export default function Header({
           />
           <button
             type="submit"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brandRed text-white shadow-sm transition hover:bg-brandRedDark"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brandRed text-white shadow-sm transition hover:bg-brandRedDark cursor-pointer"
             aria-label="Submit search"
           >
             <Search size={15} />
@@ -158,7 +166,7 @@ export default function Header({
           </a>
           <a
             href="#download-app"
-            className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-brandRed transition hover:bg-brandRed hover:text-white"
+            className="inline-flex items-center gap-1.5 rounded-full border border-brandRed/20 bg-red-50/70 px-3 py-1 text-xs font-bold text-brandRed backdrop-blur-xs transition hover:bg-brandRed hover:text-white"
           >
             <Smartphone size={13} />
             <span>Get Mobile App</span>
@@ -178,7 +186,7 @@ export default function Header({
             <button
               type="button"
               onClick={() => setLocationOpen(!locationOpen)}
-              className="inline-flex items-center gap-1 rounded-full border border-transparent px-2.5 py-1.5 text-xs font-semibold text-[#191616] transition hover:border-[#E5E7EB] hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-full border border-slate-200/60 bg-white/70 px-2.5 py-1.5 text-xs font-semibold text-[#191616] shadow-2xs backdrop-blur-md transition hover:border-[#E5E7EB] hover:bg-white"
             >
               <MapPin size={15} className="text-brandRed shrink-0" />
               <span>{currentCity}</span>
@@ -191,7 +199,7 @@ export default function Header({
             </button>
 
             {locationOpen && (
-              <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-[#E5E7EB] bg-white p-1.5 shadow-xl animate-in fade-in zoom-in-95 z-50">
+              <div className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-white/60 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl animate-in fade-in zoom-in-95 z-50">
                 <div className="px-2.5 py-1.5 text-[10px] font-bold text-[#888] uppercase tracking-wider">
                   Deliver To
                 </div>
@@ -219,37 +227,20 @@ export default function Header({
           {/* Quick App Download Pill */}
           <a
             href="#download-app"
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brandRed px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-brandRedDark"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brandRed px-3.5 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-brandRedDark active:scale-95"
           >
             <Download size={13} />
             <span>Install App</span>
           </a>
 
-          {/* User Profile */}
-          <div className="hidden items-center gap-2 border-l border-[#E5E7EB] pl-3 sm:flex">
+          {/* Login Button */}
+          <div className="hidden items-center gap-2 border-l border-slate-200/70 pl-3 sm:flex">
             <Link
-              to="/shop-owner/dashboard"
-              className="flex items-center gap-2 rounded-full p-1 transition hover:bg-slate-100"
+              to="/login"
+              className="group inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/80 px-4 py-1.5 text-xs font-bold text-[#191616] shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-brandRed hover:bg-brandRed hover:text-white hover:shadow-sm active:scale-95"
             >
-              <img
-                src="/landing/user-sanjay.png"
-                alt="Sanjay"
-                className="h-8 w-8 rounded-full object-cover ring-2 ring-brandRed/20"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=200&q=80";
-                }}
-              />
-              <div className="hidden text-left xl:block">
-                <span className="block text-[11px] font-semibold leading-tight text-[#777]">
-                  Hello,
-                </span>
-                <span className="block text-xs font-bold leading-tight text-[#191616]">
-                  Sanjay
-                </span>
-              </div>
-              <ChevronDown size={13} className="text-[#888]" />
+              <LogIn size={13} className="text-brandRed group-hover:text-white transition-colors" />
+              <span>Login</span>
             </Link>
           </div>
 
@@ -330,6 +321,14 @@ export default function Header({
             >
               <Store size={16} className="text-brandRed" />
               <span>Become a Seller</span>
+            </Link>
+            <Link
+              to="/login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 rounded-lg border-t border-slate-100 p-2 font-bold text-brandRed hover:bg-red-50"
+            >
+              <LogIn size={16} />
+              <span>Login</span>
             </Link>
           </div>
         </div>

@@ -31,7 +31,7 @@ export const APP_VIEWS = [
       "Zero inventory to purchase upfront — SeroFast stocks everything",
       "Custom profit margin slider on every single product",
       "Instant WhatsApp status card and Instagram story link generator",
-      "Custom branded store URL (e.g. serofast.in/sanjay)",
+      "Custom branded store URL (e.g. serofast.in/mystore)",
     ],
     screenBadge: "Shop Profile",
   },
@@ -106,30 +106,40 @@ export default function MobileAppShowcase({ onShowToast }) {
   const [inAppSimState, setInAppSimState] = useState("");
   const containerRef = useRef(null);
   const phoneRef = useRef(null);
+  const contentRef = useRef(null);
 
-  // Vivo S2 inspired smooth parallel scroll & 3D device tilt effect
+  // Synchronized scroll animation:
+  // Mobile phone glides UP from below, while the Core Commerce content slides IN from the RIGHT.
+  // Both move simultaneously in direct 1:1 sync with the user's scroll.
   useEffect(() => {
     let ticking = false;
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          if (containerRef.current && phoneRef.current) {
+          if (containerRef.current && phoneRef.current && contentRef.current) {
             const rect = containerRef.current.getBoundingClientRect();
             const windowHeight = window.innerHeight;
 
-            if (rect.top < windowHeight && rect.bottom > 0) {
-              const progress = Math.min(
-                1,
-                Math.max(0, (windowHeight - rect.top) / (windowHeight + rect.height * 0.4))
-              );
-              // Smooth upward glide + subtle Vivo-style 3D tilt
-              const translateY = (1 - progress) * 50 - 5;
-              const rotateX = (1 - progress) * 5;
-              const rotateY = (progress - 0.5) * -4;
+            // Start animation when section enters viewport, complete when nicely centered
+            const startScroll = windowHeight * 0.95;
+            const endScroll = windowHeight * 0.15;
+            const progress = Math.min(
+              1,
+              Math.max(0, (startScroll - rect.top) / (startScroll - endScroll))
+            );
 
-              phoneRef.current.style.transform = `translate3d(0, ${translateY}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            }
+            // Phone glides UP from below as user scrolls down
+            const phoneTranslateY = (1 - progress) * 110;
+            const phoneOpacity = 0.15 + progress * 0.85;
+            phoneRef.current.style.transform = `translate3d(0, ${phoneTranslateY}px, 0)`;
+            phoneRef.current.style.opacity = `${phoneOpacity}`;
+
+            // Core Commerce content slides IN from the RIGHT as user scrolls down
+            const contentTranslateX = (1 - progress) * 120;
+            const contentOpacity = 0.15 + progress * 0.85;
+            contentRef.current.style.transform = `translate3d(${contentTranslateX}px, 0, 0)`;
+            contentRef.current.style.opacity = `${contentOpacity}`;
           }
           ticking = false;
         });
@@ -170,12 +180,7 @@ export default function MobileAppShowcase({ onShowToast }) {
       <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-brandRed/20 bg-white px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider text-brandRed shadow-xs transition-transform hover:scale-105">
-            <Smartphone size={14} />
-            <span>Interactive Mobile Application</span>
-          </div>
-
-          <h2 className="mt-3 text-[clamp(1.9rem,3.6vw,2.9rem)] font-black tracking-tight text-[#191616]">
+          <h2 className="mt-1 text-[clamp(1.9rem,3.6vw,2.9rem)] font-black tracking-tight text-[#191616]">
             Explore What SeroFast Powers on Your Phone
           </h2>
 
@@ -190,6 +195,10 @@ export default function MobileAppShowcase({ onShowToast }) {
           <div className="flex justify-center">
             <div
               ref={phoneRef}
+              style={{
+                willChange: "transform, opacity",
+                transition: "transform 0.08s ease-out, opacity 0.08s ease-out",
+              }}
               className="vivo-device-chassis relative w-[310px] sm:w-[335px] rounded-[48px] border-[9px] border-slate-200/95 bg-white p-2 shadow-[0_25px_60px_rgba(211,47,47,0.12)] ring-1 ring-slate-300/70"
             >
               {/* Dynamic Island / Speaker Pill */}
@@ -226,7 +235,7 @@ export default function MobileAppShowcase({ onShowToast }) {
 
                 {/* In-App Simulated Toast Alert */}
                 {inAppSimState && (
-                  <div className="mx-3 mt-2 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-[10px] font-bold text-white text-center shadow-md animate-in fade-in slide-in-from-top-2">
+                  <div className="mx-3 mt-2 rounded-lg bg-brandRed px-2.5 py-1.5 text-[10px] font-bold text-white text-center shadow-md animate-in fade-in slide-in-from-top-2">
                     {inAppSimState}
                   </div>
                 )}
@@ -242,12 +251,12 @@ export default function MobileAppShowcase({ onShowToast }) {
                             S
                           </div>
                           <div>
-                            <div className="text-xs font-black">Sanjay Smart Store</div>
+                            <div className="text-xs font-black">Campus Smart Store</div>
                             <div className="text-[10px] text-white/90">Campus Reseller • 4.8 ★ (500+ orders)</div>
                           </div>
                         </div>
                         <div className="mt-2.5 flex items-center justify-between text-[10px] bg-white/15 rounded-lg px-2.5 py-1.5 backdrop-blur-xs">
-                          <span className="font-medium">serofast.in/sanjay</span>
+                          <span className="font-medium">serofast.in/mystore</span>
                           <button
                             type="button"
                             onClick={() => triggerInAppAction("Link copied to clipboard! 📋")}
@@ -261,7 +270,7 @@ export default function MobileAppShowcase({ onShowToast }) {
                       <button
                         type="button"
                         onClick={() => triggerInAppAction("WhatsApp status poster generated! 🚀")}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-600 py-2 text-[11px] font-bold text-white shadow-xs transition hover:bg-emerald-700 active:scale-95 cursor-pointer"
+                        className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-900 py-2 text-[11px] font-bold text-white shadow-xs transition hover:bg-slate-800 active:scale-95 cursor-pointer"
                       >
                         <Share2 size={12} />
                         <span>Share Store to WhatsApp Status</span>
@@ -337,7 +346,9 @@ export default function MobileAppShowcase({ onShowToast }) {
 
                       <div className="rounded-2xl border border-slate-200 bg-white p-3 flex items-center justify-between shadow-2xs">
                         <div className="flex items-center gap-2">
-                          <img src="/landing/user-sanjay.png" alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-slate-200" />
+                          <div className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-xs font-black text-slate-700 ring-1 ring-slate-200">
+                            AK
+                          </div>
                           <div>
                             <div className="text-[11px] font-black text-[#222]">Arun K. (Runner)</div>
                             <div className="text-[9px] text-[#777]">Campus Delivery Partner • 4.9 ★</div>
@@ -384,14 +395,14 @@ export default function MobileAppShowcase({ onShowToast }) {
                             <div className="font-bold text-[#222]">boAt Airdopes Sale</div>
                             <div className="text-[9px] text-[#888]">Order #SF-8120 • Just now</div>
                           </div>
-                          <span className="font-black text-emerald-600">+₹150.00</span>
+                          <span className="font-black text-brandRed">+₹150.00</span>
                         </div>
                         <div className="rounded-xl border border-slate-200 bg-white p-2.5 flex items-center justify-between text-[10px] shadow-2xs">
                           <div>
                             <div className="font-bold text-[#222]">Nike Shoes Margin</div>
                             <div className="text-[9px] text-[#888]">Order #SF-8098 • Yesterday</div>
                           </div>
-                          <span className="font-black text-emerald-600">+₹450.00</span>
+                          <span className="font-black text-brandRed">+₹450.00</span>
                         </div>
                       </div>
                     </div>
@@ -408,7 +419,7 @@ export default function MobileAppShowcase({ onShowToast }) {
                           P
                         </div>
                         <div className="rounded-2xl rounded-tl-xs bg-white p-2.5 border border-slate-200 max-w-[80%] text-[10px] text-[#222] shadow-2xs">
-                          Hey Sanjay! Is the mechanical keyboard available for delivery to Hostel 3?
+                          Hey! Is the mechanical keyboard available for delivery to Hostel 3?
                         </div>
                       </div>
                       <div className="flex items-start gap-2 justify-end">
@@ -519,7 +530,14 @@ export default function MobileAppShowcase({ onShowToast }) {
           </div>
 
           {/* Right: Feature Narrative & Direct Value */}
-          <div className="rounded-3xl border border-[#E5E7EB] bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:border-brandRed/30 hover:shadow-lg">
+          <div
+            ref={contentRef}
+            style={{
+              willChange: "transform, opacity",
+              transition: "transform 0.08s ease-out, opacity 0.08s ease-out",
+            }}
+            className="rounded-3xl border border-[#E5E7EB] bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:border-brandRed/30 hover:shadow-lg"
+          >
             <div className="inline-flex items-center gap-1.5 rounded-full bg-brandRed/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-brandRed">
               <currentView.icon size={13} />
               <span>{currentView.badge}</span>
