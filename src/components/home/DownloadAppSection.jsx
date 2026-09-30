@@ -11,6 +11,10 @@ import {
   Sparkles,
   Layers,
 } from "lucide-react";
+import { TextAnimate } from "@/registry/magicui/text-animate";
+import ParallaxLayer from "../../motion/ParallaxLayer";
+import ScrollTitleReveal from "../../motion/ScrollTitleReveal";
+import FloatingElement from "../../motion/FloatingElement";
 import ScrollReveal from "../reusable/ScrollReveal";
 import useCountUp from "../../hooks/useCountUp";
 
@@ -22,9 +26,11 @@ export default function DownloadAppSection({ onOpenTeaser }) {
       id="download-app"
       className="relative overflow-hidden border-b border-[#EBE3DC] bg-gradient-to-b from-[#FAF8F5] via-white to-red-50/30 py-16 lg:py-24 select-none"
     >
-      {/* Ambient Gradient Lights */}
-      <div className="pointer-events-none absolute -left-20 top-10 h-80 w-80 rounded-full bg-brandRed/[0.08] blur-[120px] animate-pulse-glow" />
-      <div className="pointer-events-none absolute right-0 bottom-0 h-96 w-96 rounded-full bg-rose-200/25 blur-[140px]" />
+      {/* Ambient Parallax Gradient Lights */}
+      <ParallaxLayer speed={0.16} className="section-atmosphere">
+        <div className="absolute -left-20 top-10 h-80 w-80 rounded-full bg-brandRed/[0.08] blur-[120px] animate-pulse-glow" />
+        <div className="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-rose-200/25 blur-[140px]" />
+      </ParallaxLayer>
 
       <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
         {/* Main Glassmorphic Showcase Box */}
@@ -41,24 +47,23 @@ export default function DownloadAppSection({ onOpenTeaser }) {
           <div className="relative z-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
             {/* Left Content (Cols 1-7) */}
             <div className="lg:col-span-7">
-              <ScrollReveal variant="fade-right" duration={650}>
-                {/* Badge */}
-                <div className="inline-flex items-center gap-2 rounded-full border border-brandRed/20 bg-white px-3.5 py-1 text-xs font-black uppercase tracking-wider text-brandRed shadow-xs">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brandRed opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-brandRed" />
-                  </span>
-                  <span>Next-Gen Mobile Platform</span>
-                </div>
-
-                <h2 className="mt-4 text-[clamp(2rem,4.2vw,3.4rem)] font-black leading-[1.08] tracking-tight text-[#191616]">
+              <div>
+                <TextAnimate
+                  animation="blurInUp"
+                  by="character"
+                  once
+                  as="h2"
+                  className="text-[clamp(2rem,4.2vw,3.4rem)] font-black leading-[1.08] tracking-tight text-[#191616]"
+                >
                   Power Your Campus Business <br />
                   <span className="text-brandRed">Right From Your Pocket.</span>
-                </h2>
+                </TextAnimate>
 
-                <p className="mt-3.5 text-sm text-[#555] sm:text-base max-w-[560px] leading-relaxed">
-                  Download the SeroFast mobile application today. Join thousands of verified college creators, hostel resellers, and campus shoppers turning idle time into verified earnings across India.
-                </p>
+                <ScrollTitleReveal direction="up" delay={180} duration={850}>
+                  <p className="mt-3.5 text-sm text-[#555] sm:text-base max-w-[560px] leading-relaxed">
+                    Download the SeroFast mobile application today. Join thousands of verified college creators, hostel resellers, and campus shoppers turning idle time into verified earnings across India.
+                  </p>
+                </ScrollTitleReveal>
 
                 {/* Key Benefits Pills (Strictly No Green) */}
                 <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-[520px]">
@@ -148,18 +153,19 @@ export default function DownloadAppSection({ onOpenTeaser }) {
                     <span>100% Free Student Setup</span>
                   </div>
                 </div>
-              </ScrollReveal>
+              </div>
             </div>
 
             {/* Right Interactive QR & Device Showcase (Cols 8-12) */}
             <div className="lg:col-span-5 flex justify-center">
               <ScrollReveal variant="fade-left" duration={700} delay={100} className="w-full max-w-[380px]">
-                <div className="group relative rounded-3xl border border-white/90 bg-white/90 p-7 text-center shadow-xl backdrop-blur-xl transition-all duration-300 hover:shadow-2xl">
-                  {/* Subtle Top Badge */}
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-[#444]">
-                    <QrCode size={13} className="text-brandRed" />
-                    <span>Fast Instant Install</span>
-                  </div>
+                <FloatingElement duration={5600} distance={7} mouseTrack={true}>
+                  <div className="saas-card-interactive group relative rounded-3xl border border-white/90 bg-white/95 p-7 text-center shadow-xl backdrop-blur-xl">
+                    {/* Subtle Top Badge */}
+                    <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold text-[#444]">
+                      <QrCode size={13} className="text-brandRed" />
+                      <span>Fast Instant Install</span>
+                    </div>
 
                   {/* QR Code Container with Animated Scan Line & Pulse Ring */}
                   <div className="relative mx-auto mt-5 grid h-52 w-52 place-items-center rounded-3xl bg-slate-50 p-4 border border-slate-200 shadow-inner overflow-hidden">
@@ -202,6 +208,7 @@ export default function DownloadAppSection({ onOpenTeaser }) {
                     <span className="text-[10px] font-extrabold text-brandRed">₹890</span>
                   </div>
                 </div>
+              </FloatingElement>
               </ScrollReveal>
             </div>
           </div>

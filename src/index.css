@@ -243,9 +243,43 @@
   transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Specialized Smooth Section Title & Text Scroll Reveal */
+.reveal-hidden-title-reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  filter: blur(4px);
+  will-change: transform, opacity, filter;
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-hidden-title-reveal .reveal-child-title {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-hidden-title-reveal .reveal-child-subtitle {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s,
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+  will-change: opacity, transform;
+}
+
 .reveal-visible {
   opacity: 1 !important;
   transform: translate3d(0, 0, 0) scale(1) !important;
+  filter: blur(0px) !important;
+}
+
+.reveal-visible .reveal-child-title,
+.reveal-visible .reveal-child-subtitle {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) !important;
 }
 
 /* =========================================================
@@ -267,31 +301,76 @@
   box-shadow: 0 30px 70px -10px rgba(211, 47, 47, 0.16), 0 10px 24px -5px rgba(0, 0, 0, 0.05);
 }
 
-@keyframes vivoFloating {
+@keyframes gentleFloat {
   0%, 100% {
-    transform: translateY(0px) rotate3d(1, 1, 0, 0deg);
+    transform: translate3d(0, 0px, 0);
   }
   50% {
-    transform: translateY(-8px) rotate3d(1, 0.5, 0, 1.2deg);
+    transform: translate3d(0, -9px, 0);
   }
 }
 
-.animate-vivo-float {
-  animation: vivoFloating 6s ease-in-out infinite;
+/* Smooth Scrolling (Non-hijacking, natural browser behavior) */
+html {
+  scroll-behavior: smooth;
+}
+
+/* SaaS Card Depth & Hover Micro-Interaction */
+.saas-card-interactive {
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.32s ease;
+  will-change: transform, box-shadow;
+}
+
+.saas-card-interactive:hover {
+  transform: translate3d(0, -6px, 0) scale(1.008);
+  box-shadow: 0 20px 42px -10px rgba(229, 25, 32, 0.12), 0 8px 18px -4px rgba(0, 0, 0, 0.04);
+}
+
+/* Section Ambient Layer System (Atmosphere & Parallax Glows) */
+.section-atmosphere {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  .parallax-layer {
+    transform: none !important;
+  }
+  .floating-element {
+    animation: none !important;
+    transform: none !important;
+  }
+  .animate-vivo-float,
+  .animate-float-slow,
+  .animate-float-reverse {
+    animation: none !important;
+  }
+  .scroll-title-reveal,
+  .stagger-item,
+  .reveal-hidden-title-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 
 @keyframes vivoPulseRing {
-  0% {
+  0%, 100% {
     transform: scale(0.95);
     opacity: 0.8;
   }
   50% {
     transform: scale(1.15);
     opacity: 0.2;
-  }
-  100% {
-    transform: scale(0.95);
-    opacity: 0.8;
   }
 }
 

@@ -7,43 +7,66 @@ import {
   ArrowRight,
   Download,
 } from "lucide-react";
+import ParallaxLayer from "../../motion/ParallaxLayer";
+import ScrollTitleReveal from "../../motion/ScrollTitleReveal";
 import ScrollReveal from "../reusable/ScrollReveal";
+import { TextAnimate } from "@/registry/magicui/text-animate";
 
 export default function DualModeExperience() {
   return (
-    <section id="dual-mode" className="border-b border-[#EBE3DC] bg-[#FAF8F5] py-12 lg:py-16 select-none">
-      <div className="mx-auto w-[min(1400px,calc(100%_-_32px))]">
-        <ScrollReveal variant="fade-down" duration={600} className="mx-auto max-w-3xl text-center">
-          <h2 className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black text-[#191616]">
-            Engineered for Both Student Sellers &amp; Campus Shoppers
-          </h2>
-          <p className="mt-2 text-sm text-[#555] max-w-xl mx-auto">
-            Switch seamlessly between managing your campus storefront and shopping verified peer deals.
-          </p>
-        </ScrollReveal>
+    <section id="dual-mode" className="relative border-b border-[#EBE3DC] bg-[#FAF8F5] py-14 lg:py-20 select-none overflow-hidden">
+      {/* Ambient Parallax Glow */}
+      <ParallaxLayer speed={0.16} className="section-atmosphere">
+        <div className="absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-brandRed/[0.04] blur-3xl" />
+        <div className="absolute -right-24 bottom-1/4 h-80 w-80 rounded-full bg-rose-200/20 blur-3xl" />
+      </ParallaxLayer>
+
+      <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
+        {/* Section Header with MagicUI blurInUp text entrance */}
+        <div className="mx-auto max-w-3xl text-center">
+          <TextAnimate
+            animation="blurInUp"
+            by="character"
+            once
+            as="h2"
+            className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black text-[#191616]"
+          >
+            Engineered for Both Student Sellers & Campus Shoppers
+          </TextAnimate>
+
+          <ScrollTitleReveal direction="up" delay={180} duration={850}>
+            <p className="mt-2 text-sm text-[#555] max-w-xl mx-auto">
+              Switch seamlessly between managing your campus storefront and shopping verified peer deals.
+            </p>
+          </ScrollTitleReveal>
+        </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Seller Mode Card */}
+          {/* Seller Mode Card — Styled like Core Commerce Card */}
           <ScrollReveal
             variant="fade-right"
-            duration={650}
+            duration={700}
             className="h-full"
           >
-            <div className="vivo-card-interactive group flex h-full flex-col justify-between rounded-3xl border border-[#EBE3DC] bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:border-brandRed/30">
-              <div>
+            <div className="saas-card-interactive relative flex h-full flex-col justify-between overflow-hidden rounded-[35px] border border-[#F3E5E5] bg-white p-6 sm:p-8 shadow-[-4px_5px_12px_rgba(211,47,47,0.14),-7px_8px_20px_rgba(211,47,47,0.06)] transition-all duration-300 hover:border-brandRed/30">
+              {/* Subtle soft gradient warmth */}
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-rose-100/35 blur-2xl" />
+              <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-amber-50/40 blur-2xl" />
+
+              <div className="relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brandRed text-white shadow-md transition-transform duration-300 group-hover:scale-105">
-                    <Store size={24} />
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brandRed text-white shadow-md shadow-brandRed/20 transition-transform duration-300 group-hover:scale-105">
+                    <Store size={22} />
                   </div>
                   <div>
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-brandRed">
                       For Student Sellers
                     </span>
-                    <h3 className="text-xl font-black text-[#191616]">Seller Mode</h3>
+                    <h3 className="text-xl sm:text-2xl font-black text-[#191616]">Seller Mode</h3>
                   </div>
                 </div>
 
-                <p className="mt-3 text-xs text-[#555] leading-relaxed sm:text-sm">
+                <p className="mt-3 text-xs sm:text-sm text-slate-500 leading-relaxed">
                   Turn your phone into a full-scale commerce backend. Share products, manage customer orders, track profits, and withdraw cash daily.
                 </p>
 
@@ -57,19 +80,21 @@ export default function DualModeExperience() {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2.5 text-xs font-bold text-[#333] transition-transform duration-200 hover:translate-x-1"
+                      className="flex items-center gap-3 rounded-2xl border border-[#F3E5E5] bg-[#FAF8F8]/60 px-4 py-3 text-xs font-medium text-slate-700 transition-colors hover:bg-white hover:border-brandRed/25"
                     >
-                      <CheckCircle2 size={16} className="text-brandRed shrink-0" />
-                      <span>{item}</span>
+                      <div className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brandRed/10 text-brandRed">
+                        <CheckCircle2 size={12} strokeWidth={2.5} />
+                      </div>
+                      <span className="leading-snug">{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-[#F0EBE6]">
+              <div className="relative z-10 mt-6 pt-5 border-t border-[#F3E5E5]">
                 <Link
                   to="/signup"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brandRed py-3 text-xs font-black text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:bg-brandRedDark hover:-translate-y-0.5 active:scale-95"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brandRed py-3.5 text-xs font-black text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:bg-brandRedDark hover:-translate-y-0.5 active:scale-95"
                 >
                   <span>Register as a Seller</span>
                   <ArrowRight size={14} />
@@ -78,27 +103,31 @@ export default function DualModeExperience() {
             </div>
           </ScrollReveal>
 
-          {/* Buyer Mode Card (Strictly No Green: Sleek Obsidian & Brand Red Accents) */}
+          {/* Buyer Mode Card — Styled like Core Commerce Card with Brand Red Accents (No Black, No Green) */}
           <ScrollReveal
             variant="fade-left"
             duration={650}
             className="h-full"
           >
-            <div className="vivo-card-interactive group flex h-full flex-col justify-between rounded-3xl border border-[#EBE3DC] bg-white p-6 sm:p-8 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-400">
-              <div>
+            <div className="saas-card-interactive relative flex h-full flex-col justify-between overflow-hidden rounded-[35px] border border-[#F3E5E5] bg-white p-6 sm:p-8 shadow-[-4px_5px_12px_rgba(211,47,47,0.14),-7px_8px_20px_rgba(211,47,47,0.06)] transition-all duration-300 hover:border-brandRed/30">
+              {/* Subtle soft gradient warmth */}
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-rose-100/35 blur-2xl" />
+              <div className="pointer-events-none absolute -left-16 -bottom-16 h-48 w-48 rounded-full bg-amber-50/40 blur-2xl" />
+
+              <div className="relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-slate-900 text-white shadow-md transition-transform duration-300 group-hover:scale-105">
-                    <ShoppingBag size={24} />
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brandRed text-white shadow-md shadow-brandRed/20 transition-transform duration-300 group-hover:scale-105">
+                    <ShoppingBag size={22} />
                   </div>
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-700">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-brandRed">
                       For Campus Shoppers
                     </span>
-                    <h3 className="text-xl font-black text-[#191616]">Buyer Mode</h3>
+                    <h3 className="text-xl sm:text-2xl font-black text-[#191616]">Buyer Mode</h3>
                   </div>
                 </div>
 
-                <p className="mt-3 text-xs text-[#555] leading-relaxed sm:text-sm">
+                <p className="mt-3 text-xs sm:text-sm text-slate-500 leading-relaxed">
                   Discover curated products sold by fellow college students. Enjoy hostel doorstep delivery, verified quality, and student pricing.
                 </p>
 
@@ -112,19 +141,21 @@ export default function DualModeExperience() {
                   ].map((item, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2.5 text-xs font-bold text-[#333] transition-transform duration-200 hover:translate-x-1"
+                      className="flex items-center gap-3 rounded-2xl border border-[#F3E5E5] bg-[#FAF8F8]/60 px-4 py-3 text-xs font-medium text-slate-700 transition-colors hover:bg-white hover:border-brandRed/25"
                     >
-                      <CheckCircle2 size={16} className="text-slate-800 shrink-0" />
-                      <span>{item}</span>
+                      <div className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brandRed/10 text-brandRed">
+                        <CheckCircle2 size={12} strokeWidth={2.5} />
+                      </div>
+                      <span className="leading-snug">{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-[#F0EBE6]">
+              <div className="relative z-10 mt-6 pt-5 border-t border-[#F3E5E5]">
                 <a
                   href="#download-app"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-slate-900 py-3 text-xs font-black text-white shadow-md transition-all duration-200 hover:bg-black hover:-translate-y-0.5 active:scale-95"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brandRed py-3.5 text-xs font-black text-white shadow-md shadow-brandRed/20 transition-all duration-200 hover:bg-brandRedDark hover:-translate-y-0.5 active:scale-95"
                 >
                   <span>Download App to Shop</span>
                   <Download size={14} />

@@ -12,7 +12,10 @@ import {
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
-import ScrollReveal from "../reusable/ScrollReveal";
+import ParallaxLayer from "../../motion/ParallaxLayer";
+import ScrollTitleReveal from "../../motion/ScrollTitleReveal";
+import { StaggerGroup, StaggerItem } from "../../motion/StaggerGroup";
+import { TextAnimate } from "@/registry/magicui/text-animate";
 
 // ============================================================================
 // 6 FEATURE CARDS DEFINITION (MINIMAL TEXT FRONT, DETAILED BACK)
@@ -147,36 +150,42 @@ export default function AppFeaturesBento() {
       id="app-features"
       className="relative border-b border-[#EBE3DC] bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5]/60 py-14 lg:py-20 select-none overflow-hidden"
     >
-      {/* Soft Ambient Radial Lights (Strictly clean & light) */}
-      <div className="pointer-events-none absolute -left-20 top-1/4 h-80 w-80 rounded-full bg-red-100/30 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 bottom-1/4 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
+      {/* Soft Ambient Radial Lights with Parallax */}
+      <ParallaxLayer speed={0.18} className="section-atmosphere">
+        <div className="absolute -left-20 top-1/4 h-80 w-80 rounded-full bg-red-100/30 blur-3xl" />
+        <div className="absolute -right-20 bottom-1/4 h-80 w-80 rounded-full bg-amber-100/40 blur-3xl" />
+      </ParallaxLayer>
 
       <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
-        {/* Section Header */}
-        <ScrollReveal variant="fade-down" duration={600} className="mx-auto max-w-2xl text-center">
-          <h2 className="mt-1 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]">
+        {/* Section Header with MagicUI blurInUp text entrance */}
+        <div className="mx-auto max-w-2xl text-center">
+          <TextAnimate
+            animation="blurInUp"
+            by="character"
+            once
+            as="h2"
+            className="mt-1 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]"
+          >
             Engineered for Campus Commerce
-          </h2>
-          <p className="mt-1.5 text-xs sm:text-sm text-[#555] max-w-md mx-auto">
-            Minimal, zero-friction mobile tooling. Click any card to flip and explore architectural details.
-          </p>
-        </ScrollReveal>
+          </TextAnimate>
+
+          <ScrollTitleReveal direction="up" delay={180} duration={850}>
+            <p className="mt-1.5 text-xs sm:text-sm text-[#555] max-w-md mx-auto">
+              Minimal, zero-friction mobile tooling. Click any card to flip and explore architectural details.
+            </p>
+          </ScrollTitleReveal>
+        </div>
 
         {/* =========================================================
             3D FLIP CARDS GRID (MINIMAL TEXT FRONT, DETAILED BACK)
             ========================================================= */}
-        <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerGroup step={80} className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES_DATA.map((item, index) => {
             const Icon = item.icon;
             const isFlipped = Boolean(flippedCards[item.id]);
 
             return (
-              <ScrollReveal
-                key={item.id}
-                variant="fade-up"
-                duration={550}
-                delay={index * 60}
-              >
+              <StaggerItem key={item.id} index={index}>
                 <div className="flip-card-wrapper h-[245px] sm:h-[255px] w-full">
                   <div
                     onClick={() => toggleFlip(item.id)}
@@ -187,7 +196,7 @@ export default function AppFeaturesBento() {
                     {/* ─────────────────────────────────────────────────────
                         FRONT FACE: MINIMAL COMPONENTS & CRISP TEXT ONLY
                         ───────────────────────────────────────────────────── */}
-                    <div className="flip-card-face flex flex-col justify-between rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-xs transition-all duration-300 hover:border-slate-300 hover:shadow-md">
+                    <div className="saas-card-interactive flip-card-face flex flex-col justify-between rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-xs">
                       <div>
                         {/* Top: Icon + Badge + Flip Hint */}
                         <div className="flex items-center justify-between">
@@ -283,10 +292,10 @@ export default function AppFeaturesBento() {
                     </div>
                   </div>
                 </div>
-              </ScrollReveal>
+              </StaggerItem>
             );
           })}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   );

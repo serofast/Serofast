@@ -65,21 +65,15 @@ export default function HomePage() {
         <MobileAppShowcase onShowToast={showToast} />
 
         {/* 4. Core App Capabilities Bento Grid (Seamless transition & flip cards) */}
-        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
-          <AppFeaturesBento />
-        </ScrollReveal>
+        <AppFeaturesBento />
 
-        {/* 5. For Students / Dual Mode Experience (No green, side-by-side) */}
-        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
-          <DualModeExperience />
-        </ScrollReveal>
+        {/* 5. For Students / Dual Mode Experience (Side-by-side, no green) */}
+        <DualModeExperience />
 
-        {/* 6. Download App Flagship Banner (Redesigned next section, zero green) */}
-        <ScrollReveal variant="fade-up" duration={850} threshold={0.08}>
-          <DownloadAppSection
-            onOpenTeaser={(item) => setTeaserOpen(item || "App Download")}
-          />
-        </ScrollReveal>
+        {/* 6. Download App Flagship Banner */}
+        <DownloadAppSection
+          onOpenTeaser={(item) => setTeaserOpen(item || "App Download")}
+        />
       </main>
 
       <Footer />
