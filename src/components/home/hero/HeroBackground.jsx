@@ -1,10 +1,11 @@
 import React from "react";
 import ParallaxLayer from "../../../motion/ParallaxLayer";
+import { PARALLAX_SPEEDS } from "../../../motion/motionConfig";
 
 /**
  * HeroBackground
  * Layer 1 of the Hero section:
- * High-resolution background with smooth parallax (0.15x speed)
+ * High-resolution background with smooth, slow parallax (0.08x speed)
  * and crisp gradient mask ensuring readable typography.
  */
 export default function HeroBackground() {
@@ -12,7 +13,7 @@ export default function HeroBackground() {
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
       {/* Parallax Background Image Layer */}
       <ParallaxLayer
-        speed={0.14}
+        speed={PARALLAX_SPEEDS.background}
         className="absolute inset-0 w-full h-[115%] -top-[8%]"
       >
         <div

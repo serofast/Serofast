@@ -3,9 +3,6 @@ import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import {
   Store,
-  GraduationCap,
-  Truck,
-  ShieldCheck,
   Mail,
   Phone,
   MapPin,
@@ -106,50 +103,6 @@ export default function Footer() {
 
   return (
     <footer className="w-full border-t border-[#F0EBE6] bg-white text-[#191616]">
-      {/* ── Guarantees Strip (Clean, Brand Red Tones, Responsive) ── */}
-      <div className="border-b border-[#F0EBE6] bg-[#FAF8F5]/60">
-        <div className="mx-auto grid w-[min(1320px,calc(100%_-_40px))] grid-cols-2 gap-3 py-6 sm:w-[min(1320px,calc(100%_-_48px))] lg:grid-cols-4">
-          {[
-            {
-              icon: Store,
-              title: "0% Commission",
-              desc: "Free seller onboarding & zero fee",
-            },
-            {
-              icon: GraduationCap,
-              title: "Student Sellers",
-              desc: "Campus micro-entrepreneurs network",
-            },
-            {
-              icon: Truck,
-              title: "Hostel Delivery",
-              desc: "Doorstep delivery to college blocks",
-            },
-            {
-              icon: ShieldCheck,
-              title: "Central Catalogue",
-              desc: "Admin-verified products & stock",
-            },
-          ].map((item, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-3 rounded-2xl border border-[#F0EBE6] bg-white p-3.5 shadow-xs transition-all duration-200 hover:border-brandRed/30"
-            >
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brandRed/10 text-brandRed">
-                <item.icon size={18} />
-              </div>
-              <div>
-                <strong className="block text-xs font-bold text-[#191616]">
-                  {item.title}
-                </strong>
-                <span className="block text-[11px] text-slate-500 leading-snug">
-                  {item.desc}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ── Main Footer Content (Clean, Responsive, No Bloat) ── */}
       <div className="mx-auto w-[min(1320px,calc(100%_-_40px))] py-12 sm:w-[min(1320px,calc(100%_-_48px))] sm:py-16">

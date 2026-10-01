@@ -47,7 +47,7 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
+    /* Smooth momentum scrolling handled by Lenis */
   }
 
   body {
@@ -310,9 +310,10 @@
   }
 }
 
-/* Smooth Scrolling (Non-hijacking, natural browser behavior) */
-html {
-  scroll-behavior: smooth;
+/* Smooth Momentum Scrolling (Powered by Lenis engine) */
+html.lenis,
+html.lenis body {
+  height: auto;
 }
 
 /* SaaS Card Depth & Hover Micro-Interaction */

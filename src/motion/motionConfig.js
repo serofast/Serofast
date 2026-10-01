@@ -25,7 +25,7 @@ export const DURATIONS = {
 };
 
 export const PARALLAX_SPEEDS = {
-  background: 0.15, // Moves very slowly in the back
+  background: 0.08, // Moves very slowly in the back (gentle depth)
   gradient: 0.25,   // Atmospheric glow and gradients
   decorations: 0.40,// Floating shapes, orbs, stickers
   cards: 0.65,      // Content cards and modules
