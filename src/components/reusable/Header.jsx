@@ -35,9 +35,7 @@ export default function Header({ onOpenAppTeaser }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (onOpenAppTeaser) {
-      onOpenAppTeaser(searchQuery || "Search Mobile App Features");
-    }
+    // Dialogue box removed per user request
   };
 
   return (
