@@ -7,6 +7,7 @@ import {
   ScrollToTop,
   AppTeaserModal,
   ScrollReveal,
+  FaqAccordion,
 } from "./reusable";
 import {
   HeroSection,
@@ -20,7 +21,6 @@ import {
 
 export default function HomePage() {
   const [teaserOpen, setTeaserOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState("Nagercoil");
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -50,8 +50,6 @@ export default function HomePage() {
       {/* Navigation Header with Glossy Morphism */}
       <Header
         onOpenAppTeaser={(item) => setTeaserOpen(item || "SeroFast Mobile App")}
-        selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
       />
 
       <main className="space-y-0">
@@ -70,7 +68,10 @@ export default function HomePage() {
         {/* 5. For Students / Dual Mode Experience (Side-by-side, no green) */}
         <DualModeExperience />
 
-        {/* 6. Download App Flagship Banner */}
+        {/* 6. Frequently Asked Questions */}
+        <FaqAccordion />
+
+        {/* 7. Download App Flagship Banner */}
         <DownloadAppSection
           onOpenTeaser={(item) => setTeaserOpen(item || "App Download")}
         />

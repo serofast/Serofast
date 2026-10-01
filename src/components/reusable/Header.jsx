@@ -35,7 +35,12 @@ export default function Header({ onOpenAppTeaser }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    // Dialogue box removed per user request
+    if (searchQuery.trim()) {
+      const target = document.getElementById("app-preview");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   };
 
   return (

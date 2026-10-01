@@ -167,11 +167,11 @@ export default function Footer() {
             <FooterLinkColumn
               title="Platform"
               links={[
-                { label: "Why SeroFast", href: "#audience" },
-                { label: "How It Works", href: "#how-it-works" },
-                { label: "App Showcase", href: "#mobile-showcase" },
-                { label: "Features", href: "#features" },
+                { label: "App Walkthrough", href: "#app-preview" },
+                { label: "Campus Features", href: "#app-features" },
+                { label: "For Students", href: "#dual-mode" },
                 { label: "FAQ", href: "#faq" },
+                { label: "Download App", href: "#download-app" },
               ]}
             />
           </div>
@@ -200,7 +200,7 @@ export default function Footer() {
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brandRed/10 text-brandRed">
                   <MapPin size={13} />
                 </span>
-                <span>Bangalore, India</span>
+                <span>Kanyakumari & Bangalore, India</span>
               </p>
               <p className="flex items-center gap-2.5">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brandRed/10 text-brandRed">
@@ -234,17 +234,17 @@ export default function Footer() {
           <div className="flex items-center gap-1.5">
             <span>© 2026 SeroFast. Built with</span>
             <Heart size={12} className="text-brandRed animate-pulse fill-brandRed" />
-            <span>in Bangalore, India.</span>
+            <span>in Kanyakumari, India.</span>
           </div>
 
           <div className="flex items-center gap-4 text-xs">
-            <a href="#" className="transition-colors hover:text-brandRed">Privacy</a>
+            <span className="cursor-pointer transition-colors hover:text-brandRed">Privacy</span>
             <span>·</span>
-            <a href="#" className="transition-colors hover:text-brandRed">Terms</a>
+            <span className="cursor-pointer transition-colors hover:text-brandRed">Terms</span>
             <span>·</span>
-            <a href="#" className="transition-colors hover:text-brandRed">Refund Policy</a>
+            <span className="cursor-pointer transition-colors hover:text-brandRed">Refund Policy</span>
             <span>·</span>
-            <a href="#" className="transition-colors hover:text-brandRed">Security</a>
+            <span className="cursor-pointer transition-colors hover:text-brandRed">Security</span>
           </div>
         </div>
       </div>

@@ -17,27 +17,27 @@ export default function MobileBottomNav() {
   const navItems = [
     {
       label: "Home",
-      href: "#home",
+      href: "#hero",
       icon: Home,
       isHash: true,
     },
     {
-      label: "Benefits",
-      href: "#audience",
+      label: "Features",
+      href: "#app-features",
       icon: Sparkles,
       isHash: true,
     },
     {
-      label: "Shop",
-      href: "/create-shop",
+      label: "Sell",
+      href: "/signup",
       icon: Plus,
       isPrimary: true,
     },
     {
-      label: "Dashboard",
-      href: "/shop-owner/dashboard",
+      label: "FAQ",
+      href: "#faq",
       icon: LayoutDashboard,
-      badge: true,
+      isHash: true,
     },
     {
       label: "Login",
