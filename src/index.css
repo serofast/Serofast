@@ -645,7 +645,7 @@ button:not(.no-btn-anim):not(:disabled):active {
 }
 
 .landing-page .landing-section {
-  scroll-margin-top: 80px;
+  scroll-margin-top: 64px;
 }
 
 .landing-page .landing-header {
@@ -654,7 +654,7 @@ button:not(.no-btn-anim):not(:disabled):active {
 }
 
 .landing-page .landing-header-main {
-  min-height: 64px;
+  min-height: 56px;
 }
 
 .landing-page .landing-subnav {
@@ -697,11 +697,11 @@ button:not(.no-btn-anim):not(:disabled):active {
 
 @media (max-width: 800px) {
   .landing-page .landing-header-main {
-    min-height: 58px;
+    min-height: 52px;
   }
 
   .landing-page .landing-section {
-    scroll-margin-top: 64px;
+    scroll-margin-top: 56px;
   }
 }
 
