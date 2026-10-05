@@ -1,21 +1,10 @@
 export { default as Header } from "./Header";
-export { default as SectionHeader } from "./SectionHeader";
-export { default as HeroBanner } from "./HeroBanner";
-export { default as ServiceStrip } from "./ServiceStrip";
-export { default as ShopCard } from "./ShopCard";
-export { default as ProductCard } from "./ProductCard";
-export { default as AboutSeroFastBanner } from "./AboutSeroFastBanner";
-export { default as EnquirySection } from "./EnquirySection";
 export { default as Footer } from "./Footer";
 export { default as ScrollReveal } from "./ScrollReveal";
 export { default as ScrollToTop } from "./ScrollToTop";
 export { default as MobileBottomNav } from "./MobileBottomNav";
-export { default as LogoMarquee } from "./LogoMarquee";
-export { default as ComparisonPricingSection } from "./ComparisonPricingSection";
-export { default as PlatformDemoUI } from "./PlatformDemoUI";
 export { default as FaqAccordion } from "./FaqAccordion";
 export { default as AppTeaserModal } from "./AppTeaserModal";
-export { default as LiveActivityTicker } from "./LiveActivityTicker";
 export { default as Logo } from "./Logo";
 export { default as AppBackButton } from "./AppBackButton";
 export { default as AppMetricCard } from "./AppMetricCard";
@@ -25,4 +14,4 @@ export * from "./form";
 
 // Success & Error Status Modal Components
 export { default as AppSuccessModal } from "./AppSuccessModal";
-export { default as AppErrorModal } from "./AppErrorModal";
+export { default as AppErrorModal } from "./AppErrorModal";

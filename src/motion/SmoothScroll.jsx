@@ -46,8 +46,21 @@ export default function SmoothScroll({ children }) {
     };
   }, []);
 
-  // When route changes, scroll instantly to top unless navigating to a hash
+  // Track whether initial mount has completed
+  const isInitialMount = useRef(true);
+
+  // When route changes, ensure top of page (Hero section) is shown first
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // On initial site visit/refresh, always show the Hero section first
+      window.scrollTo(0, 0);
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { immediate: true });
+      }
+      return;
+    }
+
     if (location.hash) {
       const target = document.querySelector(location.hash);
       if (target && lenisRef.current) {

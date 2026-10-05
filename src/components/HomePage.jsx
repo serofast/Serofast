@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
 import {
   Footer,
@@ -23,6 +23,22 @@ export default function HomePage() {
   const [teaserOpen, setTeaserOpen] = useState(false);
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+
+  // Ensure user starts at top at the Hero Section on page load
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+      window.scrollTo(0, 0);
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { immediate: true });
+      }
+    }
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);

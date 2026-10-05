@@ -36,40 +36,83 @@ export default function HeroFloatingVisuals({ onOpenVideo }) {
 
       {/* Decorative Callout Stickers with Parallax Layer (0.40x speed) */}
       <ParallaxLayer speed={0.4} className="hidden lg:block absolute inset-0 pointer-events-none">
-        {/* Sticker 1: Students Shop Share Earn */}
-        <div className="absolute left-[36%] top-[8%] z-10">
-          <FloatingElement duration={5800} delay={400} distance={6}>
-            <div className="font-serif italic text-sm font-bold text-brandRed transform -rotate-12 flex flex-col items-center select-none drop-shadow-xs">
-              <span>Students</span>
-              <span>Shop</span>
-              <span>Share</span>
-              <span className="font-black text-brandRedDark">Earn</span>
+        {/* Sticker 1: Students • Shop • Share • Earn - Floating Sway Animation */}
+        <div className="absolute left-[34%] top-[7%] z-10 pointer-events-auto">
+          <div
+            style={{
+              animation: "heroFloatingSway 5.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
+              willChange: "transform",
+            }}
+            className="group relative select-none cursor-default transition-all duration-300 hover:scale-110"
+          >
+            <div className="flex items-center gap-2 rounded-2xl border border-brandRed/25 bg-white/95 px-4 py-2 shadow-[0_10px_28px_rgba(211,47,47,0.16)] backdrop-blur-md transition-shadow duration-300 group-hover:shadow-[0_16px_36px_rgba(211,47,47,0.28)]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brandRed opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-brandRed" />
+              </span>
+              <div className="font-serif italic text-xs sm:text-sm font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
+                <span>Students</span>
+                <span className="text-brandRed font-black">•</span>
+                <span>Shop</span>
+                <span className="text-brandRed font-black">•</span>
+                <span>Share</span>
+                <span className="text-brandRed font-black">•</span>
+                <span className="rounded-md bg-brandRed px-1.5 py-0.5 font-sans not-italic text-[11px] font-black text-white shadow-2xs">
+                  Earn
+                </span>
+              </div>
             </div>
-          </FloatingElement>
+          </div>
         </div>
 
-        {/* Sticker 2: From Kanyakumari to India */}
-        <div className="hidden xl:block absolute right-[26%] top-[10%] z-10 text-right">
-          <FloatingElement duration={6400} delay={800} distance={8}>
-            <div className="inline-flex items-center gap-1.5 font-serif italic text-sm font-bold text-brandRed">
-              <MapPin size={14} className="text-brandRed" />
-              <span>From Kanyakumari</span>
+        {/* Sticker 2: From Kanyakumari to India ✈️ - Floating Aerodynamic Glide */}
+        <div className="hidden xl:block absolute right-[25%] top-[9%] z-10 pointer-events-auto text-right">
+          <div
+            style={{
+              animation: "heroFloatingGlide 6.8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
+              animationDelay: "400ms",
+              willChange: "transform",
+            }}
+            className="group relative select-none cursor-default transition-all duration-300 hover:scale-105"
+          >
+            <div className="inline-flex flex-col items-end rounded-2xl border border-rose-200/80 bg-white/95 px-3.5 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md transition-shadow group-hover:shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
+              <div className="inline-flex items-center gap-1.5 font-serif italic text-xs sm:text-[13px] font-bold text-brandRed">
+                <MapPin size={13} className="text-brandRed animate-bounce" />
+                <span>From Kanyakumari</span>
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-[11px] font-black text-slate-700 tracking-wide uppercase">
+                <span>to All India</span>
+                <span
+                  className="inline-block"
+                  style={{ animation: "planeHoverGlide 2.2s ease-in-out infinite" }}
+                >
+                  ✈️
+                </span>
+              </div>
             </div>
-            <div className="text-xs font-black text-[#555] tracking-wide">
-              to India ✈️
-            </div>
-          </FloatingElement>
+          </div>
         </div>
 
-        {/* Sticker 3: Same Students, Same Place */}
-        <div className="hidden xl:block absolute right-[18%] top-[24%] z-10 text-right max-w-[150px]">
-          <FloatingElement duration={5400} delay={1200} distance={6}>
-            <div className="font-serif italic text-xs font-semibold text-[#333] leading-snug">
-              Same Students. <br />
-              Same Place. <br />
-              <span className="font-bold text-brandRed">Bigger Opportunities.</span>
+        {/* Sticker 3: Same Students, Same Place - Floating Pulse Levitation */}
+        <div className="hidden xl:block absolute right-[17%] top-[23%] z-10 pointer-events-auto text-right max-w-[170px]">
+          <div
+            style={{
+              animation: "heroFloatingPulse 5.4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite",
+              animationDelay: "900ms",
+              willChange: "transform",
+            }}
+            className="group relative select-none cursor-default transition-all duration-300 hover:scale-105"
+          >
+            <div className="rounded-2xl border-l-2 border-l-brandRed border-y border-r border-slate-200/80 bg-white/95 px-3.5 py-2 shadow-[0_8px_24px_rgba(0,0,0,0.07)] backdrop-blur-md transition-all group-hover:shadow-[0_14px_32px_rgba(211,47,47,0.14)]">
+              <div className="font-serif italic text-[11px] sm:text-xs font-semibold text-slate-600 leading-snug">
+                Same Students. <br />
+                Same Place. <br />
+                <span className="font-sans not-italic font-black text-brandRed tracking-tight text-xs">
+                  Bigger Opportunities.
+                </span>
+              </div>
             </div>
-          </FloatingElement>
+          </div>
         </div>
       </ParallaxLayer>
 
