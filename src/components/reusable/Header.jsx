@@ -9,11 +9,12 @@ import {
   Store,
   LogIn,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     let ticking = false;
@@ -31,6 +32,26 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleNavClick = (e, targetHash) => {
+    if (location.pathname === "/") {
+      e.preventDefault();
+      const targetElement = document.querySelector(targetHash);
+      if (targetElement) {
+        if (window.lenis) {
+          window.lenis.scrollTo(targetElement, { offset: -70, duration: 1.2 });
+        } else {
+          targetElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        window.history.pushState(null, "", targetHash);
+      }
+    }
+  };
+
+  const handleMobileNavClick = (e, targetHash) => {
+    setMobileMenuOpen(false);
+    handleNavClick(e, targetHash);
+  };
+
   return (
     <header
       className={`landing-header sticky top-0 z-50 transition-all duration-300 ${
@@ -44,7 +65,7 @@ export default function Header() {
       }}
     >
       {/* Main Header Row */}
-      <div className="landing-header-main mx-auto flex h-14 sm:h-16 w-[min(1400px,calc(100%_-_32px))] items-center justify-between gap-4">
+      <div className="landing-header-main mx-auto flex h-14 sm:h-16 w-[min(1400px,calc(100%_-_32px))] items-center justify-between gap-3 sm:gap-6">
         {/* Left: Serofast Logo with Slogan */}
         <Link
           to="/"
@@ -65,41 +86,60 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Right: Desktop Navigation Links + Login CTA */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <nav className="hidden items-center gap-1.5 text-xs sm:text-[13px] font-semibold text-slate-600 md:flex">
-            <a
-              href="#app-preview"
-              className="rounded-full px-3.5 py-1.5 text-slate-700 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.06] active:scale-95"
-            >
+        {/* Center: Desktop Navigation Options - Occupying All Available Space (No round container) */}
+        <nav className="hidden md:flex flex-1 items-center justify-between mx-4 sm:mx-8 lg:mx-14 h-full">
+          <a
+            href={location.pathname === "/" ? "#app-preview" : "/#app-preview"}
+            onClick={(e) => handleNavClick(e, "#app-preview")}
+            className="group relative flex-1 flex flex-col items-center justify-center py-2 px-2 text-xs lg:text-[13.5px] font-bold text-slate-700 transition-colors duration-200 hover:text-brandRed cursor-pointer"
+          >
+            <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
               Walkthrough
-            </a>
-            <a
-              href="#app-features"
-              className="rounded-full px-3.5 py-1.5 text-slate-700 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.06] active:scale-95"
-            >
+            </span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 bg-brandRed rounded-full transition-all duration-200 group-hover:w-8 group-hover:shadow-[0_2px_8px_rgba(211,47,47,0.35)]" />
+          </a>
+          <a
+            href={location.pathname === "/" ? "#app-features" : "/#app-features"}
+            onClick={(e) => handleNavClick(e, "#app-features")}
+            className="group relative flex-1 flex flex-col items-center justify-center py-2 px-2 text-xs lg:text-[13.5px] font-bold text-slate-700 transition-colors duration-200 hover:text-brandRed cursor-pointer"
+          >
+            <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
               Features
-            </a>
-            <a
-              href="#dual-mode"
-              className="rounded-full px-3.5 py-1.5 text-slate-700 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.06] active:scale-95"
-            >
+            </span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 bg-brandRed rounded-full transition-all duration-200 group-hover:w-8 group-hover:shadow-[0_2px_8px_rgba(211,47,47,0.35)]" />
+          </a>
+          <a
+            href={location.pathname === "/" ? "#dual-mode" : "/#dual-mode"}
+            onClick={(e) => handleNavClick(e, "#dual-mode")}
+            className="group relative flex-1 flex flex-col items-center justify-center py-2 px-2 text-xs lg:text-[13.5px] font-bold text-slate-700 transition-colors duration-200 hover:text-brandRed cursor-pointer"
+          >
+            <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
               Students
-            </a>
-            <Link
-              to="/signup"
-              className="rounded-full px-3.5 py-1.5 text-slate-700 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.06] active:scale-95"
-            >
+            </span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 bg-brandRed rounded-full transition-all duration-200 group-hover:w-8 group-hover:shadow-[0_2px_8px_rgba(211,47,47,0.35)]" />
+          </a>
+          <Link
+            to="/signup"
+            className="group relative flex-1 flex flex-col items-center justify-center py-2 px-2 text-xs lg:text-[13.5px] font-bold text-slate-700 transition-colors duration-200 hover:text-brandRed cursor-pointer"
+          >
+            <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
               Become a Seller
-            </Link>
-          </nav>
+            </span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2.5px] w-0 bg-brandRed rounded-full transition-all duration-200 group-hover:w-8 group-hover:shadow-[0_2px_8px_rgba(211,47,47,0.35)]" />
+          </Link>
+        </nav>
 
+        {/* Right: Action Buttons (Login CTA & Mobile Toggle) */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {/* Login Button */}
           <Link
             to="/login"
-            className="group inline-flex h-9 items-center gap-1.5 rounded-full border border-slate-200/90 bg-white/95 px-4 text-xs font-bold text-[#191616] shadow-2xs backdrop-blur-md transition-all duration-150 hover:border-brandRed/30 hover:text-brandRed hover:bg-brandRed/[0.06] active:scale-95"
+            className="group inline-flex h-9 sm:h-10 items-center gap-1.5 rounded-full border border-slate-200/90 bg-white/95 px-4 sm:px-5 text-xs sm:text-[13px] font-bold text-[#191616] shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-brandRed hover:text-brandRed hover:shadow-[0_4px_12px_rgba(211,47,47,0.12)] hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
-            <LogIn size={13} className="text-brandRed transition-transform duration-150 group-hover:translate-x-0.5" />
+            <LogIn
+              size={14}
+              className="text-brandRed transition-transform duration-200 group-hover:translate-x-0.5"
+            />
             <span>Login</span>
           </Link>
 
@@ -107,7 +147,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="grid h-9 w-9 place-items-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-2xs transition-all duration-150 hover:text-brandRed hover:border-brandRed/30 hover:bg-brandRed/[0.06] active:scale-95 md:hidden cursor-pointer"
+            className="grid h-9 sm:h-10 w-9 sm:w-10 place-items-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-2xs transition-all duration-200 hover:border-brandRed hover:text-brandRed hover:shadow-xs hover:-translate-y-0.5 active:scale-95 md:hidden cursor-pointer"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={17} /> : <Menu size={17} />}
@@ -118,45 +158,45 @@ export default function Header() {
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
         <div className="border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-xl md:hidden animate-in fade-in slide-in-from-top-2">
-          <div className="flex flex-col gap-1 text-xs font-semibold text-slate-700">
+          <div className="flex flex-col gap-1.5 text-xs font-semibold text-slate-700">
             <a
-              href="#app-preview"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.07]"
+              href={location.pathname === "/" ? "#app-preview" : "/#app-preview"}
+              onClick={(e) => handleMobileNavClick(e, "#app-preview")}
+              className="group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-bold text-slate-700 transition-all duration-200 hover:text-brandRed hover:bg-slate-50/80 hover:translate-x-1"
             >
-              <Smartphone size={15} className="text-brandRed" />
+              <Smartphone size={16} className="text-brandRed transition-transform duration-200 group-hover:scale-110" />
               <span>App Walkthrough</span>
             </a>
             <a
-              href="#app-features"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.07]"
+              href={location.pathname === "/" ? "#app-features" : "/#app-features"}
+              onClick={(e) => handleMobileNavClick(e, "#app-features")}
+              className="group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-bold text-slate-700 transition-all duration-200 hover:text-brandRed hover:bg-slate-50/80 hover:translate-x-1"
             >
-              <Layers size={15} className="text-brandRed" />
+              <Layers size={16} className="text-brandRed transition-transform duration-200 group-hover:scale-110" />
               <span>Features Inside App</span>
             </a>
             <a
-              href="#dual-mode"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.07]"
+              href={location.pathname === "/" ? "#dual-mode" : "/#dual-mode"}
+              onClick={(e) => handleMobileNavClick(e, "#dual-mode")}
+              className="group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-bold text-slate-700 transition-all duration-200 hover:text-brandRed hover:bg-slate-50/80 hover:translate-x-1"
             >
-              <GraduationCap size={15} className="text-brandRed" />
+              <GraduationCap size={16} className="text-brandRed transition-transform duration-200 group-hover:scale-110" />
               <span>For Students</span>
             </a>
             <Link
               to="/signup"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:text-brandRed hover:bg-brandRed/[0.07]"
+              className="group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-bold text-slate-700 transition-all duration-200 hover:text-brandRed hover:bg-slate-50/80 hover:translate-x-1"
             >
-              <Store size={15} className="text-brandRed" />
+              <Store size={16} className="text-brandRed transition-transform duration-200 group-hover:scale-110" />
               <span>Become a Seller</span>
             </Link>
             <Link
               to="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2.5 rounded-xl border-t border-slate-100 px-3 py-2 font-bold text-brandRed hover:bg-brandRed/[0.07] mt-1"
+              className="group flex items-center gap-2.5 rounded-xl border border-slate-200/80 px-3.5 py-2.5 font-bold text-slate-800 transition-all duration-200 hover:border-brandRed hover:text-brandRed hover:shadow-xs mt-1.5"
             >
-              <LogIn size={15} />
+              <LogIn size={16} className="text-brandRed transition-transform duration-200 group-hover:translate-x-0.5" />
               <span>Login</span>
             </Link>
           </div>
