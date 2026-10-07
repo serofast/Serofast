@@ -94,7 +94,7 @@ export default function OrderTrackingPage() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-slate-900 font-sans font-sansation antialiased pb-20">
       {/* ── Top Navigation Header ───────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 py-3.5">
+      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 py-3.5">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link

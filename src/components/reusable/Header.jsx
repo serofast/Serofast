@@ -56,12 +56,12 @@ export default function Header() {
     <header
       className={`landing-header sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "border-b border-slate-200/80 bg-white/95 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
-          : "border-b border-slate-200/50 bg-white/90 shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+          ? "border-b border-slate-200/70 bg-white/95 backdrop-blur-2xl backdrop-saturate-[1.8] shadow-[0_4px_20px_rgba(0,0,0,0.05)]"
+          : "border-b border-slate-200/50 bg-white/85 backdrop-blur-xl backdrop-saturate-[1.8] shadow-[0_1px_6px_rgba(0,0,0,0.02)]"
       }`}
       style={{
-        backdropFilter: "blur(16px) saturate(180%)",
-        WebkitBackdropFilter: "blur(16px) saturate(180%)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
       }}
     >
       {/* Main Header Row */}
@@ -134,7 +134,7 @@ export default function Header() {
           {/* Login Button */}
           <Link
             to="/login"
-            className="group inline-flex h-9 sm:h-10 items-center gap-1.5 rounded-full border border-slate-200/90 bg-white/95 px-4 sm:px-5 text-xs sm:text-[13px] font-bold text-[#191616] shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-brandRed hover:text-brandRed hover:shadow-[0_4px_12px_rgba(211,47,47,0.12)] hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+            className="group inline-flex h-9 sm:h-10 items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/85 px-4 sm:px-5 text-xs sm:text-[13px] font-bold text-[#191616] shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-brandRed hover:bg-white hover:text-brandRed hover:shadow-[0_4px_12px_rgba(211,47,47,0.12)] hover:-translate-y-0.5 active:scale-95 cursor-pointer"
           >
             <LogIn
               size={14}
@@ -147,7 +147,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="grid h-9 sm:h-10 w-9 sm:w-10 place-items-center rounded-full border border-slate-200/90 bg-white/90 text-slate-700 shadow-2xs transition-all duration-200 hover:border-brandRed hover:text-brandRed hover:shadow-xs hover:-translate-y-0.5 active:scale-95 md:hidden cursor-pointer"
+            className="grid h-9 sm:h-10 w-9 sm:w-10 place-items-center rounded-full border border-slate-200/80 bg-white/85 text-slate-700 shadow-2xs backdrop-blur-md transition-all duration-200 hover:border-brandRed hover:bg-white hover:text-brandRed hover:shadow-xs hover:-translate-y-0.5 active:scale-95 md:hidden cursor-pointer"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={17} /> : <Menu size={17} />}
@@ -155,9 +155,12 @@ export default function Header() {
         </div>
       </div>
 
+      {/* Subtle bottom glass highlight reflection */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent" />
+
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-xl md:hidden animate-in fade-in slide-in-from-top-2">
+        <div className="border-t border-slate-100 bg-white/95 px-4 py-3 backdrop-blur-2xl backdrop-saturate-[1.8] shadow-lg md:hidden animate-in fade-in slide-in-from-top-2">
           <div className="flex flex-col gap-1.5 text-xs font-semibold text-slate-700">
             <a
               href={location.pathname === "/" ? "#app-preview" : "/#app-preview"}

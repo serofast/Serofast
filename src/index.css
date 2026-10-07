@@ -695,8 +695,10 @@ button:not(.no-btn-anim):not(:disabled):active {
 }
 
 .landing-page .landing-header {
-  border-color: var(--landing-line);
-  background: rgba(250, 248, 245, 0.92);
+  border-color: rgba(226, 232, 240, 0.7);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .landing-page .landing-header-main {
