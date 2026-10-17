@@ -14,4 +14,6 @@ export * from "./form";
 
 // Success & Error Status Modal Components
 export { default as AppSuccessModal } from "./AppSuccessModal";
-export { default as AppErrorModal } from "./AppErrorModal";
+export { default as AppErrorModal } from "./AppErrorModal";
+export { default as ErrorBoundary } from "./ErrorBoundary";
+

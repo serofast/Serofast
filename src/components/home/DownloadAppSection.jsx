@@ -45,9 +45,10 @@ export default function DownloadAppSection({ onOpenTeaser }) {
               <div>
                 <TextAnimate
                   animation="blurInUp"
-                  by="character"
+                  by="word"
                   once
                   as="h2"
+                  duration={650}
                   className="text-[clamp(2rem,4.2vw,3.4rem)] font-black leading-[1.08] tracking-tight text-[#191616]"
                 >
                   Power Your Campus Business <br />

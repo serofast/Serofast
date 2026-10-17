@@ -32,13 +32,14 @@ export default function HeroContent() {
           </div>
         </StaggerItem>
 
-        {/* Primary Title with MagicUI Character blurInUp Animation */}
+        {/* Primary Title with Smooth Word Entrance */}
         <StaggerItem index={1} customDelay={100}>
           <TextAnimate
             animation="blurInUp"
-            by="character"
+            by="word"
             once
             as="h1"
+            duration={650}
             className="mt-4 text-[clamp(2.5rem,4.8vw,4.4rem)] font-black leading-[1.04] tracking-[-0.035em] text-[#191616]"
           >
             Shop Local. <br />

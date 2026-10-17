@@ -26,9 +26,10 @@ export default function DualModeExperience() {
         <div className="mx-auto max-w-3xl text-center">
           <TextAnimate
             animation="blurInUp"
-            by="character"
+            by="word"
             once
             as="h2"
+            duration={650}
             className="text-[clamp(1.8rem,3.5vw,2.8rem)] font-black text-[#191616]"
           >
             Engineered for Both Student Sellers & Campus Shoppers

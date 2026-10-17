@@ -206,13 +206,13 @@ export default function Footer() {
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brandRed/10 text-brandRed">
                   <Mail size={13} />
                 </span>
-                <span>support@serofast.com</span>
+                <span>serofastinfo@gmail.com</span>
               </p>
               <p className="flex items-center gap-2.5">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brandRed/10 text-brandRed">
                   <Phone size={13} />
                 </span>
-                <span>+91 98765 43210</span>
+                <span>+91 744 840 2365</span>
               </p>
               <div className="pt-2">
                 <Link

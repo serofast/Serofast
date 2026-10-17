@@ -73,12 +73,16 @@ import "./index.css";
   }
 })();
 
+import { ErrorBoundary } from "./components/reusable";
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <SmoothScroll>
-        <App />
-      </SmoothScroll>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <SmoothScroll>
+          <App />
+        </SmoothScroll>
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

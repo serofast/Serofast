@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   ShoppingBag,
   Share2,
@@ -6,19 +6,16 @@ import {
   Truck,
   ShieldCheck,
   TrendingUp,
-  Sparkles,
-  RotateCw,
   CheckCircle2,
   ArrowRight,
-  ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import ParallaxLayer from "../../motion/ParallaxLayer";
 import ScrollTitleReveal from "../../motion/ScrollTitleReveal";
 import { StaggerGroup, StaggerItem } from "../../motion/StaggerGroup";
-import { TextAnimate } from "@/registry/magicui/text-animate";
 
 // ============================================================================
-// 6 FEATURE CARDS DEFINITION (MINIMAL TEXT FRONT, DETAILED BACK)
+// 6 ENTERPRISE FEATURE CARDS
 // ============================================================================
 const FEATURES_DATA = [
   {
@@ -30,8 +27,7 @@ const FEATURES_DATA = [
     icon: ShoppingBag,
     accentBg: "bg-red-50",
     accentText: "text-brandRed",
-    accentBorder: "border-red-200/80",
-    backTitle: "Dropshipping Architecture",
+    accentBorder: "border-red-100",
     points: [
       "SeroFast sources, inspects & holds goods at regional hubs.",
       "Set your custom retail markup and keep 100% of profit.",
@@ -48,8 +44,7 @@ const FEATURES_DATA = [
     icon: Wallet,
     accentBg: "bg-emerald-50",
     accentText: "text-emerald-600",
-    accentBorder: "border-emerald-200/80",
-    backTitle: "Payout & Settlement",
+    accentBorder: "border-emerald-100",
     points: [
       "Immediate automated settlements straight to any UPI VPA.",
       "Zero minimum balance threshold or withdrawal wait times.",
@@ -66,8 +61,7 @@ const FEATURES_DATA = [
     icon: Share2,
     accentBg: "bg-blue-50",
     accentText: "text-blue-600",
-    accentBorder: "border-blue-200/80",
-    backTitle: "Social Selling Tools",
+    accentBorder: "border-blue-100",
     points: [
       "1-click formatted status card generation with product media.",
       "Embedded QR codes & direct WhatsApp order chat links.",
@@ -84,8 +78,7 @@ const FEATURES_DATA = [
     icon: Truck,
     accentBg: "bg-amber-50",
     accentText: "text-amber-600",
-    accentBorder: "border-amber-200/80",
-    backTitle: "Hyperlocal Dispatch",
+    accentBorder: "border-amber-100",
     points: [
       "Guaranteed doorstep handover in under 45 minutes.",
       "Live GPS telemetry & route updates with student runners.",
@@ -102,8 +95,7 @@ const FEATURES_DATA = [
     icon: ShieldCheck,
     accentBg: "bg-purple-50",
     accentText: "text-purple-600",
-    accentBorder: "border-purple-200/80",
-    backTitle: "Verification & Trust",
+    accentBorder: "border-purple-100",
     points: [
       "Roll number authentication via campus student registry.",
       "Official Verified Seller badge shown on store links.",
@@ -113,15 +105,14 @@ const FEATURES_DATA = [
   },
   {
     id: "ai-radar",
-    badge: "AI Predictor",
-    title: "AI Campus Demand Radar",
+    badge: "Demand Intelligence",
+    title: "Campus Demand Radar",
     tagline:
-      "Predictive recommendations for semester exam stationery, midnight snacks, and campus trends.",
+      "Data-driven recommendations for semester exam stationery, midnight snacks, and campus trends.",
     icon: TrendingUp,
     accentBg: "bg-rose-50",
     accentText: "text-rose-600",
-    accentBorder: "border-rose-200/80",
-    backTitle: "Predictive Analytics",
+    accentBorder: "border-rose-100",
     points: [
       "Semester exam schedule alerts (calculators, drafters).",
       "Midnight hostel snack order surge detection (11 PM - 2 AM).",
@@ -131,24 +122,11 @@ const FEATURES_DATA = [
   },
 ];
 
-// ============================================================================
-// MAIN FEATURES SECTION WITH 3D FLIP CARDS
-// ============================================================================
 export default function AppFeaturesBento() {
-  // Track flipped state for each card independently
-  const [flippedCards, setFlippedCards] = useState({});
-
-  const toggleFlip = (id) => {
-    setFlippedCards((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   return (
     <section
       id="app-features"
-      className="relative border-b border-[#EBE3DC] bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5]/60 py-14 lg:py-20 select-none overflow-hidden"
+      className="relative border-b border-[#EBE3DC] bg-gradient-to-b from-[#FAF8F5] via-white to-[#FAF8F5]/60 py-16 lg:py-24 select-none overflow-hidden"
     >
       {/* Soft Ambient Radial Lights with Parallax */}
       <ParallaxLayer speed={0.18} className="section-atmosphere">
@@ -157,139 +135,85 @@ export default function AppFeaturesBento() {
       </ParallaxLayer>
 
       <div className="relative mx-auto w-[min(1400px,calc(100%_-_32px))]">
-        {/* Section Header with MagicUI blurInUp text entrance */}
+        {/* Section Header */}
         <div className="mx-auto max-w-2xl text-center">
-          <TextAnimate
-            animation="blurInUp"
-            by="character"
-            once
-            as="h2"
-            className="mt-1 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]"
-          >
+          <div className="inline-flex items-center gap-2 rounded-full border border-brandRed/20 bg-white px-3.5 py-1 shadow-2xs">
+            <Sparkles size={13} className="text-brandRed" />
+            <span className="text-[11px] font-black uppercase tracking-wider text-brandRed">
+              Architecture & Capabilities
+            </span>
+          </div>
+
+          <h2 className="mt-3 text-[clamp(2rem,3.8vw,3rem)] font-black tracking-tight text-[#191616]">
             Engineered for Campus Commerce
-          </TextAnimate>
+          </h2>
 
           <ScrollTitleReveal direction="up" delay={180} duration={850}>
-            <p className="mt-1.5 text-xs sm:text-sm text-[#555] max-w-md mx-auto">
-              Minimal, zero-friction mobile tooling. Click any card to flip and explore architectural details.
+            <p className="mt-2 text-sm sm:text-base text-slate-500 max-w-lg mx-auto leading-relaxed">
+              Minimal, zero-friction mobile tooling built from the ground up for verified university ecosystems.
             </p>
           </ScrollTitleReveal>
         </div>
 
         {/* =========================================================
-            3D FLIP CARDS GRID (MINIMAL TEXT FRONT, DETAILED BACK)
+            BENTO GRID (HIGH-DENSITY, ENTERPRISE-GRADE UI)
             ========================================================= */}
-        <StaggerGroup step={80} className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerGroup step={70} className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {FEATURES_DATA.map((item, index) => {
             const Icon = item.icon;
-            const isFlipped = Boolean(flippedCards[item.id]);
 
             return (
               <StaggerItem key={item.id} index={index}>
-                <div className="flip-card-wrapper h-[245px] sm:h-[255px] w-full">
-                  <div
-                    onClick={() => toggleFlip(item.id)}
-                    className={`flip-card-inner cursor-pointer ${
-                      isFlipped ? "is-flipped" : ""
-                    }`}
-                  >
-                    {/* ─────────────────────────────────────────────────────
-                        FRONT FACE: MINIMAL COMPONENTS & CRISP TEXT ONLY
-                        ───────────────────────────────────────────────────── */}
-                    <div className="saas-card-interactive flip-card-face flex flex-col justify-between rounded-2xl border border-[#E5E7EB] bg-white p-5 sm:p-6 shadow-xs">
-                      <div>
-                        {/* Top: Icon + Badge + Flip Hint */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <div
-                              className={`grid h-9 w-9 place-items-center rounded-xl ${item.accentBg} ${item.accentText}`}
-                            >
-                              <Icon size={18} />
-                            </div>
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${item.accentBg} ${item.accentText}`}
-                            >
-                              {item.badge}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-1 text-[11px] font-bold text-[#888] hover:text-[#333] transition-colors">
-                            <RotateCw size={12} className="text-[#999]" />
-                            <span className="hidden sm:inline">Flip</span>
-                          </div>
-                        </div>
-
-                        {/* Title */}
-                        <h3 className="mt-3.5 text-lg font-black text-[#191616] tracking-tight">
-                          {item.title}
-                        </h3>
-
-                        {/* Minimal Tagline / Summary */}
-                        <p className="mt-2 text-xs leading-relaxed text-[#555]">
-                          {item.tagline}
-                        </p>
+                <div className="group relative flex flex-col justify-between h-full rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-[0_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:-translate-y-1 hover:border-brandRed/40 hover:shadow-[0_16px_40px_rgba(211,47,47,0.08)]">
+                  <div>
+                    {/* Top Header: Icon + Badge */}
+                    <div className="flex items-center justify-between">
+                      <div
+                        className={`grid h-10 w-10 place-items-center rounded-xl ${item.accentBg} ${item.accentText} transition-transform duration-300 group-hover:scale-110`}
+                      >
+                        <Icon size={20} />
                       </div>
-
-                      {/* Bottom Footer Hint */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] font-bold text-[#888]">
-                        <span className="flex items-center gap-1 text-brandRed font-black">
-                          <span>Click for details</span>
-                          <ArrowRight size={12} />
-                        </span>
-                        <span className="text-[10px] text-[#999]">Tap to flip ↺</span>
-                      </div>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider border ${item.accentBg} ${item.accentText} ${item.accentBorder}`}
+                      >
+                        {item.badge}
+                      </span>
                     </div>
 
-                    {/* ─────────────────────────────────────────────────────
-                        BACK FACE: DETAILED SPECIFICATIONS & BULLET POINTS
-                        ───────────────────────────────────────────────────── */}
-                    <div
-                      className={`flip-card-face flip-card-back flex flex-col justify-between rounded-2xl border ${item.accentBorder} bg-gradient-to-br from-white via-[#FAF8F5] to-white p-5 sm:p-6 shadow-md`}
-                    >
-                      <div>
-                        {/* Back Top: Title + Flip Back Button */}
-                        <div className="flex items-center justify-between border-b border-slate-200/70 pb-2">
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`h-2 w-2 rounded-full ${item.accentBg.replace(
-                                "50",
-                                "500"
-                              )}`}
-                            />
-                            <span className="text-xs font-black text-[#191616] uppercase tracking-wider">
-                              {item.backTitle}
-                            </span>
-                          </div>
+                    {/* Title & Tagline */}
+                    <h3 className="mt-4 text-lg font-black text-[#191616] group-hover:text-brandRed transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 text-xs sm:text-[13px] leading-relaxed text-slate-500">
+                      {item.tagline}
+                    </p>
 
-                          <div className="flex items-center gap-1 text-[11px] font-bold text-brandRed">
-                            <RotateCw size={12} />
-                            <span>Flip back</span>
-                          </div>
+                    {/* Bullet Architecture Points */}
+                    <div className="mt-5 space-y-2 border-t border-slate-100 pt-4">
+                      {item.points.map((point, pIdx) => (
+                        <div
+                          key={pIdx}
+                          className="flex items-start gap-2 text-xs text-slate-600 leading-snug"
+                        >
+                          <CheckCircle2
+                            size={14}
+                            className="text-brandRed shrink-0 mt-0.5"
+                          />
+                          <span>{point}</span>
                         </div>
-
-                        {/* In-Depth Feature Bullets */}
-                        <div className="mt-3 space-y-2">
-                          {item.points.map((point, i) => (
-                            <div
-                              key={i}
-                              className="flex items-start gap-2 text-xs text-[#444] leading-snug"
-                            >
-                              <CheckCircle2
-                                size={14}
-                                className={`shrink-0 mt-0.5 ${item.accentText}`}
-                              />
-                              <span>{point}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Back Bottom Metric Highlight */}
-                      <div className="pt-2.5 border-t border-slate-200/70 flex items-center justify-between text-[10px] font-black text-[#666]">
-                        <span className={item.accentText}>{item.metric}</span>
-                        <span className="text-[9px] text-[#999]">Tap to close ↺</span>
-                      </div>
+                      ))}
                     </div>
+                  </div>
+
+                  {/* Card Bottom Metric Pill */}
+                  <div className="mt-6 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-400 truncate">
+                      {item.metric}
+                    </span>
+                    <ArrowRight
+                      size={14}
+                      className="text-slate-300 group-hover:text-brandRed group-hover:translate-x-1 transition-all"
+                    />
                   </div>
                 </div>
               </StaggerItem>

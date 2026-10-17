@@ -66,9 +66,10 @@ export default function FaqAccordion() {
 
           <TextAnimate
             animation="blurInUp"
-            by="character"
+            by="word"
             once
             as="h2"
+            duration={650}
             className="mt-3 text-[clamp(1.8rem,3.4vw,2.7rem)] font-black tracking-tight text-[#191616]"
           >
             Frequently Asked Questions

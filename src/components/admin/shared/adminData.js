@@ -35,13 +35,13 @@ export const categories=[
  {id:'CAT-04',name:'Home',parent:'—',children:7,shops:201,products:3178,status:'Active'},
 ];
 export const orders=[
- {id:'#SF10294',customer:'Abinesh',shop:'Urban Styles',items:3,amount:'₹2,499',payment:'Paid',status:'Shipped',date:'15 Aug 2026'},
+ {id:'#SF10294',customer:'Aditya Verma',shop:'Urban Styles',items:3,amount:'₹2,499',payment:'Paid',status:'Shipped',date:'15 Aug 2026'},
  {id:'#SF10293',customer:'Meena',shop:'Tech Haven',items:1,amount:'₹1,999',payment:'Paid',status:'Processing',date:'15 Aug 2026'},
  {id:'#SF10292',customer:'Arun',shop:'Elite Fashion',items:2,amount:'₹3,499',payment:'Paid',status:'Delivered',date:'14 Aug 2026'},
  {id:'#SF10291',customer:'Priya',shop:'Glow & Grace',items:4,amount:'₹1,899',payment:'Paid',status:'Returned',date:'14 Aug 2026'},
 ];
 export const customers=[
- {id:'CUS-901',name:'Abinesh',email:'abinesh@example.com',orders:18,spent:'₹42,540',returns:1,status:'Active'},
+ {id:'CUS-901',name:'Aditya Verma',email:'aditya@example.com',orders:18,spent:'₹42,540',returns:1,status:'Active'},
  {id:'CUS-902',name:'Meena',email:'meena@example.com',orders:14,spent:'₹31,220',returns:0,status:'Active'},
  {id:'CUS-903',name:'Rahul',email:'rahul@example.com',orders:7,spent:'₹9,120',returns:2,status:'Blocked'},
  {id:'CUS-904',name:'Priya',email:'priya@example.com',orders:21,spent:'₹58,900',returns:1,status:'Active'},
@@ -52,20 +52,20 @@ export const withdrawals=[
  {id:'WD-1999',shop:'Elite Fashion',owner:'Maya Thomas',amount:'₹36,400',method:'Bank',status:'Completed'},
 ];
 export const generic = {
- transactions:[['TXN-10801','Order Payment','#SF10294','Abinesh','₹2,499','₹100','₹2,399','Completed'],['TXN-10800','Withdrawal','—','Tech Haven','₹18,500','₹0','₹18,500','Pending']],
+ transactions:[['TXN-10801','Order Payment','#SF10294','Aditya Verma','₹2,499','₹100','₹2,399','Completed'],['TXN-10800','Withdrawal','—','Tech Haven','₹18,500','₹0','₹18,500','Pending']],
  refunds:[['RF-4001','#SF10291','Priya','Glow & Grace','₹1,899','Damaged item','Pending'],['RF-4000','#SF10272','Rahul','Home Nest','₹8,999','Wrong item','Processed']],
  returns:[['RET-101','#SF10291','Priya','Glow & Grace',"Premium Face Serum",'Damaged item','₹1,899','Requested'],['RET-100','#SF10270','Meena','Elite Fashion',"Women's Dress",'Size issue','₹1,499','Approved']],
- reviews:[['REV-501','5','Great product and fast delivery.','Abinesh',"Men's Shirt",'Urban Styles','Published'],['REV-500','1','The package arrived damaged.','Priya','Premium Face Serum','Glow & Grace','Reported']],
+ reviews:[['REV-501','5','Great product and fast delivery.','Aditya Verma',"Men's Shirt",'Urban Styles','Published'],['REV-500','1','The package arrived damaged.','Priya','Premium Face Serum','Glow & Grace','Reported']],
  inventory:[['INV-301',"Women's Dress",'Elite Fashion',0,5,'Fast','Out of Stock'],['INV-302','Modern Sofa','Home Nest',2,5,'Slow','Low Stock'],['INV-303','Premium Face Serum','Glow & Grace',4,8,'Fast','Low Stock']],
  coupons:[['CPN-01','SAVE100','Fixed','₹100','₹999','184 / 500','Active'],['CPN-02','LOCAL10','Percent','10%','₹1,499','82 / 250','Active']],
  campaigns:[['CMP-01','Independence Weekend','All Customers','₹25,000','12,480','Running'],['CMP-02','Student Seller Push','Students','₹8,000','3,220','Scheduled']],
  banners:[['BNR-01','Buy from Your Favorite Shops','Hero','Active',1],['BNR-02','Local Fashion Week','Promotion','Scheduled',2]],
- support:[['SUP-1282','Order not received','Abinesh','Customer','High','Open'],['SUP-1281','Withdrawal pending','Tech Haven','Seller','Medium','In Progress']],
+ support:[['SUP-1282','Order not received','Aditya Verma','Customer','High','Open'],['SUP-1281','Withdrawal pending','Tech Haven','Seller','Medium','In Progress']],
  notifications:[['NOT-01','Order confirmed','Push + In-app','Customer','Enabled'],['NOT-02','Order shipped','Push + Email','Customer','Enabled'],['NOT-03','Withdrawal completed','Email','Seller','Disabled']],
  admins:[['ADM-01','Antony Richards','antony@serofast.com','Super Admin','Active'],['ADM-02','Meera Finance','finance@serofast.com','Finance Admin','Active'],['ADM-03','Rohan Support','support@serofast.com','Support Admin','Active']],
  audit:[['AUD-9001','Antony Richards','Approved shop','Urban Styles','Shops','15 Aug 2026, 15:32'],['AUD-9000','Meera Finance','Approved withdrawal','₹18,500 · Tech Haven','Finance','15 Aug 2026, 15:40']],
  risk:[['RSK-01','Coupon abuse','Customer CUS-903','High','Open'],['RSK-02','Repeated refunds','Shop SHP-1060','Medium','Investigating']],
- delivery:[['SHP-7001','#SF10294','Urban Styles','Abinesh','SeroFast Express','SF-TRK-10294','Shipped'],['SHP-7000','#SF10293','Tech Haven','Meena','SeroFast Express','SF-TRK-10293','Processing']],
+ delivery:[['SHP-7001','#SF10294','Urban Styles','Aditya Verma','SeroFast Express','SF-TRK-10294','Shipped'],['SHP-7000','#SF10293','Tech Haven','Meena','SeroFast Express','SF-TRK-10293','Processing']],
 };
 export const sales=[22,34,29,51,44,62,73,68,81,76,92,84];
 export const topSearches=[['Saree',1384,100],['Men\'s Shirt',1120,81],['Shoes',982,71],['Laptop',741,54],['Perfume',622,45]];
