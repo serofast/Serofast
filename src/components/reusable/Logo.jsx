@@ -19,11 +19,11 @@ export default function Logo({
   textClassName = "",
 }) {
   const sizeMap = {
-    xs: { iconWidth: 24, iconHeight: 15, text: "text-base tracking-tight" },
-    sm: { iconWidth: 32, iconHeight: 20, text: "text-lg tracking-tight" },
-    md: { iconWidth: 42, iconHeight: 26, text: "text-xl tracking-tight" },
-    lg: { iconWidth: 54, iconHeight: 33, text: "text-2xl tracking-tight" },
-    xl: { iconWidth: 72, iconHeight: 44, text: "text-3xl tracking-tight" },
+    xs: { iconWidth: 28, iconHeight: 17, text: "text-base tracking-tight" },
+    sm: { iconWidth: 40, iconHeight: 24, text: "text-lg tracking-tight" },
+    md: { iconWidth: 50, iconHeight: 30, text: "text-xl tracking-tight" },
+    lg: { iconWidth: 64, iconHeight: 38, text: "text-2xl tracking-tight" },
+    xl: { iconWidth: 84, iconHeight: 50, text: "text-3xl tracking-tight" },
   };
 
   const currentSize = typeof size === "string" ? sizeMap[size] || sizeMap.md : {
